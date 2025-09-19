@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { MemorySearch } from "./MemorySearch";
 import { MovieCard, Movie } from "./MovieCard";
 import { MovieExplanation } from "./MovieExplanation";
@@ -6,7 +7,10 @@ import { StreamingAvailability } from "./StreamingAvailability";
 import { APIKeyInput } from "./APIKeyInput";
 import { initializeOpenAI, identifyMovie, explainMovie, getStreamingOptions } from "@/lib/openai";
 import { useToast } from "@/hooks/use-toast";
-import { Brain } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Brain, User, Compass, Menu } from "lucide-react";
+import { Button } from "./ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 type ViewState = 'search' | 'movie-details' | 'explanation' | 'streaming';
 
@@ -20,6 +24,7 @@ interface StreamingOption {
 
 export const CineMind = () => {
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [currentView, setCurrentView] = useState<ViewState>('search');
   const [isLoading, setIsLoading] = useState(false);
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
@@ -29,6 +34,7 @@ export const CineMind = () => {
     symbolism: string;
   } | null>(null);
   const [streamingOptions, setStreamingOptions] = useState<StreamingOption[]>([]);
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -38,6 +44,18 @@ export const CineMind = () => {
       setApiKey(storedApiKey);
       initializeOpenAI(storedApiKey);
     }
+
+    // Check authentication state
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleApiKeySubmit = (key: string) => {
@@ -149,11 +167,51 @@ export const CineMind = () => {
 
       {/* Header */}
       <div className="max-w-6xl mx-auto mb-8">
-        <div className="flex items-center justify-center gap-3 mb-2">
-          <Brain className="w-8 h-8 text-primary" />
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            CineMind
-          </h1>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <Brain className="w-8 h-8 text-primary" />
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              CineMind
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/discover")}
+              className="flex items-center gap-2 hover:bg-secondary/60"
+            >
+              <Compass className="w-4 h-4" />
+              Discover
+            </Button>
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <Menu className="w-3 h-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="w-4 h-4 mr-2" />
+                    Profile & CineDNA
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                onClick={() => navigate("/auth")}
+                className="neural-button"
+              >
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
         <p className="text-center text-muted-foreground">
           Your Personal AI Movie Memory Companion

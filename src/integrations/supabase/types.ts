@@ -14,7 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          is_watched: boolean | null
+          movie_poster_url: string | null
+          movie_title: string
+          movie_year: number | null
+          rating: number | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_watched?: boolean | null
+          movie_poster_url?: string | null
+          movie_title: string
+          movie_year?: number | null
+          rating?: number | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_watched?: boolean | null
+          movie_poster_url?: string | null
+          movie_title?: string
+          movie_year?: number | null
+          rating?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      movie_searches: {
+        Row: {
+          created_at: string
+          id: string
+          movie_plot: string | null
+          movie_poster_url: string | null
+          movie_title: string | null
+          movie_year: number | null
+          search_query: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          movie_plot?: string | null
+          movie_poster_url?: string | null
+          movie_title?: string | null
+          movie_year?: number | null
+          search_query: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          movie_plot?: string | null
+          movie_poster_url?: string | null
+          movie_title?: string | null
+          movie_year?: number | null
+          search_query?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_preferences: {
+        Row: {
+          cinedna_score: Json | null
+          created_at: string
+          favorite_genres: string[] | null
+          id: string
+          preferred_mood: string | null
+          updated_at: string
+          user_id: string
+          watch_time_preference: string | null
+        }
+        Insert: {
+          cinedna_score?: Json | null
+          created_at?: string
+          favorite_genres?: string[] | null
+          id?: string
+          preferred_mood?: string | null
+          updated_at?: string
+          user_id: string
+          watch_time_preference?: string | null
+        }
+        Update: {
+          cinedna_score?: Json | null
+          created_at?: string
+          favorite_genres?: string[] | null
+          id?: string
+          preferred_mood?: string | null
+          updated_at?: string
+          user_id?: string
+          watch_time_preference?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
