@@ -124,53 +124,53 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Memory Cloud Effect */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-gradient-to-l from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse animation-delay-2s" />
+        <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 bg-gradient-to-l from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse animation-delay-2s" />
         
         {/* Floating Particles */}
-        <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30"></div>
-        <div className="floating-particle absolute bottom-32 left-32 w-1 h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
-        <div className="floating-particle absolute top-1/2 left-1/3 w-1.5 h-1.5 bg-primary rounded-full opacity-40 animation-delay-1-5s"></div>
+        <div className="floating-particle absolute top-16 right-16 sm:top-20 sm:right-20 w-1 h-1 sm:w-2 sm:h-2 bg-primary rounded-full opacity-30"></div>
+        <div className="floating-particle absolute bottom-24 left-24 sm:bottom-32 sm:left-32 w-0.5 h-0.5 sm:w-1 sm:h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
+        <div className="floating-particle absolute top-1/2 left-1/3 w-1 h-1 sm:w-1.5 sm:h-1.5 bg-primary rounded-full opacity-40 animation-delay-1-5s"></div>
         
         {/* Neural Network Lines */}
-        <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
-        <div className="absolute top-1/3 right-1/3 w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
-        <div className="absolute bottom-1/3 left-1/2 w-px h-24 bg-gradient-to-b from-transparent via-primary/15 to-transparent" />
+        <div className="absolute top-1/4 left-1/4 w-px h-16 sm:h-24 md:h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
+        <div className="absolute top-1/3 right-1/3 w-16 sm:w-24 md:w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+        <div className="absolute bottom-1/3 left-1/2 w-px h-12 sm:h-18 md:h-24 bg-gradient-to-b from-transparent via-primary/15 to-transparent" />
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 sm:px-6 lg:px-8">
         {/* Hero Section */}
-        <div className="text-center mb-12 space-y-6">
-          <div className="flex items-center justify-center gap-3 mb-6">
+        <div className="text-center mb-8 sm:mb-12 space-y-4 sm:space-y-6">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
             <div className="relative">
-              <Brain className="w-12 h-12 text-primary" />
+              <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary" />
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg animate-pulse" />
             </div>
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               CineMind
             </h1>
           </div>
           
-          <h2 className="text-4xl font-bold text-white mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
             Remember Any Movie.<br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Anywhere. Anytime.
             </span>
           </h2>
           
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
             Your AI-powered movie memory companion that never forgets a single detail, 
             meaning, or where to watch your favorite films.
           </p>
         </div>
 
         {/* Movie Cards Carousel */}
-        <div className="w-full max-w-4xl mb-12">
+        <div className="w-full max-w-4xl mb-8 sm:mb-12">
           <div className="relative">
             {/* Card Container */}
             <div className="flex justify-center">
-              <div className="relative w-80 h-96 perspective-1000">
+              <div className="relative w-72 h-80 sm:w-80 sm:h-96 perspective-1000">
                 {movieData.map((movie, index) => {
                   const isActive = index === currentCard;
                   const isFlipped = flippedCards.has(index);
@@ -197,20 +197,22 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                               <img
                                 src={movie.poster}
                                 alt={movie.title}
-                                className="w-full h-full object-cover rounded-lg"
+                                className={`w-full h-full object-cover rounded-lg ${
+                                  movie.title === "Inception" ? "object-top" : ""
+                                }`}
                                 onError={(e) => {
                                   e.currentTarget.src = '/placeholder.svg';
                                 }}
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                              <div className="absolute bottom-4 left-4 right-4">
-                                <h3 className="text-2xl font-bold text-white mb-2">{movie.title}</h3>
-                                <p className="text-sm text-gray-300 mb-2">{movie.year}</p>
-                                <p className="text-sm text-gray-400 italic">"{movie.description}"</p>
+                              <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
+                                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2">{movie.title}</h3>
+                                <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">{movie.year}</p>
+                                <p className="text-xs sm:text-sm text-gray-400 italic">"{movie.description}"</p>
                               </div>
-                              <div className="absolute top-4 right-4">
-                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                                  <Eye className="w-4 h-4 text-white" />
+                              <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
+                                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                  <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                                 </div>
                               </div>
                             </div>
@@ -218,24 +220,24 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
                           {/* Back of Card - AI Response */}
                           <div className="absolute inset-0 rotate-y-180 backface-hidden">
-                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 p-6 flex flex-col justify-center items-center text-center rounded-lg">
-                              <div className="mb-4">
-                                <Brain className="w-12 h-12 text-primary mx-auto mb-2" />
-                                <h4 className="text-lg font-semibold text-white mb-2">{movie.painPoint}</h4>
+                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 p-3 sm:p-6 flex flex-col justify-center items-center text-center rounded-lg">
+                              <div className="mb-2 sm:mb-4">
+                                <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-1 sm:mb-2" />
+                                <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-1 sm:mb-2">{movie.painPoint}</h4>
                               </div>
-                              <p className="text-sm text-gray-300 mb-4">{movie.solution}</p>
-                              <div className="flex gap-2">
+                              <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-4">{movie.solution}</p>
+                              <div className="flex gap-1 sm:gap-2">
                                 <div className="flex items-center gap-1 text-xs text-primary">
-                                  <Search className="w-3 h-3" />
-                                  <span>Identify</span>
+                                  <Search className="w-2 h-2 sm:w-3 sm:h-3" />
+                                  <span className="hidden sm:inline">Identify</span>
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-accent">
-                                  <Lightbulb className="w-3 h-3" />
-                                  <span>Explain</span>
+                                  <Lightbulb className="w-2 h-2 sm:w-3 sm:h-3" />
+                                  <span className="hidden sm:inline">Explain</span>
                                 </div>
                                 <div className="flex items-center gap-1 text-xs text-primary">
-                                  <Play className="w-3 h-3" />
-                                  <span>Watch</span>
+                                  <Play className="w-2 h-2 sm:w-3 sm:h-3" />
+                                  <span className="hidden sm:inline">Watch</span>
                                 </div>
                               </div>
                             </div>
@@ -252,31 +254,31 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
             <button
               onClick={prevCard}
               title="Previous movie card"
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
             <button
               onClick={nextCard}
               title="Next movie card"
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
             >
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
           </div>
 
           {/* Card Indicators */}
-          <div className="flex justify-center gap-2 mt-6">
+          <div className="flex justify-center gap-1 sm:gap-2 mt-4 sm:mt-6">
             {movieData.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentCard(index)}
                 title={`Go to movie card ${index + 1}`}
-                className={`w-2 h-2 rounded-full transition-colors ${
+                className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
                   index === currentCard ? 'bg-primary' : 'bg-white/30'
                 }`}
               />
@@ -285,12 +287,12 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center space-y-6">
-          <div className="space-y-2">
-            <h3 className="text-2xl font-bold text-white">
+        <div className="text-center space-y-4 sm:space-y-6 px-4">
+          <div className="space-y-1 sm:space-y-2">
+            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
               Your CineMind remembers for you.
             </h3>
-            <p className="text-muted-foreground">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Tap any card above to see how CineMind solves your movie memory problems
             </p>
           </div>
@@ -298,9 +300,9 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           <Button
             onClick={onStart}
             size="lg"
-            className="neural-button text-lg px-8 py-4 h-auto"
+            className="neural-button text-sm sm:text-base md:text-lg px-6 sm:px-8 py-3 sm:py-4 h-auto w-full sm:w-auto"
           >
-            <Brain className="w-5 h-5 mr-2" />
+            <Brain className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Start Your Memory Journey
           </Button>
         </div>
