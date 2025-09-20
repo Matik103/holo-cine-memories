@@ -4,7 +4,6 @@ import { MemorySearch } from "./MemorySearch";
 import { MovieCard, Movie } from "./MovieCard";
 import { MovieExplanation } from "./MovieExplanation";
 import { StreamingAvailability } from "./StreamingAvailability";
-import { APIKeyInput } from "./APIKeyInput";
 import { LandingPage } from "./LandingPage";
 import { initializeOpenAI, identifyMovie, explainMovie, getStreamingOptions } from "@/lib/openai";
 import { useToast } from "@/hooks/use-toast";
@@ -24,7 +23,6 @@ interface StreamingOption {
 }
 
 export const CineMind = () => {
-  const [apiKey, setApiKey] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
   const [showLanding, setShowLanding] = useState(true);
   const [currentView, setCurrentView] = useState<ViewState>('search');
@@ -40,70 +38,44 @@ export const CineMind = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check if API key is stored in localStorage
-    const storedApiKey = localStorage.getItem('cinemind-api-key');
-    if (storedApiKey) {
-      setApiKey(storedApiKey);
-      initializeOpenAI(storedApiKey);
-      setShowLanding(false); // Skip landing page if API key exists
-    }
-
     // Check authentication state
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        setShowLanding(false); // Skip landing page if user is authenticated
+        // Initialize OpenAI with the main API key from Supabase
+        initializeOpenAIFromSupabase();
+      }
     });
 
     // Check initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        setShowLanding(false);
+        initializeOpenAIFromSupabase();
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleApiKeySubmit = (key: string) => {
-    localStorage.setItem('cinemind-api-key', key);
-    setApiKey(key);
-    initializeOpenAI(key);
-    setShowLanding(false);
-    toast({
-      title: "API Key Saved",
-      description: "CineMind is ready to help you remember movies!"
-    });
-  };
-
-  const handleStartJourney = async () => {
-    setShowLanding(false);
-    
-    // Get the main OpenAI API key from Supabase secrets
+  const initializeOpenAIFromSupabase = async () => {
     try {
       const { data: { secrets } } = await supabase.functions.invoke('get-secrets');
       const openaiApiKey = secrets?.OPENAI_API_KEY;
       
       if (openaiApiKey) {
-        localStorage.setItem('cinemind-api-key', openaiApiKey);
-        setApiKey(openaiApiKey);
         initializeOpenAI(openaiApiKey);
-        toast({
-          title: "Welcome to CineMind!",
-          description: "Your AI movie memory companion is ready to help!"
-        });
-      } else {
-        // Fallback to API key input if main key not available
-        toast({
-          title: "API Key Required",
-          description: "Please enter your OpenAI API key to continue.",
-          variant: "destructive"
-        });
       }
     } catch (error) {
       console.error('Error fetching OpenAI API key:', error);
-      toast({
-        title: "Error",
-        description: "Failed to initialize CineMind. Please try again.",
-        variant: "destructive"
-      });
     }
+  };
+
+  const handleStartJourney = () => {
+    // Redirect to authentication page
+    navigate("/auth");
   };
 
   const handleSearch = async (query: string) => {
@@ -193,9 +165,9 @@ export const CineMind = () => {
     return <LandingPage onStart={handleStartJourney} />;
   }
 
-  // Show API key input if not configured
-  if (!apiKey) {
-    return <APIKeyInput onApiKeySubmit={handleApiKeySubmit} />;
+  // Show authentication page if user is not logged in
+  if (!user) {
+    return <LandingPage onStart={handleStartJourney} />;
   }
 
   return (
