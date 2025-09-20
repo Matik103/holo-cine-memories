@@ -63,8 +63,33 @@ export const Auth = () => {
     e.preventDefault();
     setLoading(true);
 
+    // Validate password length
+    if (password.length < 6) {
+      toast({
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Attempting to sign up user:", { email, fullName });
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -75,20 +100,38 @@ export const Auth = () => {
         },
       });
 
+      console.log("Sign up response:", { data, error });
+
       if (error) {
+        console.error("Sign up error details:", error);
         throw error;
       }
 
-      toast({
-        title: "Account Created!",
-        description: "Welcome to CineMind! You can now start building your movie memory.",
-      });
-      
-      navigate("/");
+      if (data.user) {
+        toast({
+          title: "Account Created!",
+          description: "Welcome to CineMind! You can now start building your movie memory.",
+        });
+        
+        // Clear form
+        setEmail("");
+        setPassword("");
+        setFullName("");
+        
+        // Navigate to main app
+        navigate("/");
+      } else {
+        toast({
+          title: "Sign Up Failed",
+          description: "Unable to create account. Please try again.",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
+      console.error("Sign up error:", error);
       toast({
         title: "Sign Up Failed",
-        description: error.message || "Failed to create account.",
+        description: error.message || "Failed to create account. Please check your email and password.",
         variant: "destructive",
       });
     } finally {
@@ -102,8 +145,8 @@ export const Auth = () => {
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
         <div className="absolute top-1/3 right-1/3 w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
-        <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30" style={{ animationDelay: '0s' }}></div>
-        <div className="floating-particle absolute bottom-32 left-32 w-1 h-1 bg-accent rounded-full opacity-50" style={{ animationDelay: '3s' }}></div>
+        <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30"></div>
+        <div className="floating-particle absolute bottom-32 left-32 w-1 h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
       </div>
 
       <Card className="w-full max-w-md neural-card">
