@@ -209,21 +209,9 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                               {/* Futuristic glow effect */}
                               <div className="absolute inset-0 bg-gradient-to-t from-transparent via-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                               <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
-                                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg transition-all duration-300 group-hover:text-primary/90">{movie.title}</h3>
-                                <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 transition-all duration-300 group-hover:text-gray-200">{movie.year}</p>
-                                <p className="text-xs sm:text-sm text-gray-400 italic transition-all duration-300 group-hover:text-gray-300">"{movie.description}"</p>
-                              </div>
-                              <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
-                                <div 
-                                  className="w-10 h-10 sm:w-8 sm:h-8 bg-white/40 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/50 active:bg-white/60 transition-all duration-150 ease-out touch-manipulation select-none shadow-lg button-futuristic"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCardFlip(index);
-                                  }}
-                                  title="Tap to see AI response"
-                                >
-                                  <Eye className="w-5 h-5 sm:w-4 sm:h-4 text-white drop-shadow-sm" />
-                                </div>
+                                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{movie.title}</h3>
+                                <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">{movie.year}</p>
+                                <p className="text-xs sm:text-sm text-gray-400 italic">"{movie.description}"</p>
                               </div>
                             </div>
                           </div>
@@ -248,10 +236,10 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                               </div>
                               
                               <div className="mb-2 sm:mb-4">
-                                <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-1 sm:mb-2 drop-shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:text-accent" />
-                                <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-1 sm:mb-2 transition-all duration-300 group-hover:text-primary/90">{movie.painPoint}</h4>
+                                <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-1 sm:mb-2 drop-shadow-lg" />
+                                <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-1 sm:mb-2">{movie.painPoint}</h4>
                               </div>
-                              <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-4 transition-all duration-300 group-hover:text-gray-200">{movie.solution}</p>
+                              <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-4">{movie.solution}</p>
                               <div className="flex gap-1 sm:gap-2">
                                 <div className="flex items-center gap-1 text-xs text-primary">
                                   <Search className="w-2 h-2 sm:w-3 sm:h-3" />
