@@ -129,13 +129,13 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         
         {/* Floating Particles */}
         <div className="floating-particle absolute top-16 right-16 sm:top-20 sm:right-20 w-1 h-1 sm:w-2 sm:h-2 bg-primary rounded-full opacity-30"></div>
-        <div className="floating-particle absolute bottom-24 left-24 sm:bottom-32 sm:left-32 w-0.5 h-0.5 sm:w-1 sm:h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
-        <div className="floating-particle absolute top-1/2 left-1/3 w-1 h-1 sm:w-1.5 sm:h-1.5 bg-primary rounded-full opacity-40 animation-delay-1-5s"></div>
+        <div className="floating-particle absolute bottom-24 left-24 sm:bottom-32 sm:left-32 w-1 h-1 sm:w-1 sm:h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
+        <div className="floating-particle absolute top-1/2 left-1/3 w-1 h-1 sm:w-2 sm:h-2 bg-primary rounded-full opacity-40 animation-delay-1-5s"></div>
         
         {/* Neural Network Lines */}
         <div className="absolute top-1/4 left-1/4 w-px h-16 sm:h-24 md:h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
         <div className="absolute top-1/3 right-1/3 w-16 sm:w-24 md:w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
-        <div className="absolute bottom-1/3 left-1/2 w-px h-12 sm:h-18 md:h-24 bg-gradient-to-b from-transparent via-primary/15 to-transparent" />
+        <div className="absolute bottom-1/3 left-1/2 w-px h-12 sm:h-20 md:h-24 bg-gradient-to-b from-transparent via-primary/15 to-transparent" />
       </div>
 
       {/* Main Content */}
@@ -278,7 +278,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                 key={index}
                 onClick={() => setCurrentCard(index)}
                 title={`Go to movie card ${index + 1}`}
-                className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-colors ${
+                className={`w-2 h-2 sm:w-2 sm:h-2 rounded-full transition-colors ${
                   index === currentCard ? 'bg-primary' : 'bg-white/30'
                 }`}
               />
