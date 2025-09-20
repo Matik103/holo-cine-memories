@@ -185,7 +185,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                       }`}
                     >
                       <Card 
-                        className={`w-full h-full cursor-pointer transition-transform duration-500 hover:scale-105 ${
+                        className={`w-full h-full cursor-pointer transition-transform duration-700 ease-in-out hover:scale-105 ${
                           isFlipped ? 'rotate-y-180' : ''
                         }`}
                         onClick={() => handleCardFlip(index)}
@@ -211,7 +211,14 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                 <p className="text-xs sm:text-sm text-gray-400 italic">"{movie.description}"</p>
                               </div>
                               <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
-                                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                <div 
+                                  className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCardFlip(index);
+                                  }}
+                                  title="Flip card to see AI response"
+                                >
                                   <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                                 </div>
                               </div>
@@ -220,7 +227,23 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
                           {/* Back of Card - AI Response */}
                           <div className="absolute inset-0 rotate-y-180 backface-hidden">
-                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 p-3 sm:p-6 flex flex-col justify-center items-center text-center rounded-lg">
+                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 p-3 sm:p-6 flex flex-col justify-center items-center text-center rounded-lg relative">
+                              {/* Flip back button */}
+                              <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
+                                <div 
+                                  className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCardFlip(index);
+                                  }}
+                                  title="Flip back to movie poster"
+                                >
+                                  <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                  </svg>
+                                </div>
+                              </div>
+                              
                               <div className="mb-2 sm:mb-4">
                                 <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-1 sm:mb-2" />
                                 <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-1 sm:mb-2">{movie.painPoint}</h4>
