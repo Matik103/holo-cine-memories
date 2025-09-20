@@ -178,14 +178,14 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                   return (
                     <div
                       key={index}
-                      className={`absolute inset-0 transition-all duration-700 transform ${
+                      className={`absolute inset-0 transition-all duration-500 ease-out transform ${
                         isActive 
                           ? 'opacity-100 scale-100 z-10 translate-x-0 rotate-y-0' 
-                          : 'opacity-0 scale-75 z-0'
+                          : 'opacity-0 scale-90 z-0'
                       }`}
                     >
                       <Card 
-                        className={`w-full h-full cursor-pointer transition-transform duration-700 ease-in-out hover:scale-105 active:scale-95 touch-manipulation select-none ${
+                        className={`w-full h-full cursor-pointer transition-transform duration-600 ease-out touch-manipulation select-none group card-glow card-smooth ${
                           isFlipped ? 'rotate-y-180' : ''
                         }`}
                         onClick={() => handleCardFlip(index)}
@@ -197,65 +197,61 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                               <img
                                 src={movie.poster}
                                 alt={movie.title}
-                                className={`w-full h-full object-cover rounded-lg ${
+                                className={`w-full h-full object-cover rounded-lg transition-transform duration-300 ease-out ${
                                   movie.title === "Inception" ? "object-top" : ""
                                 }`}
                                 onError={(e) => {
                                   e.currentTarget.src = '/placeholder.svg';
                                 }}
+                                loading="lazy"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                              {/* Futuristic glow effect */}
+                              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                               <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
-                                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2">{movie.title}</h3>
-                                <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">{movie.year}</p>
-                                <p className="text-xs sm:text-sm text-gray-400 italic">"{movie.description}"</p>
+                                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg transition-all duration-300 group-hover:text-primary/90">{movie.title}</h3>
+                                <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2 transition-all duration-300 group-hover:text-gray-200">{movie.year}</p>
+                                <p className="text-xs sm:text-sm text-gray-400 italic transition-all duration-300 group-hover:text-gray-300">"{movie.description}"</p>
                               </div>
                               <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
                                 <div 
-                                  className="w-10 h-10 sm:w-8 sm:h-8 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/40 active:bg-white/50 transition-all duration-200 touch-manipulation select-none"
+                                  className="w-10 h-10 sm:w-8 sm:h-8 bg-white/40 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/50 active:bg-white/60 transition-all duration-150 ease-out touch-manipulation select-none shadow-lg button-futuristic"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCardFlip(index);
                                   }}
                                   title="Tap to see AI response"
                                 >
-                                  <Eye className="w-5 h-5 sm:w-4 sm:h-4 text-white" />
+                                  <Eye className="w-5 h-5 sm:w-4 sm:h-4 text-white drop-shadow-sm" />
                                 </div>
                               </div>
-                              {/* Mobile-friendly touch overlay */}
-                              <div className="absolute inset-0 sm:hidden bg-transparent" 
-                                   onClick={(e) => {
-                                     e.stopPropagation();
-                                     handleCardFlip(index);
-                                   }}
-                                   title="Tap anywhere to flip card" />
                             </div>
                           </div>
 
                           {/* Back of Card - AI Response */}
                           <div className="absolute inset-0 rotate-y-180 backface-hidden">
-                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 p-3 sm:p-6 flex flex-col justify-center items-center text-center rounded-lg relative">
+                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 p-3 sm:p-6 flex flex-col justify-center items-center text-center rounded-lg relative group">
                               {/* Flip back button */}
                               <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
                                 <div 
-                                  className="w-10 h-10 sm:w-8 sm:h-8 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/40 active:bg-white/50 transition-all duration-200 touch-manipulation select-none"
+                                  className="w-10 h-10 sm:w-8 sm:h-8 bg-white/40 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/50 active:bg-white/60 transition-all duration-150 ease-out touch-manipulation select-none shadow-lg button-futuristic"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCardFlip(index);
                                   }}
                                   title="Tap to go back to poster"
                                 >
-                                  <svg className="w-5 h-5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-5 h-5 sm:w-4 sm:h-4 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                   </svg>
                                 </div>
                               </div>
                               
                               <div className="mb-2 sm:mb-4">
-                                <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-1 sm:mb-2" />
-                                <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-1 sm:mb-2">{movie.painPoint}</h4>
+                                <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-1 sm:mb-2 drop-shadow-lg transition-all duration-300 group-hover:scale-110 group-hover:text-accent" />
+                                <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-1 sm:mb-2 transition-all duration-300 group-hover:text-primary/90">{movie.painPoint}</h4>
                               </div>
-                              <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-4">{movie.solution}</p>
+                              <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-4 transition-all duration-300 group-hover:text-gray-200">{movie.solution}</p>
                               <div className="flex gap-1 sm:gap-2">
                                 <div className="flex items-center gap-1 text-xs text-primary">
                                   <Search className="w-2 h-2 sm:w-3 sm:h-3" />
@@ -270,13 +266,6 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                   <span className="hidden sm:inline">Watch</span>
                                 </div>
                               </div>
-                              {/* Mobile-friendly touch overlay for back */}
-                              <div className="absolute inset-0 sm:hidden bg-transparent" 
-                                   onClick={(e) => {
-                                     e.stopPropagation();
-                                     handleCardFlip(index);
-                                   }}
-                                   title="Tap anywhere to flip back" />
                             </div>
                           </div>
                         </CardContent>
