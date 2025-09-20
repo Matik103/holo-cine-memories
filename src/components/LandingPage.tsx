@@ -185,7 +185,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                       }`}
                     >
                       <Card 
-                        className={`w-full h-full cursor-pointer transition-transform duration-700 ease-in-out hover:scale-105 ${
+                        className={`w-full h-full cursor-pointer transition-transform duration-700 ease-in-out hover:scale-105 active:scale-95 touch-manipulation select-none ${
                           isFlipped ? 'rotate-y-180' : ''
                         }`}
                         onClick={() => handleCardFlip(index)}
@@ -212,16 +212,23 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                               </div>
                               <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
                                 <div 
-                                  className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
+                                  className="w-10 h-10 sm:w-8 sm:h-8 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/40 active:bg-white/50 transition-all duration-200 touch-manipulation select-none"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCardFlip(index);
                                   }}
-                                  title="Flip card to see AI response"
+                                  title="Tap to see AI response"
                                 >
-                                  <Eye className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                                  <Eye className="w-5 h-5 sm:w-4 sm:h-4 text-white" />
                                 </div>
                               </div>
+                              {/* Mobile-friendly touch overlay */}
+                              <div className="absolute inset-0 sm:hidden bg-transparent" 
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     handleCardFlip(index);
+                                   }}
+                                   title="Tap anywhere to flip card" />
                             </div>
                           </div>
 
@@ -231,14 +238,14 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                               {/* Flip back button */}
                               <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
                                 <div 
-                                  className="w-6 h-6 sm:w-8 sm:h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/30 transition-colors"
+                                  className="w-10 h-10 sm:w-8 sm:h-8 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/40 active:bg-white/50 transition-all duration-200 touch-manipulation select-none"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleCardFlip(index);
                                   }}
-                                  title="Flip back to movie poster"
+                                  title="Tap to go back to poster"
                                 >
-                                  <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <svg className="w-5 h-5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                   </svg>
                                 </div>
@@ -263,6 +270,13 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                   <span className="hidden sm:inline">Watch</span>
                                 </div>
                               </div>
+                              {/* Mobile-friendly touch overlay for back */}
+                              <div className="absolute inset-0 sm:hidden bg-transparent" 
+                                   onClick={(e) => {
+                                     e.stopPropagation();
+                                     handleCardFlip(index);
+                                   }}
+                                   title="Tap anywhere to flip back" />
                             </div>
                           </div>
                         </CardContent>
@@ -316,7 +330,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
               Your CineMind remembers for you.
             </h3>
             <p className="text-sm sm:text-base text-muted-foreground">
-              Tap any card above to see how CineMind solves your movie memory problems
+              <span className="sm:hidden">Tap any card to flip and explore</span>
+              <span className="hidden sm:inline">Tap any card above to see how CineMind solves your movie memory problems</span>
             </p>
           </div>
           
