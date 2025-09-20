@@ -44,8 +44,15 @@ export const CineMind = () => {
       if (session?.user) {
         // Check if this is a password recovery session
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true') {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const isPasswordReset = urlParams.get('type') === 'recovery' || 
+                               urlParams.get('reset') === 'true' ||
+                               hashParams.get('type') === 'recovery' ||
+                               hashParams.has('access_token');
+        
+        if (isPasswordReset) {
           // Don't initialize app for password reset - let Auth component handle it
+          console.log('Password reset detected, not initializing app');
           return;
         }
         
@@ -61,8 +68,15 @@ export const CineMind = () => {
       if (session?.user) {
         // Check if this is a password recovery session
         const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true') {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const isPasswordReset = urlParams.get('type') === 'recovery' || 
+                               urlParams.get('reset') === 'true' ||
+                               hashParams.get('type') === 'recovery' ||
+                               hashParams.has('access_token');
+        
+        if (isPasswordReset) {
           // Don't initialize app for password reset - let Auth component handle it
+          console.log('Password reset detected, not initializing app');
           return;
         }
         
@@ -181,7 +195,11 @@ export const CineMind = () => {
 
   // Check if this is a password reset session
   const urlParams = new URLSearchParams(window.location.search);
-  const isPasswordReset = urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true';
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const isPasswordReset = urlParams.get('type') === 'recovery' || 
+                         urlParams.get('reset') === 'true' ||
+                         hashParams.get('type') === 'recovery' ||
+                         hashParams.has('access_token');
   
   // Show authentication page if user is not logged in or if it's a password reset
   if (!user || isPasswordReset) {

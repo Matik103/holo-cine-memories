@@ -80,12 +80,48 @@ export const Auth = () => {
     }
 
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
+      // Extract token from URL hash (Supabase password reset links use hash)
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      const refreshToken = hashParams.get('refresh_token');
+      
+      console.log('Hash params:', Object.fromEntries(hashParams.entries()));
+      console.log('Access token:', accessToken ? 'present' : 'missing');
+      
+      if (accessToken && refreshToken) {
+        // Set the session using the tokens from the URL
+        const { data, error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
 
-      if (error) {
-        throw error;
+        if (error) {
+          throw new Error("Invalid or expired reset link. Please request a new password reset.");
+        }
+
+        // Now update the password
+        const { error: updateError } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+
+        if (updateError) {
+          throw updateError;
+        }
+      } else {
+        // Fallback: try to get current session
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError || !session) {
+          throw new Error("No valid session found. Please request a new password reset.");
+        }
+
+        const { error } = await supabase.auth.updateUser({
+          password: newPassword
+        });
+
+        if (error) {
+          throw error;
+        }
       }
 
       toast({
@@ -98,6 +134,7 @@ export const Auth = () => {
       setConfirmPassword("");
       setShowPasswordReset(false);
     } catch (error: any) {
+      console.error("Password update error:", error);
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update password.",
@@ -112,16 +149,33 @@ export const Auth = () => {
   useEffect(() => {
     // Check URL parameters for password reset on initial load
     const urlParams = new URLSearchParams(window.location.search);
-    console.log('URL params:', Object.fromEntries(urlParams.entries()));
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
     
-    if (urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true') {
-      console.log('Password reset detected from URL');
+    console.log('URL params:', Object.fromEntries(urlParams.entries()));
+    console.log('Hash params:', Object.fromEntries(hashParams.entries()));
+    
+    // Check for password reset indicators
+    const isPasswordReset = urlParams.get('type') === 'recovery' || 
+                           urlParams.get('reset') === 'true' ||
+                           hashParams.get('type') === 'recovery' ||
+                           hashParams.has('access_token');
+    
+    if (isPasswordReset) {
+      console.log('Password reset detected from URL/hash');
       setShowPasswordReset(true);
+      // Don't let Supabase auto-sign-in redirect us
+      return;
     }
 
     // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state change:', event, session?.user?.email);
+      
+      // If we're in password reset mode, don't redirect
+      if (showPasswordReset) {
+        console.log('In password reset mode, not redirecting');
+        return;
+      }
       
       if (session) {
         // Check if this is a password reset session
@@ -131,8 +185,14 @@ export const Auth = () => {
         } else if (event === 'SIGNED_IN') {
           // Check if this is a password recovery session by looking at the URL
           const urlParams = new URLSearchParams(window.location.search);
-          if (urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true') {
-            console.log('Password reset detected from URL after sign in');
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const isPasswordReset = urlParams.get('type') === 'recovery' || 
+                                 urlParams.get('reset') === 'true' ||
+                                 hashParams.get('type') === 'recovery' ||
+                                 hashParams.has('access_token');
+          
+          if (isPasswordReset) {
+            console.log('Password reset detected from URL/hash after sign in');
             setShowPasswordReset(true);
           } else {
             console.log('Normal sign in, redirecting to app');
@@ -146,7 +206,7 @@ export const Auth = () => {
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, showPasswordReset]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
