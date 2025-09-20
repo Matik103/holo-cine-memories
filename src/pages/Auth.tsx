@@ -14,16 +14,119 @@ export const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Handle forgot password
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth?reset=true`,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Password Reset Sent",
+        description: "Check your email for password reset instructions.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Reset Failed",
+        description: error.message || "Failed to send reset email.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Handle password update
+  const handlePasswordUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    // Validate passwords
+    if (newPassword.length < 6) {
+      toast({
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters long.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords Don't Match",
+        description: "Please make sure both passwords are identical.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Password Updated!",
+        description: "Your password has been successfully updated.",
+      });
+
+      // Clear form and go back to sign in
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordReset(false);
+    } catch (error: any) {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update password.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/");
+        // Check if this is a password reset session
+        if (event === 'PASSWORD_RECOVERY') {
+          setShowPasswordReset(true);
+        } else {
+          navigate("/");
+        }
       }
     });
+
+    // Check URL parameters for password reset
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset') === 'true') {
+      setShowPasswordReset(true);
+    }
 
     return () => subscription.unsubscribe();
   }, [navigate]);
@@ -33,27 +136,62 @@ export const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log("Attempting to sign in user:", { email });
+      
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log("Sign in response:", { data, error });
+
       if (error) {
+        console.error("Sign in error details:", error);
         throw error;
       }
 
-      toast({
-        title: "Welcome back!",
-        description: "Successfully signed in to CineMind.",
-      });
-      
-      navigate("/");
+      if (data.user) {
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in to CineMind.",
+        });
+        
+        // Clear form
+        setEmail("");
+        setPassword("");
+        setFullName("");
+        
+        navigate("/");
+      } else {
+        toast({
+          title: "Sign In Failed",
+          description: "Unable to sign in. Please check your credentials.",
+          variant: "destructive",
+        });
+      }
     } catch (error: any) {
-      toast({
-        title: "Sign In Failed",
-        description: error.message || "Invalid email or password.",
-        variant: "destructive",
-      });
+      console.error("Sign in error:", error);
+      
+      // Handle specific error cases
+      if (error.message.includes("Invalid login credentials")) {
+        toast({
+          title: "Invalid Credentials",
+          description: "The email or password you entered is incorrect. Please try again.",
+          variant: "destructive",
+        });
+      } else if (error.message.includes("Email not confirmed")) {
+        toast({
+          title: "Email Not Confirmed",
+          description: "Please check your email and click the confirmation link.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sign In Failed",
+          description: error.message || "Invalid email or password.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -104,13 +242,29 @@ export const Auth = () => {
 
       if (error) {
         console.error("Sign up error details:", error);
-        throw error;
+        
+        // Handle specific error cases
+        if (error.message.includes("already registered") || error.message.includes("User already registered")) {
+          toast({
+            title: "Account Already Exists",
+            description: "An account with this email already exists. Please try signing in instead.",
+            variant: "destructive",
+          });
+          // Switch to sign in tab
+          const signInTab = document.querySelector('[value="signin"]') as HTMLElement;
+          if (signInTab) {
+            signInTab.click();
+          }
+        } else {
+          throw error;
+        }
+        return;
       }
 
       if (data.user) {
         toast({
           title: "Account Created!",
-          description: "Welcome to CineMind! You can now start building your movie memory.",
+          description: "Please check your email and click the confirmation link to complete your registration.",
         });
         
         // Clear form
@@ -118,8 +272,7 @@ export const Auth = () => {
         setPassword("");
         setFullName("");
         
-        // Navigate to main app
-        navigate("/");
+        // Don't navigate - user needs to confirm email first
       } else {
         toast({
           title: "Sign Up Failed",
@@ -138,6 +291,95 @@ export const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Show password reset screen
+  if (showPasswordReset) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4 relative">
+        {/* Background Neural Network Effect */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
+          <div className="absolute top-1/3 right-1/3 w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
+          <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30"></div>
+          <div className="floating-particle absolute bottom-32 left-32 w-1 h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
+        </div>
+
+        <Card className="w-full max-w-md neural-card">
+          <div className="p-8">
+            {/* Header */}
+            <div className="flex flex-col items-center space-y-4 mb-6">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent neural-glow">
+                <Lock className="w-8 h-8 text-primary-foreground" />
+              </div>
+              <div className="text-center">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Reset Your Password
+                </h1>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Enter your new password below
+                </p>
+              </div>
+            </div>
+
+            {/* Password Reset Form */}
+            <form onSubmit={handlePasswordUpdate} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">New Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="pl-10"
+                    placeholder="Enter your new password"
+                    required
+                    minLength={6}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirm-password"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10"
+                    placeholder="Confirm your new password"
+                    required
+                    minLength={6}
+                  />
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full neural-button"
+                disabled={loading}
+              >
+                {loading ? "Updating Password..." : "Update Password"}
+              </Button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordReset(false)}
+                  className="text-sm text-muted-foreground hover:text-foreground"
+                >
+                  Back to Sign In
+                </button>
+              </div>
+            </form>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative">
@@ -213,6 +455,16 @@ export const Auth = () => {
                 >
                   {loading ? "Signing In..." : "Sign In"}
                 </Button>
+                
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Forgot your password?
+                  </button>
+                </div>
               </form>
             </TabsContent>
 

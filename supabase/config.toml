@@ -48,8 +48,7 @@ enable_signup = true
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
-enable_confirmations = false
-secure_email_change_enabled = true
+enable_confirmations = true
 
 [functions.movie-identify]
 verify_jwt = false
