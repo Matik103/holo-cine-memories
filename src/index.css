@@ -353,4 +353,319 @@ All colors MUST be HSL for neural network-inspired design.
   .animation-delay-3s {
     animation-delay: 3s;
   }
+
+  /* ===== CINEMATIC BACKGROUND ELEMENTS ===== */
+  
+  /* Film Reel Strips - Diagonal Animation */
+  .film-reel-strip {
+    position: absolute;
+    width: 200px;
+    height: 4px;
+    background: linear-gradient(90deg, 
+      transparent 0%, 
+      rgba(255, 255, 255, 0.1) 20%, 
+      rgba(255, 255, 255, 0.3) 50%, 
+      rgba(255, 255, 255, 0.1) 80%, 
+      transparent 100%
+    );
+    transform: rotate(-15deg);
+    animation: film-reel-roll 8s linear infinite;
+  }
+
+  .film-reel-strip:nth-child(2) {
+    top: 20%;
+    left: -50px;
+    animation-delay: -2s;
+    animation-duration: 10s;
+  }
+
+  .film-reel-strip:nth-child(3) {
+    top: 60%;
+    right: -50px;
+    animation-delay: -4s;
+    animation-duration: 12s;
+  }
+
+  .film-reel-strip:nth-child(4) {
+    top: 80%;
+    left: -30px;
+    animation-delay: -6s;
+    animation-duration: 9s;
+  }
+
+  @keyframes film-reel-roll {
+    0% { transform: translateX(-100px) rotate(-15deg); }
+    100% { transform: translateX(calc(100vw + 100px)) rotate(-15deg); }
+  }
+
+  /* Spotlight / Projector Glow */
+  .cinema-spotlight {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80vw;
+    height: 80vh;
+    background: conic-gradient(
+      from 0deg at 50% 50%,
+      transparent 0deg,
+      rgba(255, 255, 255, 0.05) 30deg,
+      rgba(200, 100% 60%, 0.1) 60deg,
+      rgba(300, 100% 65%, 0.08) 90deg,
+      transparent 120deg,
+      transparent 240deg,
+      rgba(255, 255, 255, 0.03) 270deg,
+      transparent 300deg,
+      transparent 360deg
+    );
+    filter: blur(40px);
+    animation: spotlight-pulse 4s ease-in-out infinite;
+  }
+
+  @keyframes spotlight-pulse {
+    0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+  }
+
+  /* Floating Dust Particles */
+  .dust-particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: dust-float 6s ease-in-out infinite;
+  }
+
+  .dust-particle:nth-child(1) { top: 10%; left: 20%; animation-delay: 0s; }
+  .dust-particle:nth-child(2) { top: 30%; right: 15%; animation-delay: 1s; }
+  .dust-particle:nth-child(3) { bottom: 40%; left: 10%; animation-delay: 2s; }
+  .dust-particle:nth-child(4) { top: 60%; right: 30%; animation-delay: 3s; }
+  .dust-particle:nth-child(5) { bottom: 20%; right: 20%; animation-delay: 4s; }
+  .dust-particle:nth-child(6) { top: 80%; left: 40%; animation-delay: 5s; }
+
+  @keyframes dust-float {
+    0%, 100% { 
+      transform: translateY(0px) translateX(0px) scale(1);
+      opacity: 0.3;
+    }
+    25% { 
+      transform: translateY(-20px) translateX(10px) scale(1.2);
+      opacity: 0.8;
+    }
+    50% { 
+      transform: translateY(-10px) translateX(-15px) scale(0.8);
+      opacity: 0.5;
+    }
+    75% { 
+      transform: translateY(-30px) translateX(5px) scale(1.1);
+      opacity: 0.7;
+    }
+  }
+
+  /* Faded Iconic Movie Symbols */
+  .movie-symbol {
+    position: absolute;
+    opacity: 0.08;
+    color: white;
+    font-size: 2rem;
+    animation: symbol-float 8s ease-in-out infinite;
+  }
+
+  .movie-symbol.clapperboard {
+    top: 15%;
+    right: 10%;
+    animation-delay: 0s;
+  }
+
+  .movie-symbol.popcorn {
+    bottom: 25%;
+    left: 5%;
+    animation-delay: 2s;
+  }
+
+  .movie-symbol.play-button {
+    top: 40%;
+    left: 8%;
+    animation-delay: 4s;
+  }
+
+  .movie-symbol.director-chair {
+    bottom: 15%;
+    right: 15%;
+    animation-delay: 6s;
+  }
+
+  @keyframes symbol-float {
+    0%, 100% { 
+      transform: translateY(0px) rotate(0deg);
+      opacity: 0.08;
+    }
+    50% { 
+      transform: translateY(-15px) rotate(5deg);
+      opacity: 0.12;
+    }
+  }
+
+  /* Animated Curtain Gradients */
+  .curtain-gradient {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 20vh;
+    pointer-events: none;
+  }
+
+  .curtain-gradient.top {
+    top: 0;
+    background: linear-gradient(180deg, 
+      rgba(139, 0, 0, 0.3) 0%, 
+      rgba(139, 0, 0, 0.1) 50%, 
+      transparent 100%
+    );
+    animation: curtain-wave 6s ease-in-out infinite;
+  }
+
+  .curtain-gradient.bottom {
+    bottom: 0;
+    background: linear-gradient(0deg, 
+      rgba(139, 0, 0, 0.3) 0%, 
+      rgba(139, 0, 0, 0.1) 50%, 
+      transparent 100%
+    );
+    animation: curtain-wave 6s ease-in-out infinite reverse;
+  }
+
+  @keyframes curtain-wave {
+    0%, 100% { 
+      transform: translateY(0px);
+      opacity: 0.3;
+    }
+    50% { 
+      transform: translateY(-10px);
+      opacity: 0.5;
+    }
+  }
+
+  /* Lens Flares / Bokeh Lights */
+  .lens-flare {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, 
+      rgba(255, 255, 255, 0.6) 0%, 
+      rgba(200, 100% 60%, 0.3) 30%, 
+      rgba(300, 100% 65%, 0.2) 60%, 
+      transparent 100%
+    );
+    filter: blur(1px);
+    animation: lens-flare-pulse 4s ease-in-out infinite;
+  }
+
+  .lens-flare:nth-child(1) {
+    top: 20%;
+    right: 20%;
+    width: 60px;
+    height: 60px;
+    animation-delay: 0s;
+  }
+
+  .lens-flare:nth-child(2) {
+    bottom: 30%;
+    left: 25%;
+    width: 40px;
+    height: 40px;
+    animation-delay: 2s;
+  }
+
+  .lens-flare:nth-child(3) {
+    top: 60%;
+    right: 10%;
+    width: 30px;
+    height: 30px;
+    animation-delay: 4s;
+  }
+
+  @keyframes lens-flare-pulse {
+    0%, 100% { 
+      transform: scale(1);
+      opacity: 0.4;
+    }
+    50% { 
+      transform: scale(1.3);
+      opacity: 0.8;
+    }
+  }
+
+  /* Storyboard Frames */
+  .storyboard-frame {
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    animation: storyboard-float 10s ease-in-out infinite;
+  }
+
+  .storyboard-frame:nth-child(1) {
+    top: 25%;
+    left: 5%;
+    width: 80px;
+    height: 60px;
+    animation-delay: 0s;
+  }
+
+  .storyboard-frame:nth-child(2) {
+    top: 50%;
+    right: 8%;
+    width: 60px;
+    height: 45px;
+    animation-delay: 3s;
+  }
+
+  .storyboard-frame:nth-child(3) {
+    bottom: 30%;
+    left: 15%;
+    width: 70px;
+    height: 50px;
+    animation-delay: 6s;
+  }
+
+  .storyboard-frame:nth-child(4) {
+    top: 70%;
+    right: 20%;
+    width: 50px;
+    height: 40px;
+    animation-delay: 9s;
+  }
+
+  @keyframes storyboard-float {
+    0%, 100% { 
+      transform: translateY(0px) rotate(0deg);
+      opacity: 0.1;
+    }
+    25% { 
+      transform: translateY(-20px) rotate(2deg);
+      opacity: 0.2;
+    }
+    50% { 
+      transform: translateY(-10px) rotate(-1deg);
+      opacity: 0.15;
+    }
+    75% { 
+      transform: translateY(-25px) rotate(1deg);
+      opacity: 0.18;
+    }
+  }
+
+  /* Cinematic overlay for depth */
+  .cinematic-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+      radial-gradient(ellipse at top left, rgba(200, 100% 60%, 0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom right, rgba(300, 100% 65%, 0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
 }

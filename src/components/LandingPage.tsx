@@ -121,24 +121,52 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background Effects */}
+      {/* Cinematic Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Cinema Spotlight Effect */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-gradient-radial from-transparent via-primary/5 to-transparent opacity-60 animate-pulse" />
+        {/* Cinema Spotlight / Projector Glow */}
+        <div className="cinema-spotlight" />
         
-        {/* Memory Cloud Effect */}
+        {/* Film Reel Strips - Diagonal Animation */}
+        <div className="film-reel-strip" />
+        <div className="film-reel-strip" />
+        <div className="film-reel-strip" />
+        <div className="film-reel-strip" />
+        
+        {/* Floating Dust Particles */}
+        <div className="dust-particle" />
+        <div className="dust-particle" />
+        <div className="dust-particle" />
+        <div className="dust-particle" />
+        <div className="dust-particle" />
+        <div className="dust-particle" />
+        
+        {/* Faded Iconic Movie Symbols */}
+        <div className="movie-symbol clapperboard">🎬</div>
+        <div className="movie-symbol popcorn">🍿</div>
+        <div className="movie-symbol play-button">▶️</div>
+        <div className="movie-symbol director-chair">🪑</div>
+        
+        {/* Animated Curtain Gradients */}
+        <div className="curtain-gradient top" />
+        <div className="curtain-gradient bottom" />
+        
+        {/* Lens Flares / Bokeh Lights */}
+        <div className="lens-flare" />
+        <div className="lens-flare" />
+        <div className="lens-flare" />
+        
+        {/* Storyboard Frames */}
+        <div className="storyboard-frame" />
+        <div className="storyboard-frame" />
+        <div className="storyboard-frame" />
+        <div className="storyboard-frame" />
+        
+        {/* Cinematic Overlay for Depth */}
+        <div className="cinematic-overlay" />
+        
+        {/* Original Memory Cloud Effects */}
         <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-40 h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 bg-gradient-to-l from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse animation-delay-2s" />
-        
-        {/* Animated Film Reel Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="film-reel-pattern absolute inset-0"></div>
-        </div>
-        
-        {/* Floating Particles */}
-        <div className="floating-particle absolute top-16 right-16 sm:top-20 sm:right-20 w-1 h-1 sm:w-2 sm:h-2 bg-primary rounded-full opacity-30"></div>
-        <div className="floating-particle absolute bottom-24 left-24 sm:bottom-32 sm:left-32 w-1 h-1 sm:w-1 sm:h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
-        <div className="floating-particle absolute top-1/2 left-1/3 w-1 h-1 sm:w-2 sm:h-2 bg-primary rounded-full opacity-40 animation-delay-1-5s"></div>
         
         {/* Neural Network Lines */}
         <div className="absolute top-1/4 left-1/4 w-px h-16 sm:h-24 md:h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
