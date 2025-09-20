@@ -36,7 +36,7 @@ const movies: MovieData[] = [
     description: "More human than human is our motto.",
     painPoint: "Lost in philosophical sci-fi?",
     solution: "Get instant explanations of deep themes and symbolism.",
-    poster: "https://image.tmdb.org/t/p/w500/63N9uy8nd9j7Eog2axPQ8lbr3Wj.jpg"
+    poster: "https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"
   },
   {
     title: "The Dark Knight",
@@ -68,7 +68,7 @@ const movies: MovieData[] = [
     description: "Hakuna Matata!",
     painPoint: "Childhood memories fading?",
     solution: "Preserve and rediscover your favorite childhood films.",
-    poster: "https://image.tmdb.org/t/p/w500/2bXbqYdUdNVa8VIWXVfclP2ICtT.jpg"
+    poster: "https://image.tmdb.org/t/p/w500/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg"
   }
 ];
 
