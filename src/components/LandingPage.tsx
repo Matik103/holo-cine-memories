@@ -123,22 +123,49 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
     <div className="min-h-screen relative overflow-hidden">
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
-        {/* Cinema Spotlight Effect */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-gradient-radial from-transparent via-primary/5 to-transparent opacity-60 animate-pulse" />
+        {/* Theater Curtain Gradient - Red Velvet Edges */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-red-900/20 via-red-900/10 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-red-900/20 via-red-900/10 to-transparent" />
+        
+        {/* Cinema Spotlight Effect - Enhanced */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-gradient-radial from-transparent via-primary/8 to-transparent opacity-70 animate-pulse" />
+        
+        {/* Film Reel Strips - Diagonal Animated */}
+        <div className="absolute inset-0 opacity-8">
+          <div className="film-strip-diagonal absolute inset-0"></div>
+        </div>
+        
+        {/* Cinema Dust Particles - Enhanced */}
+        <div className="cinema-dust absolute inset-0">
+          <div className="dust-particle absolute top-1/4 left-1/4 w-1 h-1 bg-white/30 rounded-full animate-float-slow"></div>
+          <div className="dust-particle absolute top-1/3 right-1/3 w-0.5 h-0.5 bg-primary/40 rounded-full animate-float-medium animation-delay-1s"></div>
+          <div className="dust-particle absolute bottom-1/3 left-1/2 w-1.5 h-1.5 bg-accent/30 rounded-full animate-float-fast animation-delay-2s"></div>
+          <div className="dust-particle absolute top-2/3 right-1/4 w-0.5 h-0.5 bg-white/20 rounded-full animate-float-slow animation-delay-3s"></div>
+          <div className="dust-particle absolute bottom-1/4 right-1/2 w-1 h-1 bg-primary/25 rounded-full animate-float-medium animation-delay-4s"></div>
+        </div>
+        
+        {/* Faded Cinematic Icons */}
+        <div className="absolute top-20 left-8 opacity-5">
+          <div className="clapperboard-icon text-white/10 text-6xl">🎬</div>
+        </div>
+        <div className="absolute top-32 right-12 opacity-5">
+          <div className="popcorn-icon text-white/10 text-4xl">🍿</div>
+        </div>
+        <div className="absolute bottom-32 left-16 opacity-5">
+          <div className="play-icon text-white/10 text-5xl">▶️</div>
+        </div>
+        <div className="absolute bottom-20 right-8 opacity-5">
+          <div className="director-chair text-white/10 text-4xl">🪑</div>
+        </div>
+        
+        {/* Lens Flares / Bokeh Lights */}
+        <div className="absolute top-1/4 left-1/3 w-32 h-32 bg-gradient-radial from-yellow-400/20 via-transparent to-transparent rounded-full blur-xl animate-pulse animation-delay-1s"></div>
+        <div className="absolute bottom-1/4 right-1/3 w-24 h-24 bg-gradient-radial from-purple-400/15 via-transparent to-transparent rounded-full blur-lg animate-pulse animation-delay-3s"></div>
+        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-gradient-radial from-blue-400/20 via-transparent to-transparent rounded-full blur-md animate-pulse animation-delay-2s"></div>
         
         {/* Memory Cloud Effect */}
         <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-40 h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 bg-gradient-to-l from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse animation-delay-2s" />
-        
-        {/* Animated Film Reel Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="film-reel-pattern absolute inset-0"></div>
-        </div>
-        
-        {/* Floating Particles */}
-        <div className="floating-particle absolute top-16 right-16 sm:top-20 sm:right-20 w-1 h-1 sm:w-2 sm:h-2 bg-primary rounded-full opacity-30"></div>
-        <div className="floating-particle absolute bottom-24 left-24 sm:bottom-32 sm:left-32 w-1 h-1 sm:w-1 sm:h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
-        <div className="floating-particle absolute top-1/2 left-1/3 w-1 h-1 sm:w-2 sm:h-2 bg-primary rounded-full opacity-40 animation-delay-1-5s"></div>
         
         {/* Neural Network Lines */}
         <div className="absolute top-1/4 left-1/4 w-px h-16 sm:h-24 md:h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />

@@ -295,19 +295,101 @@ All colors MUST be HSL for neural network-inspired design.
     animation-delay: 0.5s;
   }
 
-  /* Film reel pattern */
-  .film-reel-pattern {
-    background-image: 
-      radial-gradient(circle at 20px 20px, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
-      radial-gradient(circle at 60px 20px, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
-      radial-gradient(circle at 100px 20px, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
-    background-size: 120px 40px;
-    animation: film-reel-scroll 20s linear infinite;
+  .animation-delay-1s {
+    animation-delay: 1s;
   }
 
-  @keyframes film-reel-scroll {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-120px); }
+  .animation-delay-2s {
+    animation-delay: 2s;
+  }
+
+  .animation-delay-3s {
+    animation-delay: 3s;
+  }
+
+  .animation-delay-4s {
+    animation-delay: 4s;
+  }
+
+  /* Film reel pattern - Diagonal strips */
+  .film-strip-diagonal {
+    background-image: 
+      linear-gradient(45deg, transparent 48%, rgba(255, 255, 255, 0.03) 49%, rgba(255, 255, 255, 0.03) 51%, transparent 52%),
+      linear-gradient(-45deg, transparent 48%, rgba(255, 255, 255, 0.02) 49%, rgba(255, 255, 255, 0.02) 51%, transparent 52%);
+    background-size: 60px 60px;
+    animation: film-strip-move 25s linear infinite;
+  }
+
+  @keyframes film-strip-move {
+    0% { transform: translateX(0) translateY(0); }
+    100% { transform: translateX(-60px) translateY(-60px); }
+  }
+
+  /* Cinema dust particles */
+  .cinema-dust {
+    overflow: hidden;
+  }
+
+  .dust-particle {
+    position: absolute;
+    border-radius: 50%;
+  }
+
+  @keyframes float-slow {
+    0%, 100% { 
+      transform: translateY(0px) translateX(0px) scale(1);
+      opacity: 0.3;
+    }
+    25% { 
+      transform: translateY(-20px) translateX(10px) scale(1.1);
+      opacity: 0.6;
+    }
+    50% { 
+      transform: translateY(-10px) translateX(-15px) scale(0.9);
+      opacity: 0.4;
+    }
+    75% { 
+      transform: translateY(-30px) translateX(5px) scale(1.05);
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes float-medium {
+    0%, 100% { 
+      transform: translateY(0px) translateX(0px) scale(1);
+      opacity: 0.2;
+    }
+    33% { 
+      transform: translateY(-15px) translateX(8px) scale(1.2);
+      opacity: 0.5;
+    }
+    66% { 
+      transform: translateY(-25px) translateX(-12px) scale(0.8);
+      opacity: 0.3;
+    }
+  }
+
+  @keyframes float-fast {
+    0%, 100% { 
+      transform: translateY(0px) translateX(0px) scale(1);
+      opacity: 0.4;
+    }
+    50% { 
+      transform: translateY(-35px) translateX(20px) scale(1.3);
+      opacity: 0.7;
+    }
+  }
+
+  .animate-float-slow {
+    animation: float-slow 8s ease-in-out infinite;
+  }
+
+  .animate-float-medium {
+    animation: float-medium 6s ease-in-out infinite;
+  }
+
+  .animate-float-fast {
+    animation: float-fast 4s ease-in-out infinite;
   }
 
   /* Radial gradient utility */
