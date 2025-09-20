@@ -275,6 +275,46 @@ All colors MUST be HSL for neural network-inspired design.
     height: 100px;
   }
 
+  /* Fade in animations */
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 0.5s;
+  }
+
+  /* Film reel pattern */
+  .film-reel-pattern {
+    background-image: 
+      radial-gradient(circle at 20px 20px, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+      radial-gradient(circle at 60px 20px, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+      radial-gradient(circle at 100px 20px, rgba(255, 255, 255, 0.1) 2px, transparent 2px);
+    background-size: 120px 40px;
+    animation: film-reel-scroll 20s linear infinite;
+  }
+
+  @keyframes film-reel-scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-120px); }
+  }
+
+  /* Radial gradient utility */
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+
   /* Card hover effects */
   .movie-card {
     transition: transform 0.3s ease, box-shadow 0.3s ease;

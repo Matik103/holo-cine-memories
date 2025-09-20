@@ -123,9 +123,17 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
     <div className="min-h-screen relative overflow-hidden">
       {/* Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
+        {/* Cinema Spotlight Effect */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[120vw] h-[120vh] bg-gradient-radial from-transparent via-primary/5 to-transparent opacity-60 animate-pulse" />
+        
         {/* Memory Cloud Effect */}
         <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 lg:w-96 lg:h-96 bg-gradient-to-r from-primary/10 to-accent/10 rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-1/4 right-1/4 w-40 h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 bg-gradient-to-l from-accent/10 to-primary/10 rounded-full blur-3xl animate-pulse animation-delay-2s" />
+        
+        {/* Animated Film Reel Pattern */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="film-reel-pattern absolute inset-0"></div>
+        </div>
         
         {/* Floating Particles */}
         <div className="floating-particle absolute top-16 right-16 sm:top-20 sm:right-20 w-1 h-1 sm:w-2 sm:h-2 bg-primary rounded-full opacity-30"></div>
@@ -141,8 +149,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
       {/* Main Content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 sm:px-6 lg:px-8">
         {/* Hero Section */}
-        <div className="text-center mb-8 sm:mb-12 space-y-4 sm:space-y-6">
-          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+        <div className="text-center mb-6 sm:mb-8 space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
             <div className="relative">
               <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary" />
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg animate-pulse" />
@@ -152,25 +160,25 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
             </h1>
           </div>
           
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3">
             Remember Any Movie.<br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Anywhere. Anytime.
             </span>
           </h2>
           
-          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto px-4 opacity-0 animate-fade-in-up animation-delay-500">
             Your AI-powered movie memory companion that never forgets a single detail, 
             meaning, or where to watch your favorite films.
           </p>
         </div>
 
         {/* Movie Cards Carousel */}
-        <div className="w-full max-w-4xl mb-8 sm:mb-12">
+        <div className="w-full max-w-5xl mb-8 sm:mb-12">
           <div className="relative">
             {/* Card Container */}
             <div className="flex justify-center">
-              <div className="relative w-72 h-80 sm:w-80 sm:h-96 perspective-1000">
+              <div className="relative w-80 h-96 sm:w-96 sm:h-[28rem] md:w-[28rem] md:h-[32rem] perspective-1000">
                 {movieData.map((movie, index) => {
                   const isActive = index === currentCard;
                   const isFlipped = flippedCards.has(index);
