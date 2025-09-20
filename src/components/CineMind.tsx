@@ -5,6 +5,7 @@ import { MovieCard, Movie } from "./MovieCard";
 import { MovieExplanation } from "./MovieExplanation";
 import { StreamingAvailability } from "./StreamingAvailability";
 import { APIKeyInput } from "./APIKeyInput";
+import { LandingPage } from "./LandingPage";
 import { initializeOpenAI, identifyMovie, explainMovie, getStreamingOptions } from "@/lib/openai";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +26,7 @@ interface StreamingOption {
 export const CineMind = () => {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
+  const [showLanding, setShowLanding] = useState(true);
   const [currentView, setCurrentView] = useState<ViewState>('search');
   const [isLoading, setIsLoading] = useState(false);
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
@@ -43,6 +45,7 @@ export const CineMind = () => {
     if (storedApiKey) {
       setApiKey(storedApiKey);
       initializeOpenAI(storedApiKey);
+      setShowLanding(false); // Skip landing page if API key exists
     }
 
     // Check authentication state
@@ -62,10 +65,45 @@ export const CineMind = () => {
     localStorage.setItem('cinemind-api-key', key);
     setApiKey(key);
     initializeOpenAI(key);
+    setShowLanding(false);
     toast({
       title: "API Key Saved",
       description: "CineMind is ready to help you remember movies!"
     });
+  };
+
+  const handleStartJourney = async () => {
+    setShowLanding(false);
+    
+    // Get the main OpenAI API key from Supabase secrets
+    try {
+      const { data: { secrets } } = await supabase.functions.invoke('get-secrets');
+      const openaiApiKey = secrets?.OPENAI_API_KEY;
+      
+      if (openaiApiKey) {
+        localStorage.setItem('cinemind-api-key', openaiApiKey);
+        setApiKey(openaiApiKey);
+        initializeOpenAI(openaiApiKey);
+        toast({
+          title: "Welcome to CineMind!",
+          description: "Your AI movie memory companion is ready to help!"
+        });
+      } else {
+        // Fallback to API key input if main key not available
+        toast({
+          title: "API Key Required",
+          description: "Please enter your OpenAI API key to continue.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching OpenAI API key:', error);
+      toast({
+        title: "Error",
+        description: "Failed to initialize CineMind. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSearch = async (query: string) => {
@@ -150,6 +188,11 @@ export const CineMind = () => {
     setStreamingOptions([]);
   };
 
+  // Show landing page first
+  if (showLanding) {
+    return <LandingPage onStart={handleStartJourney} />;
+  }
+
   // Show API key input if not configured
   if (!apiKey) {
     return <APIKeyInput onApiKeySubmit={handleApiKeySubmit} />;
@@ -161,8 +204,8 @@ export const CineMind = () => {
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
         <div className="absolute top-1/3 right-1/3 w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
-        <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30" style={{ animationDelay: '0s' }}></div>
-        <div className="floating-particle absolute bottom-32 left-32 w-1 h-1 bg-accent rounded-full opacity-50" style={{ animationDelay: '3s' }}></div>
+        <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30"></div>
+        <div className="floating-particle absolute bottom-32 left-32 w-1 h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
       </div>
 
       {/* Header */}
