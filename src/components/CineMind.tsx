@@ -42,6 +42,13 @@ export const CineMind = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
+        // Check if this is a password recovery session
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true') {
+          // Don't initialize app for password reset - let Auth component handle it
+          return;
+        }
+        
         setShowLanding(false); // Skip landing page if user is authenticated
         // Initialize OpenAI with the main API key from Supabase
         initializeOpenAIFromSupabase();
@@ -52,6 +59,13 @@ export const CineMind = () => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
+        // Check if this is a password recovery session
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true') {
+          // Don't initialize app for password reset - let Auth component handle it
+          return;
+        }
+        
         setShowLanding(false);
         initializeOpenAIFromSupabase();
       }
@@ -165,8 +179,12 @@ export const CineMind = () => {
     return <LandingPage onStart={handleStartJourney} />;
   }
 
-  // Show authentication page if user is not logged in
-  if (!user) {
+  // Check if this is a password reset session
+  const urlParams = new URLSearchParams(window.location.search);
+  const isPasswordReset = urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true';
+  
+  // Show authentication page if user is not logged in or if it's a password reset
+  if (!user || isPasswordReset) {
     return <LandingPage onStart={handleStartJourney} />;
   }
 

@@ -110,23 +110,40 @@ export const Auth = () => {
 
 
   useEffect(() => {
+    // Check URL parameters for password reset on initial load
+    const urlParams = new URLSearchParams(window.location.search);
+    console.log('URL params:', Object.fromEntries(urlParams.entries()));
+    
+    if (urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true') {
+      console.log('Password reset detected from URL');
+      setShowPasswordReset(true);
+    }
+
     // Check if user is already logged in
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change:', event, session?.user?.email);
+      
       if (session) {
         // Check if this is a password reset session
         if (event === 'PASSWORD_RECOVERY') {
+          console.log('Password recovery event detected');
           setShowPasswordReset(true);
+        } else if (event === 'SIGNED_IN') {
+          // Check if this is a password recovery session by looking at the URL
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('type') === 'recovery' || urlParams.get('reset') === 'true') {
+            console.log('Password reset detected from URL after sign in');
+            setShowPasswordReset(true);
+          } else {
+            console.log('Normal sign in, redirecting to app');
+            navigate("/");
+          }
         } else {
+          console.log('Other auth event, redirecting to app');
           navigate("/");
         }
       }
     });
-
-    // Check URL parameters for password reset
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('reset') === 'true') {
-      setShowPasswordReset(true);
-    }
 
     return () => subscription.unsubscribe();
   }, [navigate]);
