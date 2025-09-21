@@ -97,7 +97,7 @@ serve(async (req) => {
             content: `Recommend 3 movies for someone feeling ${mood} with ${timePreference} time available. ${userContext ? 'User context: ' + userContext : ''}` 
           }
         ],
-        max_completion_tokens: 800,
+        max_tokens: 800,
       }),
     });
 

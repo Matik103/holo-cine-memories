@@ -90,11 +90,17 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
 
           {/* Genres */}
           <div className="flex flex-wrap gap-2">
-            {movie.genre.map((g) => (
-              <Badge key={g} variant="secondary" className="bg-secondary/60">
-                {g}
+            {movie.genre && movie.genre.length > 0 ? (
+              movie.genre.map((g) => (
+                <Badge key={g} variant="secondary" className="bg-secondary/60">
+                  {g}
+                </Badge>
+              ))
+            ) : (
+              <Badge variant="secondary" className="bg-secondary/60">
+                Unknown Genre
               </Badge>
-            ))}
+            )}
           </div>
 
           {/* Plot */}

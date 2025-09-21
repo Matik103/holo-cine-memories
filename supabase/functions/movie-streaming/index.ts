@@ -66,7 +66,7 @@ serve(async (req) => {
           },
           { role: 'user', content: `Find streaming options for the movie "${movieTitle}".` }
         ],
-        max_completion_tokens: 500,
+        max_tokens: 500,
       }),
     });
 

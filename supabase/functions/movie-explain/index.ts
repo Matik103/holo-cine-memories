@@ -51,7 +51,7 @@ serve(async (req) => {
           },
           { role: 'user', content: `Explain the movie "${movieTitle}" in three different ways as specified.` }
         ],
-        max_completion_tokens: 800,
+        max_tokens: 800,
       }),
     });
 

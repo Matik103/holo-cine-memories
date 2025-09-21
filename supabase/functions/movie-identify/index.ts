@@ -47,7 +47,10 @@ serve(async (req) => {
               "director": "Director Name",
               "plot": "Brief plot summary",
               "poster_url": "https://example.com/poster.jpg",
-              "confidence": 0.95
+              "confidence": 0.95,
+              "genre": ["Drama", "Thriller"],
+              "runtime": 120,
+              "cast": ["Actor 1", "Actor 2", "Actor 3"]
             }
             
             If you can't identify the movie with high confidence (>0.7), return:
@@ -59,13 +62,16 @@ serve(async (req) => {
             
             Rules:
             - Only return valid JSON
-            - For poster_url, use a real movie poster URL from TMDB or similar
+            - For poster_url, use a real movie poster URL from TMDB or similar if possible
             - Confidence should be 0.0-1.0
+            - Include genre as an array of strings
+            - Include runtime in minutes as integer
+            - Include main cast members (3-5 actors)
             - If multiple movies match, pick the most famous/likely one`
           },
           { role: 'user', content: query }
         ],
-        max_completion_tokens: 300,
+        max_tokens: 300,
       }),
     });
 

@@ -109,8 +109,21 @@ export const CineMind = () => {
   const handleSearch = async (query: string) => {
     setIsLoading(true);
     try {
-      const movie = await identifyMovie(query);
-      if (movie) {
+      const rawMovie = await identifyMovie(query);
+      if (rawMovie) {
+        // Transform the data to match MovieCard interface
+        const movie: Movie = {
+          title: rawMovie.title,
+          year: rawMovie.year,
+          director: rawMovie.director || 'Unknown Director',
+          genre: rawMovie.genre || [],
+          plot: rawMovie.plot || 'No plot available',
+          poster: (rawMovie as any).poster_url || undefined,
+          runtime: rawMovie.runtime || undefined,
+          cast: rawMovie.cast || [],
+          imdbRating: rawMovie.imdbRating || undefined
+        };
+        
         setCurrentMovie(movie);
         setCurrentView('movie-details');
         toast({
