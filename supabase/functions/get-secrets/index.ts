@@ -13,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    const omdbApiKey = Deno.env.get("SC_OMDB_API_KEY")
-    const openaiApiKey = Deno.env.get("SC_OPENAI_API_KEY")
+    const omdbApiKey = Deno.env.get("OMDb_API_KEY")
+    const openaiApiKey = Deno.env.get("OPENAI_API_KEY")
     
     return new Response(
       JSON.stringify({ 

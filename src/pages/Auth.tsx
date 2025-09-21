@@ -154,59 +154,48 @@ export const Auth = () => {
     console.log('URL params:', Object.fromEntries(urlParams.entries()));
     console.log('Hash params:', Object.fromEntries(hashParams.entries()));
     
-    // Check for password reset indicators
-    const isPasswordReset = urlParams.get('type') === 'recovery' || 
-                           urlParams.get('reset') === 'true' ||
-                           hashParams.get('type') === 'recovery' ||
-                           hashParams.has('access_token');
+    // Check for password reset indicators - prioritize hash params which Supabase uses
+    const isPasswordReset = hashParams.get('type') === 'recovery' ||
+                           hashParams.has('access_token') ||
+                           urlParams.get('type') === 'recovery' ||
+                           urlParams.get('reset') === 'true';
     
     if (isPasswordReset) {
       console.log('Password reset detected from URL/hash');
       setShowPasswordReset(true);
-      // Don't let Supabase auto-sign-in redirect us
       return;
     }
 
-    // Check if user is already logged in
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state change:', event, session?.user?.email);
       
-      // If we're in password reset mode, don't redirect
-      if (showPasswordReset) {
-        console.log('In password reset mode, not redirecting');
+      // Handle password recovery event specifically
+      if (event === 'PASSWORD_RECOVERY') {
+        console.log('Password recovery event detected');
+        setShowPasswordReset(true);
         return;
       }
       
-      if (session) {
-        // Check if this is a password reset session
-        if (event === 'PASSWORD_RECOVERY') {
-          console.log('Password recovery event detected');
-          setShowPasswordReset(true);
-        } else if (event === 'SIGNED_IN') {
-          // Check if this is a password recovery session by looking at the URL
-          const urlParams = new URLSearchParams(window.location.search);
-          const hashParams = new URLSearchParams(window.location.hash.substring(1));
-          const isPasswordReset = urlParams.get('type') === 'recovery' || 
-                                 urlParams.get('reset') === 'true' ||
-                                 hashParams.get('type') === 'recovery' ||
-                                 hashParams.has('access_token');
-          
-          if (isPasswordReset) {
-            console.log('Password reset detected from URL/hash after sign in');
-            setShowPasswordReset(true);
-          } else {
-            console.log('Normal sign in, redirecting to app');
-            navigate("/");
-          }
-        } else {
-          console.log('Other auth event, redirecting to app');
+      // For regular sign-in, check if we're not in password reset mode
+      if (session && !showPasswordReset) {
+        const currentHashParams = new URLSearchParams(window.location.hash.substring(1));
+        const currentUrlParams = new URLSearchParams(window.location.search);
+        
+        // Double-check we're not in password reset mode
+        const stillInPasswordReset = currentHashParams.get('type') === 'recovery' ||
+                                    currentHashParams.has('access_token') ||
+                                    currentUrlParams.get('type') === 'recovery';
+        
+        if (!stillInPasswordReset) {
+          console.log('Normal sign in, redirecting to app');
           navigate("/");
         }
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, showPasswordReset]);
+  }, [navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -321,7 +310,10 @@ export const Auth = () => {
         console.error("Sign up error details:", error);
         
         // Handle specific error cases
-        if (error.message.includes("already registered") || error.message.includes("User already registered")) {
+        if (error.message.includes("already registered") || 
+            error.message.includes("User already registered") ||
+            error.message.includes("already been registered") ||
+            error.status === 422) {
           toast({
             title: "Account Already Exists",
             description: "An account with this email already exists. Please try signing in instead.",
@@ -332,6 +324,7 @@ export const Auth = () => {
           if (signInTab) {
             signInTab.click();
           }
+          return;
         } else {
           throw error;
         }
