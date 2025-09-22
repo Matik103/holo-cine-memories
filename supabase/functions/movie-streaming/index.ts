@@ -24,6 +24,10 @@ serve(async (req) => {
       });
     }
 
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -31,7 +35,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -66,7 +70,8 @@ serve(async (req) => {
           },
           { role: 'user', content: `Find streaming options for the movie "${movieTitle}".` }
         ],
-        max_tokens: 500,
+        max_tokens: 400,
+        temperature: 0.5,
       }),
     });
 
@@ -74,10 +79,24 @@ serve(async (req) => {
     console.log('OpenAI streaming response received');
     
     if (!response.ok) {
+      console.error('OpenAI API error:', data);
       throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
     }
 
-    const streamingOptions = JSON.parse(data.choices[0].message.content);
+    let streamingOptions;
+    try {
+      streamingOptions = JSON.parse(data.choices[0].message.content);
+      console.log('Parsed streaming options:', streamingOptions);
+      
+      // Ensure it's an array
+      if (!Array.isArray(streamingOptions)) {
+        console.warn('Streaming options is not an array, wrapping in array');
+        streamingOptions = [];
+      }
+    } catch (parseError) {
+      console.error('Failed to parse streaming response:', data.choices[0].message.content);
+      streamingOptions = [];
+    }
 
     return new Response(JSON.stringify(streamingOptions), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

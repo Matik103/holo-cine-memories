@@ -86,7 +86,7 @@ export const Discover = () => {
   ];
 
   return (
-    <div className="min-h-screen p-4 relative">
+    <div className="min-h-screen p-2 sm:p-4 relative">
       {/* Background Neural Network Effect */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
@@ -94,49 +94,49 @@ export const Discover = () => {
         <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30" style={{ animationDelay: '0s' }}></div>
       </div>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto px-2">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Button 
             variant="ghost" 
             onClick={() => navigate("/")}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 self-start"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Search
+            <span className="text-sm sm:text-base">Back to Search</span>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <div className="flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Discover Movies
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm sm:text-base">
               Let AI find the perfect movie for your current mood
             </p>
           </div>
         </div>
 
         {/* Mood Selection */}
-        <Card className="neural-card p-8 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Sparkles className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">What's your mood?</h2>
+        <Card className="neural-card p-4 sm:p-8 mb-6">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6">
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <h2 className="text-xl sm:text-2xl font-bold">What's your mood?</h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 sm:mb-6">
             {moodOptions.map((option) => (
               <Button
                 key={option.value}
                 variant={mood === option.value ? "default" : "outline"}
                 onClick={() => setMood(option.value)}
-                className={`text-left h-auto p-4 ${
+                className={`text-left h-auto p-3 sm:p-4 ${
                   mood === option.value 
                     ? "neural-button" 
                     : "hover:bg-secondary/60"
                 }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${option.color}`} />
-                  <span className="text-sm font-medium">{option.label}</span>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${option.color}`} />
+                  <span className="text-xs sm:text-sm font-medium">{option.label}</span>
                 </div>
               </Button>
             ))}
@@ -164,10 +164,11 @@ export const Discover = () => {
           <Button
             onClick={handleGetRecommendations}
             disabled={loading}
-            className="w-full mt-6 neural-button h-12 text-lg"
+            className="w-full mt-4 sm:mt-6 neural-button h-10 sm:h-12 text-sm sm:text-lg"
           >
-            <Sparkles className="w-5 h-5 mr-2" />
-            {loading ? "Finding Perfect Movies..." : "Discover Movies for Me"}
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+            <span className="hidden sm:inline">{loading ? "Finding Perfect Movies..." : "Discover Movies for Me"}</span>
+            <span className="sm:hidden">{loading ? "Finding Movies..." : "Discover Movies"}</span>
           </Button>
         </Card>
 
@@ -179,13 +180,13 @@ export const Discover = () => {
             </h2>
 
             {recommendations.map((rec, index) => (
-              <Card key={index} className="neural-card p-6">
-                <div className="flex gap-6">
+              <Card key={index} className="neural-card p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
                   {rec.poster_url && (
                     <img
                       src={rec.poster_url}
                       alt={rec.title}
-                      className="w-24 h-36 object-cover rounded-lg"
+                      className="w-full sm:w-24 h-48 sm:h-36 object-cover rounded-lg mx-auto sm:mx-0"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.style.display = 'none';
@@ -195,10 +196,10 @@ export const Discover = () => {
                   
                   <div className="flex-1 space-y-3">
                     <div>
-                      <h3 className="text-xl font-bold">
+                      <h3 className="text-lg sm:text-xl font-bold text-center sm:text-left">
                         {rec.title} ({rec.year})
                       </h3>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
                         <Badge variant="secondary">
                           <Clock className="w-3 h-3 mr-1" />
                           {rec.runtime}
@@ -206,19 +207,19 @@ export const Discover = () => {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 text-center sm:text-left">
                       <div>
-                        <h4 className="font-semibold text-primary">Why it's perfect for you:</h4>
-                        <p className="text-muted-foreground">{rec.reason}</p>
+                        <h4 className="font-semibold text-primary text-sm sm:text-base">Why it's perfect for you:</h4>
+                        <p className="text-muted-foreground text-sm sm:text-base">{rec.reason}</p>
                       </div>
                       
                       <div>
-                        <h4 className="font-semibold text-accent">Mood Match:</h4>
-                        <p className="text-muted-foreground">{rec.mood_match}</p>
+                        <h4 className="font-semibold text-accent text-sm sm:text-base">Mood Match:</h4>
+                        <p className="text-muted-foreground text-sm sm:text-base">{rec.mood_match}</p>
                       </div>
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-2">
                       <Button
                         onClick={() => {
                           // Add to favorites or search for streaming
@@ -227,10 +228,11 @@ export const Discover = () => {
                             description: `${rec.title} looks like a perfect match for your mood.`
                           });
                         }}
-                        className="neural-button flex-1"
+                        className="neural-button flex-1 text-sm"
                       >
                         <Heart className="w-4 h-4 mr-2" />
-                        Add to Favorites
+                        <span className="hidden sm:inline">Add to Favorites</span>
+                        <span className="sm:hidden">Favorite</span>
                       </Button>
                       
                       <Button
@@ -239,8 +241,10 @@ export const Discover = () => {
                           // Could navigate to streaming page or search
                           navigate("/", { state: { searchQuery: rec.title } });
                         }}
+                        className="text-sm"
                       >
-                        Find Where to Watch
+                        <span className="hidden sm:inline">Find Where to Watch</span>
+                        <span className="sm:hidden">Watch</span>
                       </Button>
                     </div>
                   </div>

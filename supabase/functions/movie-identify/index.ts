@@ -20,13 +20,17 @@ serve(async (req) => {
 
   try {
     const { query } = await req.json();
-    console.log('Received query:', query);
+    console.log('Received movie identification query:', query);
 
     if (!query) {
       return new Response(JSON.stringify({ error: 'Query is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -36,7 +40,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
@@ -71,18 +75,27 @@ serve(async (req) => {
           },
           { role: 'user', content: query }
         ],
-        max_tokens: 300,
+        max_tokens: 400,
+        temperature: 0.3,
       }),
     });
 
     const data = await response.json();
-    console.log('OpenAI response:', data);
+    console.log('OpenAI response received, status:', response.status);
     
     if (!response.ok) {
+      console.error('OpenAI API error:', data);
       throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
     }
 
-    const movieData = JSON.parse(data.choices[0].message.content);
+    let movieData;
+    try {
+      movieData = JSON.parse(data.choices[0].message.content);
+      console.log('Parsed movie data:', movieData);
+    } catch (parseError) {
+      console.error('Failed to parse OpenAI response:', data.choices[0].message.content);
+      throw new Error('Invalid response format from AI');
+    }
 
     // If movie identified, save search to database
     if (movieData.title && movieData.confidence > 0.7) {

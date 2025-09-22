@@ -24,6 +24,10 @@ serve(async (req) => {
       });
     }
 
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -59,10 +63,18 @@ serve(async (req) => {
     console.log('OpenAI explanation response received');
     
     if (!response.ok) {
+      console.error('OpenAI API error:', data);
       throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
     }
 
-    const explanation = JSON.parse(data.choices[0].message.content);
+    let explanation;
+    try {
+      explanation = JSON.parse(data.choices[0].message.content);
+      console.log('Parsed explanation:', explanation);
+    } catch (parseError) {
+      console.error('Failed to parse explanation response:', data.choices[0].message.content);
+      throw new Error('Invalid response format from AI');
+    }
 
     return new Response(JSON.stringify(explanation), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

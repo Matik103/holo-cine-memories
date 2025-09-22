@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Mic, Search, Sparkles } from "lucide-react";
+import { VoiceRecorder } from "./VoiceRecorder";
+import { Search, Sparkles } from "lucide-react";
 
 interface MemorySearchProps {
   onSearch: (query: string) => void;
@@ -19,8 +20,14 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
     }
   };
 
+  const handleVoiceTranscription = (text: string) => {
+    setQuery(text);
+    // Auto-search when voice input is received
+    onSearch(text);
+  };
+
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-6">
+    <div className="w-full max-w-2xl mx-auto space-y-6 px-4">
       {/* Floating Memory Particles */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="floating-particle absolute top-20 left-20 w-2 h-2 bg-primary rounded-full opacity-40" style={{ animationDelay: '0s' }}></div>
@@ -31,13 +38,13 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
       {/* Main Memory Input */}
       <div className="neural-card rounded-2xl p-8 space-y-6">
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent neural-glow">
-            <Sparkles className="w-8 h-8 text-primary-foreground" />
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-primary to-accent neural-glow">
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent px-2">
             What movie do you remember?
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-sm sm:text-base px-4">
             Describe any scene, quote, feeling, or half-memory...
           </p>
         </div>
@@ -56,28 +63,25 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
               <Button
                 type="submit"
                 disabled={!query.trim() || isLoading}
-                className="neural-button flex-1 h-12 rounded-xl text-base"
+                className="neural-button flex-1 h-12 rounded-xl text-sm sm:text-base"
               >
-                <Search className="w-5 h-5 mr-2" />
-                {isLoading ? "Searching Memory..." : "Recall Movie"}
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <span className="hidden sm:inline">{isLoading ? "Searching Memory..." : "Recall Movie"}</span>
+                <span className="sm:hidden">{isLoading ? "Searching..." : "Search"}</span>
               </Button>
               
-              <Button
-                type="button"
-                variant="outline"
-                className="h-12 px-6 rounded-xl border-border hover:bg-secondary/50"
+              <VoiceRecorder
+                onTranscription={handleVoiceTranscription}
                 disabled={isLoading}
-              >
-                <Mic className="w-5 h-5" />
-              </Button>
+              />
             </div>
           </div>
         </form>
 
         {/* Quick Suggestions */}
         <div className="pt-4 border-t border-border">
-          <p className="text-sm text-muted-foreground mb-3">Try these examples:</p>
-          <div className="flex flex-wrap gap-2">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 text-center">Try these examples:</p>
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
             {[
               "Movie with spinning dreams",
               "Robot falls in love with human", 
@@ -89,7 +93,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setQuery(example)}
-                className="text-xs bg-secondary/30 hover:bg-secondary/60 rounded-full"
+                className="text-xs bg-secondary/30 hover:bg-secondary/60 rounded-full p-2 h-auto"
                 disabled={isLoading}
               >
                 {example}

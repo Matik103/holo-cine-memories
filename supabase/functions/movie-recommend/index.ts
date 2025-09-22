@@ -55,6 +55,12 @@ serve(async (req) => {
       }
     }
 
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    console.log('Generating recommendations for mood:', mood, 'time:', timePreference);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -86,9 +92,10 @@ serve(async (req) => {
             - User context: ${userContext}
             - Reason should be 2-3 sentences explaining the perfect match
             - Mood_match should explain how it fits their current mood
-            - Use real movie posters URLs
+            - Use real movie poster URLs if possible
             - Consider runtime for time preference
             - Choose diverse but personalized recommendations
+            - Always return exactly 3 recommendations
             
             Only return valid JSON.`
           },
@@ -98,6 +105,7 @@ serve(async (req) => {
           }
         ],
         max_tokens: 800,
+        temperature: 0.7,
       }),
     });
 
@@ -105,10 +113,24 @@ serve(async (req) => {
     console.log('OpenAI recommendation response received');
     
     if (!response.ok) {
+      console.error('OpenAI API error:', data);
       throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
     }
 
-    const recommendations = JSON.parse(data.choices[0].message.content);
+    let recommendations;
+    try {
+      recommendations = JSON.parse(data.choices[0].message.content);
+      console.log('Parsed recommendations:', recommendations);
+      
+      // Ensure proper structure
+      if (!recommendations.recommendations || !Array.isArray(recommendations.recommendations)) {
+        console.warn('Invalid recommendations structure, creating fallback');
+        recommendations = { recommendations: [] };
+      }
+    } catch (parseError) {
+      console.error('Failed to parse recommendations response:', data.choices[0].message.content);
+      throw new Error('Invalid response format from AI');
+    }
 
     return new Response(JSON.stringify(recommendations), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

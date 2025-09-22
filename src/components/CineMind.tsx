@@ -220,7 +220,7 @@ export const CineMind = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 relative">
+    <div className="min-h-screen p-2 sm:p-4 relative">
       {/* Background Neural Network Effect */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
@@ -230,31 +230,31 @@ export const CineMind = () => {
       </div>
 
       {/* Header */}
-      <div className="max-w-6xl mx-auto mb-8">
+      <div className="max-w-6xl mx-auto mb-4 sm:mb-8 px-2">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Brain className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+            <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               CineMind
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
               onClick={() => navigate("/discover")}
-              className="flex items-center gap-2 hover:bg-secondary/60"
+              className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
             >
-              <Compass className="w-4 h-4" />
-              Discover
+              <Compass className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Discover</span>
             </Button>
 
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-2">
-                    <User className="w-4 h-4" />
-                    <Menu className="w-3 h-3" />
+                  <Button variant="ghost" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4">
+                    <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Menu className="w-2 h-2 sm:w-3 sm:h-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -270,14 +270,15 @@ export const CineMind = () => {
             ) : (
               <Button
                 onClick={() => navigate("/auth")}
-                className="neural-button"
+                className="neural-button text-xs sm:text-sm px-2 sm:px-4"
               >
-                Sign In
+                <span className="hidden sm:inline">Sign In</span>
+                <span className="sm:hidden">Login</span>
               </Button>
             )}
           </div>
         </div>
-        <p className="text-center text-muted-foreground">
+        <p className="text-center text-muted-foreground text-xs sm:text-sm px-2">
           Your Personal AI Movie Memory Companion
         </p>
       </div>

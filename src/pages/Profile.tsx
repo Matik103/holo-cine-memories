@@ -117,45 +117,46 @@ export const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen p-4 relative">
+    <div className="min-h-screen p-2 sm:p-4 relative">
       {/* Background Neural Network Effect */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
         <div className="absolute top-1/3 right-1/3 w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
       </div>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto px-2">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
           <Button 
             variant="ghost" 
             onClick={() => navigate("/")}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 self-start"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to CineMind
+            <span className="text-sm sm:text-base">Back to CineMind</span>
           </Button>
           <Button 
             variant="outline" 
             onClick={handleSignOut}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 self-end text-sm sm:text-base"
           >
             <LogOut className="w-4 h-4" />
-            Sign Out
+            <span className="hidden sm:inline">Sign Out</span>
+            <span className="sm:hidden">Logout</span>
           </Button>
         </div>
 
         {/* Profile Header */}
-        <Card className="neural-card p-8 mb-6">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center neural-glow">
-              <User className="w-10 h-10 text-primary-foreground" />
+        <Card className="neural-card p-4 sm:p-8 mb-6">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center neural-glow">
+              <User className="w-8 h-8 sm:w-10 sm:h-10 text-primary-foreground" />
             </div>
-            <div className="flex-1">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <div className="flex-1 text-center sm:text-left">
+              <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent break-words">
                 {profile?.display_name || user?.email || "Movie Explorer"}
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-muted-foreground mt-2 text-sm sm:text-base">
                 Member since {new Date(user?.created_at).toLocaleDateString()}
               </p>
             </div>
@@ -163,13 +164,13 @@ export const Profile = () => {
         </Card>
 
         {/* CineDNA Profile */}
-        <Card className="neural-card p-8 mb-6">
-          <div className="flex items-center gap-3 mb-6">
-            <Brain className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">Your CineDNA Profile</h2>
+        <Card className="neural-card p-4 sm:p-8 mb-6">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6">
+            <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <h2 className="text-xl sm:text-2xl font-bold">Your CineDNA Profile</h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <h3 className="text-lg font-semibold mb-4">Movie Memory Progress</h3>
               <div className="space-y-4">
@@ -223,10 +224,10 @@ export const Profile = () => {
         </Card>
 
         {/* Recent Movie Memories */}
-        <Card className="neural-card p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Film className="w-6 h-6 text-primary" />
-            <h2 className="text-2xl font-bold">Recent Movie Memories</h2>
+        <Card className="neural-card p-4 sm:p-8">
+          <div className="flex items-center gap-3 mb-4 sm:mb-6">
+            <Film className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+            <h2 className="text-xl sm:text-2xl font-bold">Recent Movie Memories</h2>
           </div>
 
           {movieSearches.length > 0 ? (
