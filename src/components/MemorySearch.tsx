@@ -83,7 +83,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
           <p className="text-xs sm:text-sm text-muted-foreground mb-3 text-center">Try these examples:</p>
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
             {[
-              "Movie with spinning dreams",
+              "Spinning dreams",
               "Robot loves human", 
               "Time loop same day",
               "Talking toys come alive"
