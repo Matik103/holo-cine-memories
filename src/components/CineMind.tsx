@@ -255,12 +255,25 @@ export const CineMind = () => {
           errorMessage = "AI service error. Please try again.";
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
           errorMessage = "Network error. Please check your connection and try again.";
+        } else if (error.message.includes('FunctionsHttpError')) {
+          errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+        } else if (error.message.includes('Invalid response format')) {
+          errorMessage = "AI response format error. Please try again.";
         }
       }
       
+      // Set a fallback explanation to prevent the user from being stuck
+      setMovieExplanation({
+        simple: "This movie explores complex themes and storytelling techniques that make it engaging for audiences.",
+        detailed: "The film presents a multi-layered narrative that examines human nature, relationships, and the human condition through its characters and plot development.",
+        symbolism: "The movie uses various symbolic elements and metaphors to convey deeper meanings about life, society, and the human experience."
+      });
+      setPreviousView('movie-details');
+      setCurrentView('explanation');
+      
       toast({
-        title: "Explanation Failed",
-        description: errorMessage,
+        title: "Using Fallback Explanation",
+        description: "AI service temporarily unavailable. Showing a general explanation instead.",
         variant: "destructive"
       });
     } finally {
