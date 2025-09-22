@@ -31,8 +31,8 @@ export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSel
         </div>
       </div>
 
-      {/* Similar Movies Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      {/* Similar Movies Grid - Optimized for 2 movies */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
         {similarMovies.map((movie, index) => (
           <Card 
             key={`${movie.title}-${movie.year}`}
@@ -60,20 +60,53 @@ export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSel
             </div>
             
             {/* Movie Info */}
-            <div className="p-4 space-y-2">
-              <h3 className="text-lg font-semibold text-foreground truncate">{movie.title}</h3>
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <Calendar className="w-4 h-4 flex-shrink-0" />
-                {movie.year}
-              </p>
+            <div className="p-4 sm:p-6 space-y-3">
+              <h3 className="text-lg sm:text-xl font-semibold text-foreground truncate">{movie.title}</h3>
+              
+              {/* Year and Rating */}
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                  {movie.year}
+                </div>
+                {movie.imdbRating && movie.imdbRating > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                    {movie.imdbRating.toFixed(1)}
+                  </div>
+                )}
+                {movie.runtime && movie.runtime > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    {movie.runtime}m
+                  </div>
+                )}
+              </div>
+              
+              {/* Director */}
               <p className="text-sm text-muted-foreground flex items-center gap-2">
                 <User className="w-4 h-4 flex-shrink-0" />
-                {movie.director || 'Unknown'}
+                {movie.director || 'Unknown Director'}
               </p>
+              
+              {/* Genre */}
               {movie.genre && movie.genre.length > 0 && (
-                <p className="text-xs text-muted-foreground flex items-center gap-2 flex-wrap">
-                  <Clapperboard className="w-4 h-4 flex-shrink-0" />
-                  {movie.genre.join(', ')}
+                <div className="flex items-start gap-2">
+                  <Clapperboard className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <div className="flex flex-wrap gap-1">
+                    {movie.genre.slice(0, 3).map((genre, idx) => (
+                      <span key={idx} className="text-xs bg-secondary/50 text-muted-foreground px-2 py-1 rounded-full">
+                        {genre}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Plot Preview */}
+              {movie.plot && (
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                  {movie.plot}
                 </p>
               )}
             </div>
@@ -91,6 +124,20 @@ export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSel
           <p className="text-muted-foreground">
             We couldn't find similar movies for {originalMovie.title}. Try searching for another movie.
           </p>
+        </div>
+      )}
+
+      {/* Back to Original Movie Button */}
+      {similarMovies.length > 0 && (
+        <div className="flex justify-center pt-6">
+          <Button 
+            variant="outline"
+            onClick={onBack}
+            className="neural-button rounded-xl border-border hover:bg-secondary/50 h-12 px-6 touch-manipulation"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to {originalMovie.title}
+          </Button>
         </div>
       )}
 

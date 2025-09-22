@@ -49,7 +49,7 @@ async function searchMoviesByGenre(genre: string, year?: number): Promise<any[]>
     
     if (data.Response === 'True' && data.Search && data.Search.length > 0) {
       console.log(`Found ${data.Search.length} movies for genre: ${genre}`);
-      return data.Search.slice(0, 6); // Limit to 6 movies
+      return data.Search.slice(0, 2); // Limit to 2 movies
     } else {
       console.log(`No movies found for genre: ${genre}`);
       return [];
@@ -173,7 +173,7 @@ serve(async (req) => {
       }
       
       // If we have enough movies, break
-      if (similarMovies.length >= 6) {
+      if (similarMovies.length >= 2) {
         break;
       }
     }
@@ -188,7 +188,7 @@ serve(async (req) => {
         const genreMovies = await searchMoviesByGenre(genreItem);
         
         for (const movie of genreMovies) {
-          if (movie.imdbID && similarMovies.length < 6) {
+          if (movie.imdbID && similarMovies.length < 2) {
             const details = await getMovieDetails(movie.imdbID);
             
             if (details) {
@@ -206,8 +206,8 @@ serve(async (req) => {
     // Sort by IMDB rating (highest first)
     similarMovies.sort((a, b) => (b.imdbRating || 0) - (a.imdbRating || 0));
     
-    // Return top 6 movies
-    const finalMovies = similarMovies.slice(0, 6);
+    // Return top 2 movies
+    const finalMovies = similarMovies.slice(0, 2);
     
     console.log(`Returning ${finalMovies.length} similar movies`);
     

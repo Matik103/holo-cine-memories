@@ -277,9 +277,9 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
     return { ...fallbackMovie, score };
   });
   
-  // Sort by score and return top 3
+  // Sort by score and return top 2
   return scoredMovies
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
+    .slice(0, 2)
     .map(({ score, ...movie }) => movie);
 };
