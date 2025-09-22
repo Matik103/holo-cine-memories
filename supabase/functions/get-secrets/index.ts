@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    const omdbApiKey = Deno.env.get("OMDb_API_KEY")
+    const omdbApiKey = Deno.env.get("OMDB_API_KEY")
     const openaiApiKey = Deno.env.get("OPENAI_API_KEY")
     const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY")
     

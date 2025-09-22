@@ -15,32 +15,81 @@ const corsHeaders = {
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// Function to fetch movie poster from OMDb
+// Function to fetch movie poster from OMDb with multiple fallback strategies
 async function fetchMoviePoster(title: string, year?: number): Promise<string | null> {
   if (!omdbApiKey) {
     console.log('OMDb API key not available, skipping poster fetch');
     return null;
   }
 
+  // Try multiple search strategies
+  const searchStrategies = [
+    // Strategy 1: Title + Year
+    year ? `${title} ${year}` : null,
+    // Strategy 2: Just title
+    title,
+    // Strategy 3: Remove common words and try again
+    title.replace(/\b(the|a|an)\b/gi, '').trim(),
+    // Strategy 4: Try without year if year was provided
+    year ? title : null
+  ].filter(Boolean);
+
+  for (const searchQuery of searchStrategies) {
+    if (!searchQuery) continue;
+    
+    try {
+      const omdbUrl = `https://www.omdbapi.com/?apikey=${omdbApiKey}&t=${encodeURIComponent(searchQuery)}&plot=short`;
+      
+      console.log('Fetching poster from OMDb for:', searchQuery);
+      const response = await fetch(omdbUrl);
+      
+      if (!response.ok) {
+        console.log(`OMDb API error: ${response.status} ${response.statusText}`);
+        continue;
+      }
+      
+      const data = await response.json();
+      
+      if (data.Response === 'True' && data.Poster && data.Poster !== 'N/A') {
+        console.log('Found poster:', data.Poster);
+        return data.Poster;
+      } else {
+        console.log(`No poster found for search: "${searchQuery}". Response:`, data.Response);
+        if (data.Error) {
+          console.log('OMDb error:', data.Error);
+        }
+      }
+    } catch (error) {
+      console.error(`Error fetching poster for "${searchQuery}":`, error);
+      continue;
+    }
+  }
+  
+  console.log('No poster found after trying all search strategies for:', title);
+  
+  // Final fallback: Try TMDB API (free, no key required for basic searches)
   try {
-    const searchQuery = year ? `${title} ${year}` : title;
-    const omdbUrl = `https://www.omdbapi.com/?apikey=${omdbApiKey}&t=${encodeURIComponent(searchQuery)}&plot=short`;
+    console.log('Trying TMDB fallback for:', title);
+    const tmdbSearchUrl = `https://api.themoviedb.org/3/search/movie?query=${encodeURIComponent(title)}${year ? `&year=${year}` : ''}`;
     
-    console.log('Fetching poster from OMDb for:', searchQuery);
-    const response = await fetch(omdbUrl);
-    const data = await response.json();
-    
-    if (data.Response === 'True' && data.Poster && data.Poster !== 'N/A') {
-      console.log('Found poster:', data.Poster);
-      return data.Poster;
-    } else {
-      console.log('No poster found in OMDb for:', searchQuery);
-      return null;
+    const tmdbResponse = await fetch(tmdbSearchUrl);
+    if (tmdbResponse.ok) {
+      const tmdbData = await tmdbResponse.json();
+      
+      if (tmdbData.results && tmdbData.results.length > 0) {
+        const movie = tmdbData.results[0];
+        if (movie.poster_path) {
+          const posterUrl = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+          console.log('Found poster via TMDB fallback:', posterUrl);
+          return posterUrl;
+        }
+      }
     }
   } catch (error) {
-    console.error('Error fetching poster from OMDb:', error);
-    return null;
+    console.error('TMDB fallback failed:', error);
   }
+  
+  return null;
 }
 
 // Function to fetch movie trailer from YouTube

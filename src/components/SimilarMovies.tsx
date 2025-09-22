@@ -135,3 +135,4 @@ export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSel
     </div>
   );
 };
+
