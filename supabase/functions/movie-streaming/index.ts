@@ -85,7 +85,24 @@ serve(async (req) => {
 
     let streamingOptions;
     try {
-      streamingOptions = JSON.parse(data.choices[0].message.content);
+      const responseContent = data.choices[0].message.content;
+      console.log('Raw streaming response:', responseContent);
+      
+      // Try to extract JSON from the response if it's wrapped in markdown
+      let jsonContent = responseContent;
+      if (responseContent.includes('```json')) {
+        const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch) {
+          jsonContent = jsonMatch[1];
+        }
+      } else if (responseContent.includes('```')) {
+        const jsonMatch = responseContent.match(/```\n([\s\S]*?)\n```/);
+        if (jsonMatch) {
+          jsonContent = jsonMatch[1];
+        }
+      }
+      
+      streamingOptions = JSON.parse(jsonContent);
       console.log('Parsed streaming options:', streamingOptions);
       
       // Ensure it's an array
@@ -95,7 +112,18 @@ serve(async (req) => {
       }
     } catch (parseError) {
       console.error('Failed to parse streaming response:', data.choices[0].message.content);
-      streamingOptions = [];
+      console.error('Parse error:', parseError);
+      
+      // Return fallback options instead of empty array
+      streamingOptions = [
+        {
+          platform: "Search manually",
+          type: "search",
+          price: "Various",
+          url: "https://www.google.com/search?q=" + encodeURIComponent(movieTitle + " streaming"),
+          quality: "Various"
+        }
+      ];
     }
 
     return new Response(JSON.stringify(streamingOptions), {
