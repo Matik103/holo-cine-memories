@@ -128,7 +128,7 @@ export const CineMind = () => {
     
     try {
       const rawMovie = await identifyMovie(query);
-      if (rawMovie) {
+      if (rawMovie && rawMovie.title && rawMovie.confidence > 0.7) {
         // Transform the data to match MovieCard interface
         const movie: Movie = {
           title: rawMovie.title,
@@ -150,11 +150,20 @@ export const CineMind = () => {
           description: `Identified: ${movie.title} (${movie.year})`
         });
       } else {
-        toast({
-          title: "No Match Found",
-          description: "Try describing the movie differently or with more details.",
-          variant: "destructive"
-        });
+        // Handle case where API returns null title or low confidence
+        if (rawMovie && rawMovie.title === null) {
+          toast({
+            title: "No Match Found",
+            description: "Couldn't identify a movie from your description. Try being more specific or describing key scenes, actors, or plot points.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "No Match Found",
+            description: "Try describing the movie differently or with more details.",
+            variant: "destructive"
+          });
+        }
       }
     } catch (error) {
       console.error('Search error:', error);
