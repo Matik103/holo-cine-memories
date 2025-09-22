@@ -506,10 +506,10 @@ export const CineMind = () => {
             originalMovie={currentMovie}
             similarMovies={similarMovies}
             onBack={handleBackToMovie}
-            onMovieSelect={(movie) => {
-              setPreviousView('similar-movies');
-              setCurrentMovie(movie);
-              setCurrentView('movie-details');
+            onMovieSearch={(query) => {
+              // Go back to search view and trigger a search
+              setCurrentView('search');
+              handleSearch(query);
             }}
           />
         )}

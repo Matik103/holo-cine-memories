@@ -1,22 +1,27 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Play, Star, Clock, Users, Calendar, User, Clapperboard, Film } from "lucide-react";
+import { ArrowLeft, Search, Star, Calendar, User, Clapperboard } from "lucide-react";
 import { Movie } from "./MovieCard";
 
 interface SimilarMoviesProps {
   originalMovie: Movie;
   similarMovies: Movie[];
   onBack: () => void;
-  onMovieSelect: (movie: Movie) => void;
+  onMovieSearch: (query: string) => void;
 }
 
-export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSelect }: SimilarMoviesProps) => {
+export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSearch }: SimilarMoviesProps) => {
   // Debug logging
   console.log('SimilarMovies component received:', { originalMovie, similarMovies });
   
+  const handleMovieClick = (movie: Movie) => {
+    // Search for the movie using its title
+    onMovieSearch(movie.title);
+  };
+  
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-0">
-      {/* Header - Mobile Optimized */}
+    <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-0">
+      {/* Header */}
       <div className="flex items-center gap-3 sm:gap-4">
         <Button 
           variant="ghost" 
@@ -34,104 +39,67 @@ export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSel
         </div>
       </div>
 
-      {/* Similar Movies Grid - Optimized for 2 movies */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto">
-        {similarMovies.map((movie, index) => (
-          <Card 
-            key={`${movie.title}-${movie.year}`}
-            className="neural-card rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group"
-            onClick={() => onMovieSelect(movie)}
-          >
-            {/* Movie Poster */}
-            <div className="relative aspect-[2/3] bg-secondary/20 flex items-center justify-center text-muted-foreground">
-              {movie.poster ? (
-                <img 
-                  src={movie.poster} 
-                  alt={movie.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
-                  onError={(e) => {
-                    console.log('Poster failed to load for:', movie.title, 'URL:', movie.poster);
-                    e.currentTarget.style.display = 'none';
-                  }}
-                  onLoad={() => {
-                    console.log('Poster loaded successfully for:', movie.title);
-                  }}
-                />
-              ) : (
-                <div className="flex flex-col items-center gap-2">
-                  <Film className="w-12 h-12 opacity-30" />
-                  <span className="text-xs opacity-50">No poster</span>
+      {/* Similar Movies List - Text-based */}
+      {similarMovies.length > 0 ? (
+        <div className="space-y-3">
+          {similarMovies.map((movie, index) => (
+            <Card 
+              key={`${movie.title}-${movie.year}`}
+              className="neural-card rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300 cursor-pointer group border-border hover:border-primary/50"
+              onClick={() => handleMovieClick(movie)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                      {movie.title}
+                    </h3>
+                    <span className="text-sm text-muted-foreground">({movie.year})</span>
+                  </div>
+                  
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                    {movie.director && movie.director !== 'Unknown Director' && (
+                      <div className="flex items-center gap-1">
+                        <User className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{movie.director}</span>
+                      </div>
+                    )}
+                    
+                    {movie.imdbRating && movie.imdbRating > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                        <span>{movie.imdbRating.toFixed(1)}</span>
+                      </div>
+                    )}
+                    
+                    {movie.genre && movie.genre.length > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Clapperboard className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{movie.genre.slice(0, 2).join(', ')}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {movie.plot && (
+                    <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
+                      {movie.plot}
+                    </p>
+                  )}
                 </div>
-              )}
-              
-              {/* Play Overlay */}
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <Play className="w-6 h-6 text-white" />
+                
+                <div className="ml-4 flex-shrink-0">
+                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                    <Search className="w-5 h-5 text-primary" />
+                  </div>
                 </div>
               </div>
-            </div>
-            
-            {/* Movie Info */}
-            <div className="p-4 sm:p-6 space-y-3">
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground truncate">{movie.title}</h3>
-              
-              {/* Year and Rating */}
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4 flex-shrink-0" />
-                  {movie.year}
-                </div>
-                {movie.imdbRating && movie.imdbRating > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                    {movie.imdbRating.toFixed(1)}
-                  </div>
-                )}
-                {movie.runtime && movie.runtime > 0 && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    {movie.runtime}m
-                  </div>
-                )}
-              </div>
-              
-              {/* Director */}
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <User className="w-4 h-4 flex-shrink-0" />
-                {movie.director || 'Unknown Director'}
-              </p>
-              
-              {/* Genre */}
-              {movie.genre && movie.genre.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <Clapperboard className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <div className="flex flex-wrap gap-1">
-                    {movie.genre.slice(0, 3).map((genre, idx) => (
-                      <span key={idx} className="text-xs bg-secondary/50 text-muted-foreground px-2 py-1 rounded-full">
-                        {genre}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Plot Preview */}
-              {movie.plot && (
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
-                  {movie.plot}
-                </p>
-              )}
-            </div>
-          </Card>
-        ))}
-      </div>
-
-      {/* Empty State */}
-      {similarMovies.length === 0 && (
+            </Card>
+          ))}
+        </div>
+      ) : (
         <div className="text-center py-12">
           <div className="w-16 h-16 mx-auto bg-secondary/20 rounded-full flex items-center justify-center mb-4">
-            <Play className="w-8 h-8 text-muted-foreground" />
+            <Search className="w-8 h-8 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">No Similar Movies Found</h3>
           <p className="text-muted-foreground">
