@@ -30,8 +30,8 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
   if (!videoId) {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl w-full p-0">
-          <div className="relative">
+        <DialogContent className="w-[95vw] h-[95vh] max-w-none p-0 bg-black">
+          <div className="relative w-full h-full">
             {/* Close Button */}
             <Button
               onClick={handleClose}
@@ -42,7 +42,7 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
               <X className="w-4 h-4" />
             </Button>
             
-            <div className="flex items-center justify-center h-96 p-6 bg-black rounded-lg">
+            <div className="flex items-center justify-center h-full p-6">
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center">
                   <X className="w-8 h-8 text-red-500" />
@@ -58,8 +58,8 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-6xl w-full p-0 bg-black">
-        <div className="relative">
+      <DialogContent className="w-[95vw] h-[95vh] max-w-none p-0 bg-black">
+        <div className="relative w-full h-full">
           {/* Close Button */}
           <Button
             onClick={handleClose}
@@ -70,15 +70,23 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
             <X className="w-4 h-4" />
           </Button>
           
-          {/* YouTube Embed */}
-          <div className="relative w-full" style={{ aspectRatio: '16/9' }}>
-            <iframe
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=1`}
-              title={`${title} Trailer`}
-              className="w-full h-full rounded-lg"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
+          {/* YouTube Embed - Dynamic sizing */}
+          <div className="relative w-full h-full flex items-center justify-center">
+            <div 
+              className="relative w-full max-w-6xl"
+              style={{ 
+                aspectRatio: '16/9',
+                maxHeight: 'calc(95vh - 2rem)' // Account for padding
+              }}
+            >
+              <iframe
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=1`}
+                title={`${title} Trailer`}
+                className="w-full h-full rounded-lg"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
           </div>
         </div>
       </DialogContent>
