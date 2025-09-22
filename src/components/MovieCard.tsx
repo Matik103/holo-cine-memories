@@ -84,15 +84,6 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
             </Badge>
           </div>
           
-          {/* Trailer Available Indicator */}
-          {movie.trailer && (
-            <div className="absolute bottom-4 left-4">
-              <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
-                <Play className="w-3 h-3 mr-1" />
-                Trailer Available
-              </Badge>
-            </div>
-          )}
         </div>
 
         {/* Movie Details */}

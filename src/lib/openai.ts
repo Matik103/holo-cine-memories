@@ -101,7 +101,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "A computer hacker learns about the true nature of reality.",
       imdbRating: 8.7,
       runtime: 136,
-      cast: ["Keanu Reeves", "Laurence Fishburne", "Carrie-Anne Moss"]
+      cast: ["Keanu Reeves", "Laurence Fishburne", "Carrie-Anne Moss"],
+      poster: "https://m.media-amazon.com/images/M/MV5BN2NmN2VhMTQtMDNiOS00NDlhLTliMjgtODE2ZTY0ODQyNDRhXkEyXkFqcGc@._V1_SX300.jpg"
     },
     {
       title: "Blade Runner",
@@ -111,7 +112,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "A blade runner must pursue and terminate four replicants.",
       imdbRating: 8.1,
       runtime: 117,
-      cast: ["Harrison Ford", "Rutger Hauer", "Sean Young"]
+      cast: ["Harrison Ford", "Rutger Hauer", "Sean Young"],
+      poster: "https://m.media-amazon.com/images/M/MV5BNzA1Njg4NzYxOV5BMl5BanBnXkFtZTcwODk5MzU1Mw@@._V1_SX300.jpg"
     },
     {
       title: "Interstellar",
@@ -121,7 +123,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "A team of explorers travel through a wormhole in space.",
       imdbRating: 8.6,
       runtime: 169,
-      cast: ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"]
+      cast: ["Matthew McConaughey", "Anne Hathaway", "Jessica Chastain"],
+      poster: "https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGc@._V1_SX300.jpg"
     },
     {
       title: "Ex Machina",
@@ -131,7 +134,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "A young programmer is selected to participate in a breakthrough experiment in artificial intelligence.",
       imdbRating: 7.7,
       runtime: 108,
-      cast: ["Domhnall Gleeson", "Alicia Vikander", "Oscar Isaac"]
+      cast: ["Domhnall Gleeson", "Alicia Vikander", "Oscar Isaac"],
+      poster: "https://m.media-amazon.com/images/M/MV5BMTUxNzc0OTIxMV5BMl5BanBnXkFtZTgwNDI3NzU2NDE@._V1_SX300.jpg"
     },
     // Action Movies
     {
@@ -142,7 +146,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "An ex-hit-man comes out of retirement to track down the gangsters that took everything from him.",
       imdbRating: 7.4,
       runtime: 101,
-      cast: ["Keanu Reeves", "Michael Nyqvist", "Alfie Allen"]
+      cast: ["Keanu Reeves", "Michael Nyqvist", "Alfie Allen"],
+      poster: "https://m.media-amazon.com/images/M/MV5BMTU2NjA1ODgzMF5BMl5BanBnXkFtZTgwMTM2MTI4MjE@._V1_SX300.jpg"
     },
     {
       title: "Mad Max: Fury Road",
@@ -152,7 +157,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "In a post-apocalyptic wasteland, Max teams up with a mysterious woman to escape from a tyrannical warlord.",
       imdbRating: 8.1,
       runtime: 120,
-      cast: ["Tom Hardy", "Charlize Theron", "Nicholas Hoult"]
+      cast: ["Tom Hardy", "Charlize Theron", "Nicholas Hoult"],
+      poster: "https://m.media-amazon.com/images/M/MV5BN2EwM2I0OWMtMGQyMi00Zjg1LTk1MzEtNjFkMGFiNzNkODNhXkEyXkFqcGc@._V1_SX300.jpg"
     },
     // Drama Movies
     {
@@ -163,7 +169,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
       imdbRating: 9.3,
       runtime: 142,
-      cast: ["Tim Robbins", "Morgan Freeman", "Bob Gunton"]
+      cast: ["Tim Robbins", "Morgan Freeman", "Bob Gunton"],
+      poster: "https://m.media-amazon.com/images/M/MV5BMDFkYTc0MGEtZmNhMC00ZDIzLWFmNTEtODM1ZmRlYWMwMWFmXkEyXkFqcGc@._V1_SX300.jpg"
     },
     {
       title: "Forrest Gump",
@@ -173,7 +180,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "The presidencies of Kennedy and Johnson, the Vietnam War, the Watergate scandal and other historical events unfold from the perspective of an Alabama man.",
       imdbRating: 8.8,
       runtime: 142,
-      cast: ["Tom Hanks", "Robin Wright", "Gary Sinise"]
+      cast: ["Tom Hanks", "Robin Wright", "Gary Sinise"],
+      poster: "https://m.media-amazon.com/images/M/MV5BNWIwODRlZTUtY2U3ZS00Yzg1LWJhNzYtMmZiYmEyNmU1NjMzXkEyXkFqcGc@._V1_SX300.jpg"
     },
     // Comedy Movies
     {
@@ -184,7 +192,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "The adventures of Gustave H, a legendary concierge at a famous European hotel, and his protégé Zero Moustafa.",
       imdbRating: 8.1,
       runtime: 99,
-      cast: ["Ralph Fiennes", "F. Murray Abraham", "Mathieu Amalric"]
+      cast: ["Ralph Fiennes", "F. Murray Abraham", "Mathieu Amalric"],
+      poster: "https://m.media-amazon.com/images/M/MV5BMzM5NjUxOTEyMl5BMl5BanBnXkFtZTgwNjEyMDM0MDE@._V1_SX300.jpg"
     },
     {
       title: "Deadpool",
@@ -194,7 +203,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "A wisecracking mercenary gets experimented on and becomes immortal but ugly, and sets out to track down the man who ruined his looks.",
       imdbRating: 8.0,
       runtime: 108,
-      cast: ["Ryan Reynolds", "Morena Baccarin", "T.J. Miller"]
+      cast: ["Ryan Reynolds", "Morena Baccarin", "T.J. Miller"],
+      poster: "https://m.media-amazon.com/images/M/MV5BYzE5MjY1ZDgtMTkyNC00MTJlLWE1M2YtMjM2YjQ0YzQzYzQzXkEyXkFqcGc@._V1_SX300.jpg"
     },
     // Horror Movies
     {
@@ -205,7 +215,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "A young African-American visits his white girlfriend's parents for the weekend, where his uneasiness about their reception of him eventually reaches a boiling point.",
       imdbRating: 7.7,
       runtime: 104,
-      cast: ["Daniel Kaluuya", "Allison Williams", "Bradley Whitford"]
+      cast: ["Daniel Kaluuya", "Allison Williams", "Bradley Whitford"],
+      poster: "https://m.media-amazon.com/images/M/MV5BMjUxMDQwNjcyNl5BMl5BanBnXkFtZTgwNzcwMzc0MTI@._V1_SX300.jpg"
     },
     {
       title: "Hereditary",
@@ -215,7 +226,8 @@ const getFallbackSimilarMovies = (movie: Movie): Movie[] => {
       plot: "A grieving family is haunted by tragic and disturbing occurrences.",
       imdbRating: 7.3,
       runtime: 127,
-      cast: ["Toni Collette", "Milly Shapiro", "Gabriel Byrne"]
+      cast: ["Toni Collette", "Milly Shapiro", "Gabriel Byrne"],
+      poster: "https://m.media-amazon.com/images/M/MV5BOTU5MDg3OGItZWQ1OO00YjI0LTk0YzUtN2RjYzQzYzQzYzQzXkEyXkFqcGc@._V1_SX300.jpg"
     }
   ];
 
