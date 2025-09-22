@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { MemorySearch } from "./MemorySearch";
 import { MovieCard, Movie } from "./MovieCard";
 import { MovieExplanation } from "./MovieExplanation";
@@ -40,6 +40,7 @@ export const CineMind = () => {
   const [previousView, setPreviousView] = useState<ViewState | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -92,6 +93,16 @@ export const CineMind = () => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Handle search query from navigation state (e.g., from Discover Movies)
+  useEffect(() => {
+    if (location.state?.searchQuery) {
+      console.log('Received search query from navigation:', location.state.searchQuery);
+      handleSearch(location.state.searchQuery);
+      // Clear the state to prevent re-triggering
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state?.searchQuery]);
 
   const initializeOpenAIFromSupabase = async () => {
     try {
