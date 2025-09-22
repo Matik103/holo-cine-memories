@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, Brain, Film, Heart, ArrowLeft, LogOut } from "lucide-react";
+import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw } from "lucide-react";
 
 interface MovieSearch {
   id: string;
@@ -102,9 +102,61 @@ export const Profile = () => {
     navigate("/auth");
   };
 
+  const refreshCineDNA = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('update-cinedna', {
+        body: { userId: user.id }
+      });
+
+      if (error) {
+        console.error('Error updating CineDNA:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update CineDNA profile",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Refresh the preferences data
+      const { data: preferencesData } = await supabase
+        .from('user_preferences')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (preferencesData) {
+        setPreferences(preferencesData);
+        toast({
+          title: "CineDNA Updated!",
+          description: "Your movie profile has been refreshed",
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing CineDNA:', error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh CineDNA profile",
+        variant: "destructive",
+      });
+    }
+  };
+
   const calculateCineDNAProgress = () => {
     const searchCount = movieSearches.length;
     const genreCount = preferences?.favorite_genres?.length || 0;
+    const cinednaScore = preferences?.cinedna_score;
+    
+    // If we have CineDNA score data, use it for more accurate progress
+    if (cinednaScore && typeof cinednaScore === 'object') {
+      const totalSearches = cinednaScore.total_searches || 0;
+      const favoriteGenres = cinednaScore.favorite_genres || [];
+      return Math.min(Math.floor((totalSearches * 10 + favoriteGenres.length * 5) / 2), 100);
+    }
+    
+    // Fallback to basic calculation
     return Math.min(Math.floor((searchCount * 10 + genreCount * 5) / 2), 100);
   };
 
@@ -165,9 +217,20 @@ export const Profile = () => {
 
         {/* CineDNA Profile */}
         <Card className="neural-card p-4 sm:p-8 mb-6">
-          <div className="flex items-center gap-3 mb-4 sm:mb-6">
-            <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            <h2 className="text-xl sm:text-2xl font-bold">Your CineDNA Profile</h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex items-center gap-3">
+              <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              <h2 className="text-xl sm:text-2xl font-bold">Your CineDNA Profile</h2>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={refreshCineDNA}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">

@@ -332,6 +332,27 @@ serve(async (req) => {
             movie_plot: movieData.plot
           });
           console.log('Saved search to database for user:', userData.user.id);
+          
+          // Update CineDNA profile asynchronously
+          try {
+            const cinednaResponse = await fetch(`${supabaseUrl}/functions/v1/update-cinedna`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${supabaseServiceKey}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ userId: userData.user.id })
+            });
+            
+            if (cinednaResponse.ok) {
+              console.log('CineDNA profile updated for user:', userData.user.id);
+            } else {
+              console.log('Failed to update CineDNA profile, but search was saved');
+            }
+          } catch (cinednaError) {
+            console.log('Error updating CineDNA profile:', cinednaError);
+            // Don't fail the main request if CineDNA update fails
+          }
         }
       }
     }
