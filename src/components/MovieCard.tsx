@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { VideoPlayer } from "@/components/VideoPlayer";
 import { Calendar, Clock, Star, Play, BookOpen, Lightbulb } from "lucide-react";
 
 export interface Movie {
@@ -24,6 +25,7 @@ interface MovieCardProps {
 
 export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: MovieCardProps) => {
   const [imageError, setImageError] = useState(false);
+  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
 
   return (
     <div className="neural-card rounded-2xl overflow-hidden">
@@ -43,7 +45,7 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
                 {movie.trailer && (
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <Button
-                      onClick={() => window.open(movie.trailer, '_blank')}
+                      onClick={() => setIsVideoPlayerOpen(true)}
                       size="lg"
                       className="neural-button rounded-full w-12 h-12 sm:w-16 sm:h-16 p-0 touch-manipulation"
                     >
@@ -62,7 +64,7 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
                 </div>
                 {movie.trailer && (
                   <Button
-                    onClick={() => window.open(movie.trailer, '_blank')}
+                    onClick={() => setIsVideoPlayerOpen(true)}
                     size="sm"
                     className="neural-button rounded-full"
                   >
@@ -180,7 +182,7 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
             {movie.trailer && (
               <Button 
-                onClick={() => window.open(movie.trailer, '_blank')}
+                onClick={() => setIsVideoPlayerOpen(true)}
                 className="neural-button rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 h-12 sm:h-auto touch-manipulation"
                 size="lg"
               >
@@ -221,6 +223,16 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
           </div>
         </div>
       </div>
+
+      {/* Video Player Modal */}
+      {movie.trailer && (
+        <VideoPlayer
+          isOpen={isVideoPlayerOpen}
+          onClose={() => setIsVideoPlayerOpen(false)}
+          videoUrl={movie.trailer}
+          title={movie.title}
+        />
+      )}
     </div>
   );
 };
