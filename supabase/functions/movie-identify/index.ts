@@ -149,11 +149,38 @@ serve(async (req) => {
 
     let movieData;
     try {
-      movieData = JSON.parse(data.choices[0].message.content);
+      const responseContent = data.choices[0].message.content;
+      console.log('Raw AI response:', responseContent);
+      
+      // Try to extract JSON from the response if it's wrapped in markdown
+      let jsonContent = responseContent;
+      if (responseContent.includes('```json')) {
+        const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch) {
+          jsonContent = jsonMatch[1];
+        }
+      } else if (responseContent.includes('```')) {
+        const jsonMatch = responseContent.match(/```\n([\s\S]*?)\n```/);
+        if (jsonMatch) {
+          jsonContent = jsonMatch[1];
+        }
+      }
+      
+      movieData = JSON.parse(jsonContent);
       console.log('Parsed movie data:', movieData);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', data.choices[0].message.content);
-      throw new Error('Invalid response format from AI');
+      console.error('Parse error:', parseError);
+      
+      // Return a proper error response instead of throwing
+      return new Response(JSON.stringify({ 
+        error: 'Invalid response format from AI',
+        title: null,
+        confidence: 0 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200
+      });
     }
 
     // Fetch poster and trailer if movie was identified
