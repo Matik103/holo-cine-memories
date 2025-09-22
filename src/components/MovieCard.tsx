@@ -178,12 +178,13 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4">
+          {/* Action Buttons - Mobile Optimized */}
+          <div className="space-y-3 pt-3 sm:pt-4">
+            {/* Primary Action - Watch Trailer */}
             {movie.trailer && (
               <Button 
                 onClick={() => setIsVideoPlayerOpen(true)}
-                className="neural-button rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 h-12 sm:h-auto touch-manipulation"
+                className="w-full neural-button rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 h-12 touch-manipulation"
                 size="lg"
               >
                 <Play className="w-4 h-4 mr-2" />
@@ -191,10 +192,11 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
               </Button>
             )}
             
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            {/* Secondary Actions Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               <Button 
                 onClick={onFindWhereToWatch}
-                className="neural-button rounded-xl h-12 sm:h-auto touch-manipulation"
+                className="w-full neural-button rounded-xl h-12 touch-manipulation"
                 size="lg"
               >
                 <Play className="w-4 h-4 mr-2" />
@@ -204,7 +206,7 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
               <Button 
                 onClick={onExplainMeaning}
                 variant="outline"
-                className="rounded-xl border-border hover:bg-secondary/50 h-12 sm:h-auto touch-manipulation"
+                className="w-full rounded-xl border-border hover:bg-secondary/50 h-12 touch-manipulation"
                 size="lg"
               >
                 <Lightbulb className="w-4 h-4 mr-2" />
@@ -212,9 +214,10 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
               </Button>
             </div>
             
+            {/* Tertiary Action */}
             <Button 
               variant="ghost"
-              className="rounded-xl hover:bg-secondary/30 h-12 sm:h-auto touch-manipulation"
+              className="w-full rounded-xl hover:bg-secondary/30 h-12 touch-manipulation"
               size="lg"
             >
               <BookOpen className="w-4 h-4 mr-2" />
