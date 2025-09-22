@@ -128,8 +128,17 @@ export const CineMind = () => {
     setLoadingMessage("Analyzing your description...");
     setRetryCount(0);
     
+    // Clear previous state to prevent stale data
+    setCurrentMovie(null);
+    setMovieExplanation(null);
+    setStreamingOptions([]);
+    setSimilarMovies([]);
+    
     try {
+      console.log('Starting search for:', query);
       const rawMovie = await identifyMovie(query);
+      console.log('Raw movie response:', rawMovie);
+      
       if (rawMovie && rawMovie.title && rawMovie.confidence > 0.5) {
         // Transform the data to match MovieCard interface
         const movie: Movie = {
@@ -145,6 +154,10 @@ export const CineMind = () => {
           imdbRating: rawMovie.imdbRating || undefined
         };
         
+        console.log('Transformed movie data:', movie);
+        console.log('Poster URL:', movie.poster);
+        console.log('Trailer URL:', movie.trailer);
+        
         setCurrentMovie(movie);
         setCurrentView('movie-details');
         toast({
@@ -152,6 +165,7 @@ export const CineMind = () => {
           description: `Identified: ${movie.title} (${movie.year})`
         });
       } else {
+        console.log('No movie found or low confidence:', rawMovie);
         // Handle case where API returns null title or low confidence
         if (rawMovie && rawMovie.title === null) {
           toast({

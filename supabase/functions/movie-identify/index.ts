@@ -41,7 +41,19 @@ async function fetchMoviePoster(title: string, year?: number): Promise<string | 
       const omdbUrl = `https://www.omdbapi.com/?apikey=${omdbApiKey}&t=${encodeURIComponent(searchQuery)}&plot=short`;
       
       console.log('Fetching poster from OMDb for:', searchQuery);
-      const response = await fetch(omdbUrl);
+      
+      // Add timeout to prevent hanging
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      const response = await fetch(omdbUrl, { 
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'CineMind/1.0'
+        }
+      });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         console.log(`OMDb API error: ${response.status} ${response.statusText}`);
@@ -60,7 +72,11 @@ async function fetchMoviePoster(title: string, year?: number): Promise<string | 
         }
       }
     } catch (error) {
-      console.error(`Error fetching poster for "${searchQuery}":`, error);
+      if (error.name === 'AbortError') {
+        console.log(`OMDb request timeout for "${searchQuery}"`);
+      } else {
+        console.error(`Error fetching poster for "${searchQuery}":`, error);
+      }
       continue;
     }
   }
@@ -104,7 +120,25 @@ async function fetchMovieTrailer(title: string, year?: number): Promise<string |
     const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(searchQuery)}&type=video&videoCategoryId=24&key=${youtubeApiKey}&maxResults=1`;
     
     console.log('Fetching trailer from YouTube for:', searchQuery);
-    const response = await fetch(youtubeUrl);
+    
+    // Add timeout to prevent hanging
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    
+    const response = await fetch(youtubeUrl, { 
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'CineMind/1.0'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!response.ok) {
+      console.log(`YouTube API error: ${response.status} ${response.statusText}`);
+      return null;
+    }
+    
     const data = await response.json();
     
     if (data.items && data.items.length > 0) {
@@ -117,7 +151,11 @@ async function fetchMovieTrailer(title: string, year?: number): Promise<string |
       return null;
     }
   } catch (error) {
-    console.error('Error fetching trailer from YouTube:', error);
+    if (error.name === 'AbortError') {
+      console.log('YouTube request timeout for:', title);
+    } else {
+      console.error('Error fetching trailer from YouTube:', error);
+    }
     return null;
   }
 }
@@ -250,10 +288,13 @@ serve(async (req) => {
     if (movieData.title && movieData.confidence > 0.7) {
       console.log('Fetching media for:', movieData.title, movieData.year);
       
-      // Fetch poster and trailer in parallel for better performance
-      const [posterUrl, trailerUrl] = await Promise.all([
+      // Fetch poster and trailer in parallel with timeout
+      const [posterUrl, trailerUrl] = await Promise.allSettled([
         fetchMoviePoster(movieData.title, movieData.year),
         fetchMovieTrailer(movieData.title, movieData.year)
+      ]).then(results => [
+        results[0].status === 'fulfilled' ? results[0].value : null,
+        results[1].status === 'fulfilled' ? results[1].value : null
       ]);
       
       if (posterUrl) {
