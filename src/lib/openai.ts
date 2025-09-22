@@ -71,6 +71,8 @@ export const getStreamingOptions = async (movieTitle: string) => {
 
 export const findSimilarMovies = async (movie: Movie): Promise<Movie[]> => {
   try {
+    console.log('Finding similar movies for:', movie.title, 'genres:', movie.genre);
+    
     const { data, error } = await supabase.functions.invoke('movie-similar', {
       body: { 
         title: movie.title,
@@ -80,8 +82,20 @@ export const findSimilarMovies = async (movie: Movie): Promise<Movie[]> => {
       }
     });
 
-    if (error) throw error;
-    return data || [];
+    if (error) {
+      console.error('Supabase function error:', error);
+      throw error;
+    }
+    
+    console.log('Similar movies response:', data);
+    
+    if (data && data.similarMovies && data.similarMovies.length > 0) {
+      console.log(`Found ${data.similarMovies.length} similar movies from API`);
+      return data.similarMovies;
+    } else {
+      console.log('No similar movies found from API, using fallback');
+      return getFallbackSimilarMovies(movie);
+    }
   } catch (error) {
     console.error('Error finding similar movies:', error);
     // Return fallback similar movies based on genre
