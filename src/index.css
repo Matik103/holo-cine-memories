@@ -681,3 +681,6 @@ All colors MUST be HSL for neural network-inspired design.
 .animation-delay-300 {
   animation-delay: 300ms;
 }
+
+/* Close the components layer */
+}
