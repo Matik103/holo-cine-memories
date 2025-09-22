@@ -15,12 +15,14 @@ serve(async (req) => {
   try {
     const omdbApiKey = Deno.env.get("OMDb_API_KEY")
     const openaiApiKey = Deno.env.get("OPENAI_API_KEY")
+    const youtubeApiKey = Deno.env.get("YOUTUBE_API_KEY")
     
     return new Response(
       JSON.stringify({ 
         secrets: {
           OMDB_API_KEY: omdbApiKey,
-          OPENAI_API_KEY: openaiApiKey
+          OPENAI_API_KEY: openaiApiKey,
+          YOUTUBE_API_KEY: youtubeApiKey
         }
       }),
       { 

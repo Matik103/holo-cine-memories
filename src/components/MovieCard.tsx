@@ -13,6 +13,7 @@ export interface Movie {
   runtime?: number;
   cast?: string[];
   poster?: string;
+  trailer?: string;
 }
 
 interface MovieCardProps {
@@ -131,6 +132,17 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
               <Play className="w-4 h-4 mr-2" />
               Where to Watch
             </Button>
+            
+            {movie.trailer && (
+              <Button 
+                onClick={() => window.open(movie.trailer, '_blank')}
+                variant="outline"
+                className="rounded-xl border-border hover:bg-secondary/50"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                Watch Trailer
+              </Button>
+            )}
             
             <Button 
               onClick={onExplainMeaning}

@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const omdbApiKey = Deno.env.get('OMDB_API_KEY');
+const youtubeApiKey = Deno.env.get('YOUTUBE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
@@ -38,6 +39,36 @@ async function fetchMoviePoster(title: string, year?: number): Promise<string | 
     }
   } catch (error) {
     console.error('Error fetching poster from OMDb:', error);
+    return null;
+  }
+}
+
+// Function to fetch movie trailer from YouTube
+async function fetchMovieTrailer(title: string, year?: number): Promise<string | null> {
+  if (!youtubeApiKey) {
+    console.log('YouTube API key not available, skipping trailer fetch');
+    return null;
+  }
+
+  try {
+    const searchQuery = year ? `${title} ${year} official trailer` : `${title} official trailer`;
+    const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(searchQuery)}&type=video&videoCategoryId=24&key=${youtubeApiKey}&maxResults=1`;
+    
+    console.log('Fetching trailer from YouTube for:', searchQuery);
+    const response = await fetch(youtubeUrl);
+    const data = await response.json();
+    
+    if (data.items && data.items.length > 0) {
+      const videoId = data.items[0].id.videoId;
+      const trailerUrl = `https://www.youtube.com/watch?v=${videoId}`;
+      console.log('Found trailer:', trailerUrl);
+      return trailerUrl;
+    } else {
+      console.log('No trailer found in YouTube for:', searchQuery);
+      return null;
+    }
+  } catch (error) {
+    console.error('Error fetching trailer from YouTube:', error);
     return null;
   }
 }
@@ -125,16 +156,30 @@ serve(async (req) => {
       throw new Error('Invalid response format from AI');
     }
 
-    // Fetch poster from OMDb if movie was identified
+    // Fetch poster and trailer if movie was identified
     if (movieData.title && movieData.confidence > 0.7) {
-      console.log('Fetching poster for:', movieData.title, movieData.year);
-      const posterUrl = await fetchMoviePoster(movieData.title, movieData.year);
+      console.log('Fetching media for:', movieData.title, movieData.year);
+      
+      // Fetch poster and trailer in parallel for better performance
+      const [posterUrl, trailerUrl] = await Promise.all([
+        fetchMoviePoster(movieData.title, movieData.year),
+        fetchMovieTrailer(movieData.title, movieData.year)
+      ]);
+      
       if (posterUrl) {
         movieData.poster_url = posterUrl;
         console.log('Added poster URL:', posterUrl);
       } else {
         console.log('No poster found, will use fallback');
         movieData.poster_url = null;
+      }
+      
+      if (trailerUrl) {
+        movieData.trailer_url = trailerUrl;
+        console.log('Added trailer URL:', trailerUrl);
+      } else {
+        console.log('No trailer found, will use fallback');
+        movieData.trailer_url = null;
       }
     }
 
@@ -152,6 +197,7 @@ serve(async (req) => {
             movie_title: movieData.title,
             movie_year: movieData.year,
             movie_poster_url: movieData.poster_url,
+            movie_trailer_url: movieData.trailer_url,
             movie_plot: movieData.plot
           });
           console.log('Saved search to database for user:', userData.user.id);

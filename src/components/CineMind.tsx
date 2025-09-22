@@ -137,6 +137,7 @@ export const CineMind = () => {
           genre: rawMovie.genre || [],
           plot: rawMovie.plot || 'No plot available',
           poster: (rawMovie as any).poster_url || undefined,
+          trailer: (rawMovie as any).trailer_url || undefined,
           runtime: rawMovie.runtime || undefined,
           cast: rawMovie.cast || [],
           imdbRating: rawMovie.imdbRating || undefined
