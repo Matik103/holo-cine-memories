@@ -128,7 +128,7 @@ export const CineMind = () => {
     
     try {
       const rawMovie = await identifyMovie(query);
-      if (rawMovie && rawMovie.title && rawMovie.confidence > 0.7) {
+      if (rawMovie && rawMovie.title && rawMovie.confidence > 0.5) {
         // Transform the data to match MovieCard interface
         const movie: Movie = {
           title: rawMovie.title,

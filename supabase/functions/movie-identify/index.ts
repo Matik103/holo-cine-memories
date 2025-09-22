@@ -104,7 +104,17 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a movie identification expert. Based on user descriptions, identify movies and return ONLY a JSON object with this exact format:
+            content: `You are an expert movie identification AI that can interpret ANY format of movie descriptions. You're incredibly versatile and can understand:
+
+            - Single words or phrases: "Inception", "Spinning dreams", "Time travel"
+            - Partial descriptions: "Movie with dreams", "Robot love story", "Space adventure"
+            - Vague references: "That one with the spinning", "The dream movie", "The robot one"
+            - Plot elements: "Dreams within dreams", "Spinning top", "Reality vs dreams"
+            - Character descriptions: "Guy who enters dreams", "Robot falls in love"
+            - Genre hints: "Sci-fi dreams", "Romantic robot", "Time loop movie"
+            - Any creative wording or format the user provides
+
+            Return ONLY a JSON object with this exact format:
             {
               "title": "Movie Title",
               "year": 2023,
@@ -116,7 +126,9 @@ serve(async (req) => {
               "cast": ["Actor 1", "Actor 2", "Actor 3"]
             }
             
-            If you can't identify the movie with high confidence (>0.7), return:
+            IMPORTANT: Be VERY flexible with confidence scoring. Even if the description is vague, if you can reasonably identify a movie, give it a confidence of 0.6 or higher. Only return null if you truly cannot identify ANY movie from the description.
+            
+            If you absolutely cannot identify any movie, return:
             {
               "title": null,
               "confidence": 0.0,
@@ -126,16 +138,18 @@ serve(async (req) => {
             Rules:
             - Only return valid JSON
             - DO NOT include poster_url in the response (it will be fetched separately)
-            - Confidence should be 0.0-1.0
+            - Confidence should be 0.0-1.0 (be generous with 0.6+ for reasonable matches)
             - Include genre as an array of strings
             - Include runtime in minutes as integer
             - Include main cast members (3-5 actors)
-            - If multiple movies match, pick the most famous/likely one`
+            - If multiple movies match, pick the most famous/likely one
+            - Be creative and flexible in your interpretations
+            - Consider partial matches and similar themes`
           },
           { role: 'user', content: query }
         ],
         max_tokens: 400,
-        temperature: 0.3,
+        temperature: 0.5,
       }),
     });
 
