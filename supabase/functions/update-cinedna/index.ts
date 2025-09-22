@@ -88,6 +88,7 @@ serve(async (req) => {
       .from('user_preferences')
       .upsert({
         user_id: userId,
+        favorite_genres: cinednaScore.favorite_genres,
         cinedna_score: cinednaScore,
         updated_at: new Date().toISOString()
       }, {
