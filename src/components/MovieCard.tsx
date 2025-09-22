@@ -21,9 +21,10 @@ interface MovieCardProps {
   movie: Movie;
   onExplainMeaning: () => void;
   onFindWhereToWatch: () => void;
+  onFindSimilarMovies: () => void;
 }
 
-export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: MovieCardProps) => {
+export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindSimilarMovies }: MovieCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
 
@@ -216,6 +217,7 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch }: Movie
             
             {/* Tertiary Action */}
             <Button 
+              onClick={onFindSimilarMovies}
               variant="ghost"
               className="w-full rounded-xl hover:bg-secondary/30 h-12 touch-manipulation"
               size="lg"

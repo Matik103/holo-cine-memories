@@ -4,15 +4,16 @@ import { MemorySearch } from "./MemorySearch";
 import { MovieCard, Movie } from "./MovieCard";
 import { MovieExplanation } from "./MovieExplanation";
 import { StreamingAvailability } from "./StreamingAvailability";
+import { SimilarMovies } from "./SimilarMovies";
 import { LandingPage } from "./LandingPage";
-import { initializeOpenAI, identifyMovie, explainMovie, getStreamingOptions } from "@/lib/openai";
+import { initializeOpenAI, identifyMovie, explainMovie, getStreamingOptions, findSimilarMovies } from "@/lib/openai";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Brain, User, Compass, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
-type ViewState = 'search' | 'movie-details' | 'explanation' | 'streaming';
+type ViewState = 'search' | 'movie-details' | 'explanation' | 'streaming' | 'similar-movies';
 
 interface StreamingOption {
   platform: string;
@@ -35,6 +36,7 @@ export const CineMind = () => {
     symbolism: string;
   } | null>(null);
   const [streamingOptions, setStreamingOptions] = useState<StreamingOption[]>([]);
+  const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -298,6 +300,57 @@ export const CineMind = () => {
     setCurrentView('movie-details');
     setMovieExplanation(null);
     setStreamingOptions([]);
+    setSimilarMovies([]);
+  };
+
+  const handleFindSimilarMovies = async () => {
+    if (!currentMovie) return;
+    
+    setIsLoading(true);
+    setLoadingMessage("Finding similar movies...");
+    
+    try {
+      // For now, we'll create a simple similar movies list based on genre and year
+      // In a real implementation, you'd call an API or use a recommendation service
+      const similarMoviesData = await findSimilarMovies(currentMovie);
+      
+      if (similarMoviesData && similarMoviesData.length > 0) {
+        setSimilarMovies(similarMoviesData);
+        setCurrentView('similar-movies');
+        toast({
+          title: "Similar Movies Found!",
+          description: `Found ${similarMoviesData.length} movies similar to ${currentMovie.title}`
+        });
+      } else {
+        toast({
+          title: "No Similar Movies",
+          description: "No similar movies found for this movie.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('Similar movies error:', error);
+      
+      let errorMessage = "Failed to find similar movies. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes('CORS')) {
+          errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+        } else if (error.message.includes('API')) {
+          errorMessage = "AI service error. Please try again.";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        }
+      }
+      
+      toast({
+        title: "Similar Movies Search Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+      setLoadingMessage("");
+    }
   };
 
   // Show landing page first
@@ -396,6 +449,7 @@ export const CineMind = () => {
               movie={currentMovie}
               onExplainMeaning={handleExplainMeaning}
               onFindWhereToWatch={handleFindWhereToWatch}
+              onFindSimilarMovies={handleFindSimilarMovies}
             />
             <div className="flex justify-center">
               <button
@@ -421,6 +475,18 @@ export const CineMind = () => {
             movieTitle={currentMovie.title}
             options={streamingOptions}
             onBack={handleBackToMovie}
+          />
+        )}
+
+        {currentView === 'similar-movies' && currentMovie && (
+          <SimilarMovies
+            originalMovie={currentMovie}
+            similarMovies={similarMovies}
+            onBack={handleBackToMovie}
+            onMovieSelect={(movie) => {
+              setCurrentMovie(movie);
+              setCurrentView('movie-details');
+            }}
           />
         )}
       </div>
