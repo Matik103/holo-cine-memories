@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowLeft, Play, Star, Clock, Users } from "lucide-react";
+import { ArrowLeft, Play, Star, Clock, Users, Calendar, User, Clapperboard, Film } from "lucide-react";
 import { Movie } from "./MovieCard";
 
 interface SimilarMoviesProps {
