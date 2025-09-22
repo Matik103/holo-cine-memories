@@ -85,8 +85,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
             {[
               "Movie with spinning dreams",
               "Robot falls in love with human", 
-              "Time loop same day",
-              "Talking toys come alive"
+              "Time loop same day"
             ].map((example) => (
               <Button
                 key={example}

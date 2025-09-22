@@ -656,16 +656,28 @@ All colors MUST be HSL for neural network-inspired design.
     }
   }
 
-  /* Cinematic overlay for depth */
-  .cinematic-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-      radial-gradient(ellipse at top left, rgba(200, 100% 60%, 0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at bottom right, rgba(300, 100% 65%, 0.05) 0%, transparent 50%);
-    pointer-events: none;
-  }
+/* Cinematic overlay for depth */
+.cinematic-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse at top left, rgba(200, 100% 60%, 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, rgba(300, 100% 65%, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Animation delay utilities for loading dots */
+.animation-delay-0 {
+  animation-delay: 0ms;
+}
+
+.animation-delay-150 {
+  animation-delay: 150ms;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
 }

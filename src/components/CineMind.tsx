@@ -27,6 +27,7 @@ export const CineMind = () => {
   const [showLanding, setShowLanding] = useState(true);
   const [currentView, setCurrentView] = useState<ViewState>('search');
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
   const [movieExplanation, setMovieExplanation] = useState<{
     simple: string;
@@ -34,6 +35,7 @@ export const CineMind = () => {
     symbolism: string;
   } | null>(null);
   const [streamingOptions, setStreamingOptions] = useState<StreamingOption[]>([]);
+  const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -95,9 +97,22 @@ export const CineMind = () => {
       
       if (openaiApiKey) {
         initializeOpenAI(openaiApiKey);
+        console.log('OpenAI API key loaded successfully');
+      } else {
+        console.warn('No OpenAI API key found in secrets');
+        toast({
+          title: "API Configuration Issue",
+          description: "Unable to load AI services. Please try refreshing the page.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Error fetching OpenAI API key:', error);
+      toast({
+        title: "Connection Error",
+        description: "Unable to connect to AI services. Please check your internet connection and try again.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -108,6 +123,9 @@ export const CineMind = () => {
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
+    setLoadingMessage("Analyzing your description...");
+    setRetryCount(0);
+    
     try {
       const rawMovie = await identifyMovie(query);
       if (rawMovie) {
@@ -138,13 +156,30 @@ export const CineMind = () => {
         });
       }
     } catch (error) {
+      console.error('Search error:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = "Something went wrong";
+      if (error instanceof Error) {
+        if (error.message.includes('CORS')) {
+          errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+        } else if (error.message.includes('API')) {
+          errorMessage = "AI service error. Please try again.";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Something went wrong",
+        title: "Search Failed",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -152,20 +187,46 @@ export const CineMind = () => {
     if (!currentMovie) return;
     
     setIsLoading(true);
+    setLoadingMessage("Analyzing movie themes and symbolism...");
+    
     try {
       const explanation = await explainMovie(currentMovie.title);
       if (explanation) {
         setMovieExplanation(explanation);
         setCurrentView('explanation');
+        toast({
+          title: "Explanation Ready!",
+          description: "AI analysis complete. Explore the different perspectives below."
+        });
+      } else {
+        toast({
+          title: "No Explanation Available",
+          description: "Unable to generate explanation for this movie.",
+          variant: "destructive"
+        });
       }
     } catch (error) {
+      console.error('Explanation error:', error);
+      
+      let errorMessage = "Failed to explain movie. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes('CORS')) {
+          errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+        } else if (error.message.includes('API')) {
+          errorMessage = "AI service error. Please try again.";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        }
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to explain movie. Please try again.",
+        title: "Explanation Failed",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -173,18 +234,46 @@ export const CineMind = () => {
     if (!currentMovie) return;
     
     setIsLoading(true);
+    setLoadingMessage("Searching streaming platforms...");
+    
     try {
       const options = await getStreamingOptions(currentMovie.title);
-      setStreamingOptions(options);
-      setCurrentView('streaming');
+      if (options && options.length > 0) {
+        setStreamingOptions(options);
+        setCurrentView('streaming');
+        toast({
+          title: "Streaming Options Found!",
+          description: `Found ${options.length} ways to watch ${currentMovie.title}`
+        });
+      } else {
+        toast({
+          title: "No Streaming Options",
+          description: "No streaming options found for this movie.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
+      console.error('Streaming error:', error);
+      
+      let errorMessage = "Failed to find streaming options. Please try again.";
+      if (error instanceof Error) {
+        if (error.message.includes('CORS')) {
+          errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+        } else if (error.message.includes('API')) {
+          errorMessage = "AI service error. Please try again.";
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        }
+      }
+      
       toast({
-        title: "Error",
-        description: "Failed to find streaming options. Please try again.",
+        title: "Streaming Search Failed",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
+      setLoadingMessage("");
     }
   };
 
@@ -326,15 +415,22 @@ export const CineMind = () => {
         )}
       </div>
 
-      {/* Loading Overlay */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="neural-card p-8 flex flex-col items-center space-y-4">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-            <p className="text-muted-foreground">Processing your memory...</p>
-          </div>
-        </div>
-      )}
+              {/* Loading Overlay */}
+              {isLoading && (
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
+                  <div className="neural-card p-8 flex flex-col items-center space-y-4">
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    <p className="text-muted-foreground">
+                      {loadingMessage || "Processing your memory..."}
+                    </p>
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-0" />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-150" />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-300" />
+                    </div>
+                  </div>
+                </div>
+              )}
     </div>
   );
 };
