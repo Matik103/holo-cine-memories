@@ -85,14 +85,15 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
             {[
               "Movie with spinning dreams",
               "Robot falls in love with human", 
-              "Time loop same day"
+              "Time loop same day",
+              "Talking toys come alive"
             ].map((example) => (
               <Button
                 key={example}
                 variant="ghost"
                 size="sm"
                 onClick={() => setQuery(example)}
-                className="text-xs bg-secondary/30 hover:bg-secondary/60 rounded-full p-2 h-auto"
+                className="text-xs bg-secondary/30 hover:bg-secondary/60 rounded-full p-2 h-auto text-center break-words"
                 disabled={isLoading}
               >
                 {example}
