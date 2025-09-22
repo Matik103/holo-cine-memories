@@ -37,6 +37,7 @@ export const CineMind = () => {
   } | null>(null);
   const [streamingOptions, setStreamingOptions] = useState<StreamingOption[]>([]);
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
+  const [previousView, setPreviousView] = useState<ViewState | null>(null);
   const [retryCount, setRetryCount] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -219,6 +220,7 @@ export const CineMind = () => {
       const explanation = await explainMovie(currentMovie.title);
       if (explanation) {
         setMovieExplanation(explanation);
+        setPreviousView('movie-details');
         setCurrentView('explanation');
         toast({
           title: "Explanation Ready!",
@@ -266,6 +268,7 @@ export const CineMind = () => {
       const options = await getStreamingOptions(currentMovie.title);
       if (options && options.length > 0) {
         setStreamingOptions(options);
+        setPreviousView('movie-details');
         setCurrentView('streaming');
         toast({
           title: "Streaming Options Found!",
@@ -311,10 +314,15 @@ export const CineMind = () => {
   };
 
   const handleBackToMovie = () => {
-    setCurrentView('movie-details');
+    // Go back to the previous view, or movie-details if no previous view
+    const targetView = previousView || 'movie-details';
+    setCurrentView(targetView);
     setMovieExplanation(null);
     setStreamingOptions([]);
-    setSimilarMovies([]);
+    if (targetView !== 'similar-movies') {
+      setSimilarMovies([]);
+    }
+    setPreviousView(null);
   };
 
   const handleFindSimilarMovies = async () => {
@@ -330,6 +338,7 @@ export const CineMind = () => {
       
       if (similarMoviesData && similarMoviesData.length > 0) {
         setSimilarMovies(similarMoviesData);
+        setPreviousView('movie-details');
         setCurrentView('similar-movies');
         toast({
           title: "Similar Movies Found!",
@@ -498,6 +507,7 @@ export const CineMind = () => {
             similarMovies={similarMovies}
             onBack={handleBackToMovie}
             onMovieSelect={(movie) => {
+              setPreviousView('similar-movies');
               setCurrentMovie(movie);
               setCurrentView('movie-details');
             }}

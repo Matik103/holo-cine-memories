@@ -11,6 +11,9 @@ interface SimilarMoviesProps {
 }
 
 export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSelect }: SimilarMoviesProps) => {
+  // Debug logging
+  console.log('SimilarMovies component received:', { originalMovie, similarMovies });
+  
   return (
     <div className="w-full max-w-6xl mx-auto space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-0">
       {/* Header - Mobile Optimized */}
@@ -46,9 +49,19 @@ export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSel
                   src={movie.poster} 
                   alt={movie.title} 
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                  onError={(e) => {
+                    console.log('Poster failed to load for:', movie.title, 'URL:', movie.poster);
+                    e.currentTarget.style.display = 'none';
+                  }}
+                  onLoad={() => {
+                    console.log('Poster loaded successfully for:', movie.title);
+                  }}
                 />
               ) : (
-                <Film className="w-12 h-12 opacity-30" />
+                <div className="flex flex-col items-center gap-2">
+                  <Film className="w-12 h-12 opacity-30" />
+                  <span className="text-xs opacity-50">No poster</span>
+                </div>
               )}
               
               {/* Play Overlay */}
