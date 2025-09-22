@@ -84,7 +84,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
             {[
               "Movie with spinning dreams",
-              "Robot falls in love with human", 
+              "Robot loves human", 
               "Time loop same day",
               "Talking toys come alive"
             ].map((example) => (
