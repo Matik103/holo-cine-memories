@@ -63,8 +63,15 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
           <div className="flex flex-col w-full h-full bg-black">
-            {/* Dedicated Header Area with Close Button */}
-            <div className="flex items-center justify-between w-full h-16 bg-black/90 backdrop-blur-sm border-b border-white/10 px-4 z-50">
+            {/* Dedicated Header Area with Close Button - Safe area support */}
+            <div 
+              className="flex items-center justify-between w-full bg-black/90 backdrop-blur-sm border-b border-white/10 px-4 z-50"
+              style={{
+                height: 'calc(64px + env(safe-area-inset-top, 0px))',
+                paddingTop: 'env(safe-area-inset-top, 0px)',
+                minHeight: '64px',
+              }}
+            >
               <div className="flex-1">
                 <h3 className="text-white text-sm font-medium truncate pr-4">
                   {title} Trailer
@@ -80,8 +87,13 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
               </Button>
             </div>
             
-            {/* Error Content Area */}
-            <div className="flex-1 flex items-center justify-center p-6 bg-black">
+            {/* Error Content Area - Safe area adjustment */}
+            <div 
+              className="flex-1 flex items-center justify-center p-6 bg-black"
+              style={{
+                height: 'calc(100vh - 64px - env(safe-area-inset-top, 0px))',
+              }}
+            >
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center">
                   <X className="w-8 h-8 text-red-500" />
@@ -99,8 +111,15 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
         <div className="flex flex-col w-full h-full bg-black">
-          {/* Dedicated Header Area with Close Button */}
-          <div className="flex items-center justify-between w-full h-16 bg-black/90 backdrop-blur-sm border-b border-white/10 px-4 z-50">
+          {/* Dedicated Header Area with Close Button - Safe area support */}
+          <div 
+            className="flex items-center justify-between w-full bg-black/90 backdrop-blur-sm border-b border-white/10 px-4 z-50"
+            style={{
+              height: 'calc(64px + env(safe-area-inset-top, 0px))',
+              paddingTop: 'env(safe-area-inset-top, 0px)',
+              minHeight: '64px',
+            }}
+          >
             <div className="flex-1">
               <h3 className="text-white text-sm font-medium truncate pr-4">
                 {title} Trailer
@@ -116,8 +135,13 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
             </Button>
           </div>
           
-          {/* Video Player Area - Reduced height */}
-          <div className="flex-1 relative bg-black">
+          {/* Video Player Area - Reduced height with safe area adjustment */}
+          <div 
+            className="flex-1 relative bg-black"
+            style={{
+              height: 'calc(100vh - 64px - env(safe-area-inset-top, 0px))',
+            }}
+          >
             {/* Loading State */}
             {isLoading && (
               <div className="absolute inset-0 bg-black flex items-center justify-center z-10">
