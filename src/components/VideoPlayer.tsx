@@ -63,24 +63,36 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
           <div className="relative w-full h-full bg-black">
-            {/* Close Button - Aligned with trailer title */}
+            {/* Close Button - Highly visible and always on top */}
             <div 
-              className="fixed right-0 z-[99999] p-2 sm:p-4"
+              className="fixed right-0 z-[999999] p-2 sm:p-4"
               style={{
                 // Position at the same height as YouTube's title bar
                 top: 'env(safe-area-inset-top, 44px)',
                 right: 'env(safe-area-inset-right, 8px)',
                 maxWidth: 'calc(100vw - 16px)',
                 maxHeight: 'calc(100vh - 16px)',
+                // Force this element to be on top of everything
+                position: 'fixed',
+                pointerEvents: 'auto',
               }}
             >
               <Button
                 onClick={handleClose}
                 variant="ghost"
                 size="sm"
-                className="w-12 h-12 sm:w-10 sm:h-10 p-0 text-white hover:bg-white/20 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 shadow-lg touch-manipulation"
+                className="w-14 h-14 sm:w-12 sm:h-12 p-0 text-white hover:bg-white/30 rounded-full bg-red-600 hover:bg-red-700 border-2 border-white shadow-2xl touch-manipulation"
+                style={{
+                  // Ensure button is always visible and clickable
+                  position: 'relative',
+                  zIndex: 999999,
+                  pointerEvents: 'auto',
+                  // Add a strong background to make it stand out
+                  backgroundColor: 'rgba(220, 38, 38, 0.9)',
+                  backdropFilter: 'blur(8px)',
+                }}
               >
-                <X className="w-6 h-6 sm:w-5 sm:h-5" />
+                <X className="w-7 h-7 sm:w-6 sm:h-6 font-bold" />
               </Button>
             </div>
             
@@ -102,24 +114,36 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
         <div className="relative w-full h-full bg-black">
-          {/* Close Button - Aligned with trailer title */}
+          {/* Close Button - Highly visible and always on top */}
           <div 
-            className="fixed right-0 z-[99999] p-2 sm:p-4"
+            className="fixed right-0 z-[999999] p-2 sm:p-4"
             style={{
               // Position at the same height as YouTube's title bar
               top: 'env(safe-area-inset-top, 44px)',
               right: 'env(safe-area-inset-right, 8px)',
               maxWidth: 'calc(100vw - 16px)',
               maxHeight: 'calc(100vh - 16px)',
+              // Force this element to be on top of everything
+              position: 'fixed',
+              pointerEvents: 'auto',
             }}
           >
             <Button
               onClick={handleClose}
               variant="ghost"
               size="sm"
-              className="w-12 h-12 sm:w-10 sm:h-10 p-0 text-white hover:bg-white/20 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 shadow-lg touch-manipulation"
+              className="w-14 h-14 sm:w-12 sm:h-12 p-0 text-white hover:bg-white/30 rounded-full bg-red-600 hover:bg-red-700 border-2 border-white shadow-2xl touch-manipulation"
+              style={{
+                // Ensure button is always visible and clickable
+                position: 'relative',
+                zIndex: 999999,
+                pointerEvents: 'auto',
+                // Add a strong background to make it stand out
+                backgroundColor: 'rgba(220, 38, 38, 0.9)',
+                backdropFilter: 'blur(8px)',
+              }}
             >
-              <X className="w-6 h-6 sm:w-5 sm:h-5" />
+              <X className="w-7 h-7 sm:w-6 sm:h-6 font-bold" />
             </Button>
           </div>
           
