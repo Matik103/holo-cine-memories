@@ -9,11 +9,9 @@ import { LandingPage } from "./LandingPage";
 import { initializeOpenAI, identifyMovie, explainMovie, getStreamingOptions, findSimilarMovies } from "@/lib/openai";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, User, Compass, Menu, Settings } from "lucide-react";
+import { Brain, User, Compass, Menu } from "lucide-react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-import { PrivacyPolicy } from "./PrivacyPolicy";
-import { useAccessibility } from "@/contexts/AccessibilityContext";
 
 type ViewState = 'search' | 'movie-details' | 'explanation' | 'streaming' | 'similar-movies';
 
@@ -44,7 +42,6 @@ export const CineMind = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { settings } = useAccessibility();
 
   useEffect(() => {
     // Check authentication state
@@ -187,13 +184,13 @@ export const CineMind = () => {
             title: "No Match Found",
             description: "Couldn't identify a movie from your description. Try being more specific or describing key scenes, actors, or plot points.",
             variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "No Match Found",
-          description: "Try describing the movie differently or with more details.",
-          variant: "destructive"
-        });
+          });
+        } else {
+          toast({
+            title: "No Match Found",
+            description: "Try describing the movie differently or with more details.",
+            variant: "destructive"
+          });
         }
       }
     } catch (error) {
@@ -422,14 +419,9 @@ export const CineMind = () => {
   }
 
   return (
-    <div 
-      className={`min-h-screen p-2 sm:p-4 relative ${settings.highContrast ? 'high-contrast' : ''} ${settings.largeTouchTargets ? 'large-touch-targets' : ''} ${settings.reducedMotion ? 'reduced-motion' : ''}`}
-      role="application" 
-      aria-label="CineMind movie identification app"
-      style={{ '--text-scale': settings.textSize } as React.CSSProperties}
-    >
+    <div className="min-h-screen p-2 sm:p-4 relative">
       {/* Background Neural Network Effect */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
         <div className="absolute top-1/3 right-1/3 w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
         <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30"></div>
@@ -437,67 +429,39 @@ export const CineMind = () => {
       </div>
 
       {/* Header */}
-      <header className="max-w-6xl mx-auto mb-4 sm:mb-8 px-2" role="banner">
+      <div className="max-w-6xl mx-auto mb-4 sm:mb-8 px-2">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 sm:gap-3">
-            <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-primary" aria-hidden="true" />
+            <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
             <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               CineMind
             </h1>
           </div>
 
-          <nav className="flex items-center gap-1 sm:gap-2" role="navigation" aria-label="Main navigation">
+          <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
               onClick={() => navigate("/discover")}
-              className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4 min-h-[44px]"
-              aria-label="Navigate to Discover Movies page"
-              role="button"
-              tabIndex={0}
+              className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
             >
-              <Compass className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
+              <Compass className="w-3 h-3 sm:w-4 sm:h-4" />
               <span className="hidden sm:inline">Discover</span>
             </Button>
 
             {user ? (
-              <DropdownMenu role="menu" aria-label="User account menu">
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 min-h-[44px]"
-                    aria-label="Open user menu"
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <User className="w-3 h-3 sm:w-4 sm:h-4" aria-hidden="true" />
-                    <Menu className="w-2 h-2 sm:w-3 sm:h-3" aria-hidden="true" />
+                  <Button variant="ghost" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4">
+                    <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Menu className="w-2 h-2 sm:w-3 sm:h-3" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" role="menu" aria-label="User menu">
-                  <DropdownMenuItem 
-                    onClick={() => navigate("/profile")}
-                    role="menuitem"
-                    tabIndex={0}
-                    aria-label="Navigate to Profile & CineDNA page"
-                  >
-                    <User className="w-4 h-4 mr-2" aria-hidden="true" />
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => navigate("/profile")}>
+                    <User className="w-4 h-4 mr-2" />
                     Profile & CineDNA
                   </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => navigate("/settings")}
-                    role="menuitem"
-                    tabIndex={0}
-                    aria-label="Navigate to Settings page"
-                  >
-                    <Settings className="w-4 h-4 mr-2" aria-hidden="true" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem 
-                    onClick={() => supabase.auth.signOut()}
-                    role="menuitem"
-                    tabIndex={0}
-                    aria-label="Sign out of account"
-                  >
+                  <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -505,32 +469,29 @@ export const CineMind = () => {
             ) : (
               <Button
                 onClick={() => navigate("/auth")}
-                className="neural-button text-xs sm:text-sm px-2 sm:px-4 min-h-[44px]"
-                aria-label="Sign in to CineMind"
-                role="button"
-                tabIndex={0}
+                className="neural-button text-xs sm:text-sm px-2 sm:px-4"
               >
                 <span className="hidden sm:inline">Sign In</span>
                 <span className="sm:hidden">Login</span>
               </Button>
             )}
-          </nav>
+          </div>
         </div>
         <p className="text-center text-muted-foreground text-xs sm:text-sm px-2">
           Your Personal AI Movie Memory Companion
         </p>
-      </header>
+      </div>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto" role="main" aria-label="Main content">
+      <div className="max-w-6xl mx-auto">
         {currentView === 'search' && (
-          <section className="flex flex-col items-center justify-center space-y-8" aria-label="Movie search section">
+          <div className="flex flex-col items-center justify-center space-y-8">
             <MemorySearch onSearch={handleSearch} isLoading={isLoading} />
-          </section>
+          </div>
         )}
 
         {currentView === 'movie-details' && currentMovie && (
-          <section className="space-y-6" aria-label="Movie details section">
+          <div className="space-y-6">
             <MovieCard
               movie={currentMovie}
               onExplainMeaning={handleExplainMeaning}
@@ -540,70 +501,53 @@ export const CineMind = () => {
             <div className="flex justify-center">
               <button
                 onClick={handleBackToSearch}
-                className="text-muted-foreground hover:text-foreground transition-colors min-h-[44px] px-4 py-2 rounded-lg hover:bg-secondary/30"
-                aria-label="Return to search page"
-                role="button"
-                tabIndex={0}
+                className="text-muted-foreground hover:text-foreground transition-colors"
               >
                 ← Back to Search
               </button>
             </div>
-          </section>
+          </div>
         )}
 
         {currentView === 'explanation' && movieExplanation && currentMovie && (
-          <section aria-label="Movie explanation section">
           <MovieExplanation
             movieTitle={currentMovie.title}
             explanation={movieExplanation}
             onBack={handleBackToMovie}
           />
-          </section>
         )}
 
         {currentView === 'streaming' && currentMovie && (
-          <section aria-label="Streaming availability section">
           <StreamingAvailability
             movieTitle={currentMovie.title}
             options={streamingOptions}
             onBack={handleBackToMovie}
           />
-          </section>
         )}
 
         {currentView === 'similar-movies' && currentMovie && (
-          <section aria-label="Similar movies section">
-            <SimilarMovies
-              originalMovie={currentMovie}
-              similarMovies={similarMovies}
-              onBack={handleBackToMovie}
-              onMovieSearch={(query) => {
-                // Go back to search view and trigger a search
-                setCurrentView('search');
-                handleSearch(query);
-              }}
-            />
-          </section>
+          <SimilarMovies
+            originalMovie={currentMovie}
+            similarMovies={similarMovies}
+            onBack={handleBackToMovie}
+            onMovieSearch={(query) => {
+              // Go back to search view and trigger a search
+              setCurrentView('search');
+              handleSearch(query);
+            }}
+          />
         )}
-      </main>
+      </div>
 
               {/* Loading Overlay */}
               {isLoading && (
-        <div 
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50"
-          role="status"
-          aria-live="polite"
-          aria-label="Loading content"
-        >
+                <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
                   <div className="neural-card p-8 flex flex-col items-center space-y-4">
-            <div 
-              className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"
-              aria-hidden="true"
-            />
+                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     <p className="text-muted-foreground">
                       {loadingMessage || "Processing your memory..."}
                     </p>
-            <div className="flex space-x-1" aria-hidden="true">
+                    <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-0" />
                       <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-150" />
                       <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-300" />
@@ -611,25 +555,6 @@ export const CineMind = () => {
                   </div>
                 </div>
               )}
-
-      {/* Footer */}
-      <footer className="mt-8 py-4 border-t border-border/50" role="contentinfo">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-muted-foreground">
-            <span>© 2024 CineMind</span>
-            <span>•</span>
-            <span>AI Movie Memory Companion</span>
-            <span>•</span>
-            <Button 
-              variant="link" 
-              className="text-xs p-0 h-auto"
-              onClick={() => navigate("/settings")}
-            >
-              Settings
-            </Button>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };
