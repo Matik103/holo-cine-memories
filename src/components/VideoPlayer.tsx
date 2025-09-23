@@ -66,94 +66,102 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     onClose();
   };
 
-  // Industry standard mobile video player header with guaranteed visibility
+  // Always visible close button with absolute positioning
+  const renderCloseButton = () => (
+    <Button
+      onClick={handleClose}
+      variant="ghost"
+      size="sm"
+      style={{
+        position: 'fixed',
+        top: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+        right: '16px',
+        zIndex: 99999999,
+        width: '48px',
+        height: '48px',
+        minWidth: '48px',
+        minHeight: '48px',
+        borderRadius: '50%',
+        backgroundColor: 'rgba(239, 68, 68, 0.95)',
+        border: '2px solid rgba(255,255,255,0.9)',
+        color: '#ffffff',
+        padding: '0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.2)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        transition: 'all 0.2s ease',
+        cursor: 'pointer',
+        touchAction: 'manipulation',
+        transform: 'translateZ(0)', // Force hardware acceleration
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.98)';
+        e.currentTarget.style.transform = 'translateZ(0) scale(1.1)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.95)';
+        e.currentTarget.style.transform = 'translateZ(0) scale(1)';
+      }}
+      onTouchStart={(e) => {
+        e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.98)';
+        e.currentTarget.style.transform = 'translateZ(0) scale(0.95)';
+      }}
+      onTouchEnd={(e) => {
+        e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.95)';
+        e.currentTarget.style.transform = 'translateZ(0) scale(1)';
+      }}
+    >
+      <X 
+        style={{
+          width: '22px',
+          height: '22px',
+          strokeWidth: '3px',
+          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+        }}
+      />
+    </Button>
+  );
+
+  // Simplified header for title only
   const renderHeader = () => (
     <div 
-      className="flex items-center justify-between w-full"
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        zIndex: 999999,
-        background: 'linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.3) 100%)',
+        right: '80px', // Leave space for close button
+        zIndex: 99999998,
+        background: 'linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.2) 100%)',
         backdropFilter: 'blur(8px)',
         WebkitBackdropFilter: 'blur(8px)',
-        height: 'calc(60px + env(safe-area-inset-top, 20px))',
-        paddingTop: 'calc(env(safe-area-inset-top, 20px) + 8px)',
-        paddingBottom: '8px',
-        paddingLeft: '16px',
-        paddingRight: '16px',
-        minHeight: '60px',
-        boxShadow: '0 2px 20px rgba(0,0,0,0.8)',
+        height: 'calc(60px + env(safe-area-inset-top, 0px))',
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+        paddingBottom: '12px',
+        paddingLeft: '20px',
+        paddingRight: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        boxShadow: '0 2px 20px rgba(0,0,0,0.6)',
       }}
     >
-      <div className="flex-1 pr-4">
-        <h3 
-          className="font-medium truncate"
-          style={{
-            color: '#ffffff',
-            fontSize: '16px',
-            lineHeight: '1.2',
-            textShadow: '0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6)',
-            fontWeight: '500',
-          }}
-        >
-          {title || 'Movie'} Trailer
-        </h3>
-      </div>
-      <Button
-        onClick={handleClose}
-        variant="ghost"
-        size="sm"
+      <h3 
         style={{
-          position: 'relative',
-          zIndex: 1000000,
-          width: '44px',
-          height: '44px',
-          minWidth: '44px',
-          minHeight: '44px',
-          borderRadius: '50%',
-          backgroundColor: 'rgba(239, 68, 68, 0.9)',
-          border: '2px solid rgba(255,255,255,0.8)',
           color: '#ffffff',
-          padding: '0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-          transition: 'all 0.2s ease',
-          cursor: 'pointer',
-          touchAction: 'manipulation',
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.95)';
-          e.currentTarget.style.transform = 'scale(1.05)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
-          e.currentTarget.style.transform = 'scale(1)';
-        }}
-        onTouchStart={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.95)';
-          e.currentTarget.style.transform = 'scale(0.95)';
-        }}
-        onTouchEnd={(e) => {
-          e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
-          e.currentTarget.style.transform = 'scale(1)';
+          fontSize: '16px',
+          lineHeight: '1.3',
+          textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7)',
+          fontWeight: '600',
+          margin: '0',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
         }}
       >
-        <X 
-          style={{
-            width: '20px',
-            height: '20px',
-            strokeWidth: '2.5px',
-            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
-          }}
-        />
-      </Button>
+        {title || 'Movie'} Trailer
+      </h3>
     </div>
   );
 
@@ -161,16 +169,18 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
-          <div className="flex flex-col w-full h-full bg-black">
-            {/* Unified Header - Always shows */}
+          <div className="flex flex-col w-full h-full bg-black relative">
+            {/* Always visible close button */}
+            {renderCloseButton()}
+            
+            {/* Header with title */}
             {renderHeader()}
             
-            {/* Error Content Area - Industry standard spacing */}
+            {/* Error Content Area */}
             <div 
               className="flex-1 flex items-center justify-center p-6 bg-black"
               style={{
-                height: 'calc(100vh - 60px - env(safe-area-inset-top, 20px) - 16px)',
-                marginTop: 'calc(60px + env(safe-area-inset-top, 20px) + 8px)',
+                height: '100vh',
                 width: '100%',
               }}
             >
@@ -190,16 +200,18 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
-        <div className="flex flex-col w-full h-full bg-black">
-          {/* Unified Header - Always shows */}
+        <div className="flex flex-col w-full h-full bg-black relative">
+          {/* Always visible close button */}
+          {renderCloseButton()}
+          
+          {/* Header with title */}
           {renderHeader()}
           
-            {/* Video Player Area - Industry standard spacing */}
+          {/* Video Player Area */}
           <div 
             className="flex-1 relative bg-black"
             style={{
-              height: 'calc(100vh - 60px - env(safe-area-inset-top, 20px) - 16px)',
-              marginTop: 'calc(60px + env(safe-area-inset-top, 20px) + 8px)',
+              height: '100vh',
               width: '100%',
             }}
           >
