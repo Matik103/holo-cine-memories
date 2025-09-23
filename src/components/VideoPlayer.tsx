@@ -37,6 +37,8 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
   const [videoId, setVideoId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [controlsTimeout, setControlsTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Extract YouTube video ID from URL with better error handling
   useEffect(() => {
@@ -52,21 +54,43 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     }
   }, [videoUrl, isOpen]);
 
-  // Reset states when modal opens
+  // Reset states when modal opens and manage auto-hide controls
   useEffect(() => {
     if (isOpen) {
       setIsLoading(true);
       setHasError(false);
-      // Debug logging to help identify issues
+      setShowControls(true);
+      
+      // Auto-hide controls after 4 seconds (industry standard)
+      if (controlsTimeout) clearTimeout(controlsTimeout);
+      const timeout = setTimeout(() => {
+        setShowControls(false);
+      }, 4000);
+      setControlsTimeout(timeout);
+      
       console.log('VideoPlayer opened:', { videoUrl, title, isOpen });
     }
+    
+    return () => {
+      if (controlsTimeout) clearTimeout(controlsTimeout);
+    };
   }, [isOpen, videoUrl, title]);
+
+  // Show controls on user interaction
+  const handleShowControls = () => {
+    setShowControls(true);
+    if (controlsTimeout) clearTimeout(controlsTimeout);
+    const timeout = setTimeout(() => {
+      setShowControls(false);
+    }, 4000);
+    setControlsTimeout(timeout);
+  };
 
   const handleClose = () => {
     onClose();
   };
 
-  // Always visible close button with absolute positioning
+  // Industry standard: Always visible close button (Netflix/YouTube style)
   const renderCloseButton = () => (
     <Button
       onClick={handleClose}
@@ -74,90 +98,91 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       size="sm"
       style={{
         position: 'fixed',
-        top: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+        top: 'calc(env(safe-area-inset-top, 0px) + 16px)',
         right: '16px',
-        zIndex: 99999999,
-        width: '48px',
-        height: '48px',
-        minWidth: '48px',
-        minHeight: '48px',
+        zIndex: 999999999, // Maximum priority - never hidden
+        width: '44px',
+        height: '44px',
+        minWidth: '44px',
+        minHeight: '44px',
         borderRadius: '50%',
-        backgroundColor: 'rgba(239, 68, 68, 0.95)',
-        border: '2px solid rgba(255,255,255,0.9)',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        border: '2px solid rgba(255, 255, 255, 0.3)',
         color: '#ffffff',
         padding: '0',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.2)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.6)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         transition: 'all 0.2s ease',
         cursor: 'pointer',
         touchAction: 'manipulation',
-        transform: 'translateZ(0)', // Force hardware acceleration
+        transform: 'translateZ(0)',
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.98)';
-        e.currentTarget.style.transform = 'translateZ(0) scale(1.1)';
+        e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
+        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.8)';
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.95)';
-        e.currentTarget.style.transform = 'translateZ(0) scale(1)';
+        e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
       }}
       onTouchStart={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.98)';
+        e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.9)';
         e.currentTarget.style.transform = 'translateZ(0) scale(0.95)';
       }}
       onTouchEnd={(e) => {
-        e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.95)';
+        e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
         e.currentTarget.style.transform = 'translateZ(0) scale(1)';
       }}
     >
       <X 
         style={{
-          width: '22px',
-          height: '22px',
-          strokeWidth: '3px',
-          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.9))',
+          width: '20px',
+          height: '20px',
+          strokeWidth: '2.5px',
+          filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))',
         }}
       />
     </Button>
   );
 
-  // Simplified header for title only
-  const renderHeader = () => (
+  // Auto-hiding title overlay (Netflix/YouTube style)
+  const renderTitleOverlay = () => (
     <div 
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
-        right: '80px', // Leave space for close button
+        right: 0,
         zIndex: 99999998,
-        background: 'linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.2) 100%)',
-        backdropFilter: 'blur(8px)',
-        WebkitBackdropFilter: 'blur(8px)',
-        height: 'calc(60px + env(safe-area-inset-top, 0px))',
-        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 12px)',
-        paddingBottom: '12px',
+        background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)',
+        height: 'calc(80px + env(safe-area-inset-top, 0px))',
+        paddingTop: 'calc(env(safe-area-inset-top, 0px) + 16px)',
         paddingLeft: '20px',
-        paddingRight: '20px',
+        paddingRight: '80px', // Space for close button
         display: 'flex',
-        alignItems: 'center',
-        boxShadow: '0 2px 20px rgba(0,0,0,0.6)',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-start',
+        opacity: showControls ? 1 : 0,
+        transition: 'opacity 0.3s ease',
+        pointerEvents: showControls ? 'auto' : 'none',
       }}
     >
       <h3 
         style={{
           color: '#ffffff',
-          fontSize: '16px',
+          fontSize: '15px',
           lineHeight: '1.3',
-          textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 12px rgba(0,0,0,0.7)',
+          textShadow: '0 2px 8px rgba(0,0,0,0.9)',
           fontWeight: '600',
           margin: '0',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
+          maxWidth: '100%',
         }}
       >
         {title || 'Movie'} Trailer
@@ -169,12 +194,16 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
-          <div className="flex flex-col w-full h-full bg-black relative">
-            {/* Always visible close button */}
+          <div 
+            className="flex flex-col w-full h-full bg-black relative"
+            onClick={handleShowControls}
+            onTouchStart={handleShowControls}
+          >
+            {/* Always visible close button - Industry standard */}
             {renderCloseButton()}
             
-            {/* Header with title */}
-            {renderHeader()}
+            {/* Auto-hiding title overlay */}
+            {renderTitleOverlay()}
             
             {/* Error Content Area */}
             <div 
@@ -200,12 +229,16 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
-        <div className="flex flex-col w-full h-full bg-black relative">
-          {/* Always visible close button */}
+        <div 
+          className="flex flex-col w-full h-full bg-black relative"
+          onClick={handleShowControls}
+          onTouchStart={handleShowControls}
+        >
+          {/* Always visible close button - Industry standard */}
           {renderCloseButton()}
           
-          {/* Header with title */}
-          {renderHeader()}
+          {/* Auto-hiding title overlay */}
+          {renderTitleOverlay()}
           
           {/* Video Player Area */}
           <div 
