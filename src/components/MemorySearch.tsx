@@ -44,7 +44,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
           <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent px-2">
             What movie do you remember?
           </h1>
-          <p className="text-muted-foreground text-sm sm:text-base px-4">
+          <p id="search-help" className="text-muted-foreground text-sm sm:text-base px-4">
             Describe any scene, quote, feeling, or half-memory...
           </p>
         </div>
@@ -57,15 +57,22 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
               placeholder="That movie where a god loses his eyes and a slave helps him fight..."
               className="memory-input min-h-24 text-lg resize-none rounded-xl"
               disabled={isLoading}
+              aria-label="Movie search description"
+              aria-describedby="search-help"
+              role="textbox"
+              tabIndex={0}
             />
             
             <div className="flex gap-3">
               <Button
                 type="submit"
                 disabled={!query.trim() || isLoading}
-                className="neural-button flex-1 h-12 rounded-xl text-sm sm:text-base"
+                className="neural-button flex-1 h-12 rounded-xl text-sm sm:text-base min-h-[44px]"
+                aria-label={isLoading ? "Searching for movie" : "Search for movie"}
+                role="button"
+                tabIndex={0}
               >
-                <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />
                 <span className="hidden sm:inline">{isLoading ? "Searching Memory..." : "Recall Movie"}</span>
                 <span className="sm:hidden">{isLoading ? "Searching..." : "Search"}</span>
               </Button>

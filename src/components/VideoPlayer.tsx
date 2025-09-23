@@ -96,9 +96,12 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
             onClick={handleClose}
             variant="ghost"
             size="sm"
-            className="absolute top-4 right-4 z-20 text-white hover:bg-white/20 rounded-full w-10 h-10 p-0"
+            className="absolute top-4 right-4 z-20 text-white hover:bg-white/20 rounded-full w-10 h-10 p-0 min-h-[44px] min-w-[44px]"
+            aria-label="Close video player"
+            role="button"
+            tabIndex={0}
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </Button>
           
           {/* Loading State */}
@@ -128,6 +131,9 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
                 height: '100%',
                 backgroundColor: 'black'
               }}
+              role="application"
+              aria-label={`${title} movie trailer video player`}
+              tabIndex={0}
             />
           </div>
         </div>

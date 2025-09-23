@@ -38,9 +38,11 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
               <>
                 <img 
                   src={movie.poster} 
-                  alt={movie.title}
+                  alt={`${movie.title} movie poster`}
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={() => setImageError(true)}
+                  role="img"
+                  aria-label={`${movie.title} movie poster`}
                 />
                 {/* Trailer Play Overlay */}
                 {movie.trailer && (
@@ -48,9 +50,12 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
                     <Button
                       onClick={() => setIsVideoPlayerOpen(true)}
                       size="lg"
-                      className="neural-button rounded-full w-12 h-12 sm:w-16 sm:h-16 p-0 touch-manipulation"
+                      className="neural-button rounded-full w-12 h-12 sm:w-16 sm:h-16 p-0 touch-manipulation min-h-[44px] min-w-[44px]"
+                      aria-label={`Play trailer for ${movie.title}`}
+                      role="button"
+                      tabIndex={0}
                     >
-                      <Play className="w-4 h-4 sm:w-6 sm:h-6 ml-1" />
+                      <Play className="w-4 h-4 sm:w-6 sm:h-6 ml-1" aria-hidden="true" />
                     </Button>
                   </div>
                 )}
@@ -176,10 +181,13 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
             {movie.trailer && (
               <Button 
                 onClick={() => setIsVideoPlayerOpen(true)}
-                className="w-full neural-button rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 h-12 touch-manipulation"
+                className="w-full neural-button rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 h-12 touch-manipulation min-h-[44px]"
                 size="lg"
+                aria-label={`Watch trailer for ${movie.title}`}
+                role="button"
+                tabIndex={0}
               >
-                <Play className="w-4 h-4 mr-2" />
+                <Play className="w-4 h-4 mr-2" aria-hidden="true" />
                 Watch Trailer
               </Button>
             )}
@@ -188,20 +196,26 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               <Button 
                 onClick={onFindWhereToWatch}
-                className="w-full neural-button rounded-xl h-12 touch-manipulation"
+                className="w-full neural-button rounded-xl h-12 touch-manipulation min-h-[44px]"
                 size="lg"
+                aria-label={`Find where to watch ${movie.title}`}
+                role="button"
+                tabIndex={0}
               >
-                <Play className="w-4 h-4 mr-2" />
+                <Play className="w-4 h-4 mr-2" aria-hidden="true" />
                 Where to Watch
               </Button>
               
               <Button 
                 onClick={onExplainMeaning}
                 variant="outline"
-                className="w-full rounded-xl border-border hover:bg-secondary/50 h-12 touch-manipulation"
+                className="w-full rounded-xl border-border hover:bg-secondary/50 h-12 touch-manipulation min-h-[44px]"
                 size="lg"
+                aria-label={`Explain meaning of ${movie.title}`}
+                role="button"
+                tabIndex={0}
               >
-                <Lightbulb className="w-4 h-4 mr-2" />
+                <Lightbulb className="w-4 h-4 mr-2" aria-hidden="true" />
                 Explain Meaning
               </Button>
             </div>
@@ -210,10 +224,13 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
             <Button 
               onClick={onFindSimilarMovies}
               variant="ghost"
-              className="w-full rounded-xl hover:bg-secondary/30 h-12 touch-manipulation"
+              className="w-full rounded-xl hover:bg-secondary/30 h-12 touch-manipulation min-h-[44px]"
               size="lg"
+              aria-label={`Find movies similar to ${movie.title}`}
+              role="button"
+              tabIndex={0}
             >
-              <BookOpen className="w-4 h-4 mr-2" />
+              <BookOpen className="w-4 h-4 mr-2" aria-hidden="true" />
               Similar Movies
             </Button>
           </div>

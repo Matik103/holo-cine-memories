@@ -127,6 +127,51 @@ All colors MUST be HSL for neural network-inspired design.
     background-image: radial-gradient(circle at 20% 80%, hsl(200 100% 60% / 0.1) 0%, transparent 50%),
                       radial-gradient(circle at 80% 20%, hsl(300 100% 65% / 0.1) 0%, transparent 50%);
     min-height: 100vh;
+    /* Support for iOS Dynamic Type */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Dynamic Text Sizing Support */
+  html {
+    font-size: 16px; /* Base font size */
+  }
+
+  /* Support for iOS Dynamic Type sizes */
+  .text-dynamic-xs { font-size: clamp(0.75rem, 2.5vw, 0.875rem); }
+  .text-dynamic-sm { font-size: clamp(0.875rem, 2.5vw, 1rem); }
+  .text-dynamic-base { font-size: clamp(1rem, 2.5vw, 1.125rem); }
+  .text-dynamic-lg { font-size: clamp(1.125rem, 2.5vw, 1.25rem); }
+  .text-dynamic-xl { font-size: clamp(1.25rem, 2.5vw, 1.5rem); }
+  .text-dynamic-2xl { font-size: clamp(1.5rem, 2.5vw, 1.875rem); }
+  .text-dynamic-3xl { font-size: clamp(1.875rem, 2.5vw, 2.25rem); }
+  .text-dynamic-4xl { font-size: clamp(2.25rem, 2.5vw, 3rem); }
+  .text-dynamic-5xl { font-size: clamp(3rem, 2.5vw, 3.75rem); }
+  .text-dynamic-6xl { font-size: clamp(3.75rem, 2.5vw, 4.5rem); }
+
+  /* Accessibility: Focus indicators */
+  *:focus-visible {
+    outline: 2px solid hsl(var(--primary));
+    outline-offset: 2px;
+  }
+
+  /* Accessibility: Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Accessibility: High contrast mode support */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: 0 0% 50%;
+      --ring: 0 0% 50%;
+    }
   }
 }
 
@@ -680,6 +725,40 @@ All colors MUST be HSL for neural network-inspired design.
 
 .animation-delay-300 {
   animation-delay: 300ms;
+}
+
+/* Accessibility: Range slider styles */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  cursor: pointer;
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  cursor: pointer;
+  border: 2px solid hsl(var(--background));
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-webkit-slider-track {
+  height: 8px;
+  border-radius: 4px;
+  background: hsl(var(--secondary));
+}
+
+.slider::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: hsl(var(--secondary));
 }
 
 /* Close the components layer */
