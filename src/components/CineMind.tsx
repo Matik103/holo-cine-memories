@@ -13,6 +13,7 @@ import { Brain, User, Compass, Menu, Settings } from "lucide-react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { PrivacyPolicy } from "./PrivacyPolicy";
+import { useAccessibility } from "@/contexts/AccessibilityContext";
 
 type ViewState = 'search' | 'movie-details' | 'explanation' | 'streaming' | 'similar-movies';
 
@@ -43,6 +44,7 @@ export const CineMind = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { settings } = useAccessibility();
 
   useEffect(() => {
     // Check authentication state
@@ -185,13 +187,13 @@ export const CineMind = () => {
             title: "No Match Found",
             description: "Couldn't identify a movie from your description. Try being more specific or describing key scenes, actors, or plot points.",
             variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "No Match Found",
-            description: "Try describing the movie differently or with more details.",
-            variant: "destructive"
-          });
+        });
+      } else {
+        toast({
+          title: "No Match Found",
+          description: "Try describing the movie differently or with more details.",
+          variant: "destructive"
+        });
         }
       }
     } catch (error) {
@@ -420,7 +422,12 @@ export const CineMind = () => {
   }
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 relative" role="application" aria-label="CineMind movie identification app">
+    <div 
+      className={`min-h-screen p-2 sm:p-4 relative ${settings.highContrast ? 'high-contrast' : ''} ${settings.largeTouchTargets ? 'large-touch-targets' : ''} ${settings.reducedMotion ? 'reduced-motion' : ''}`}
+      role="application" 
+      aria-label="CineMind movie identification app"
+      style={{ '--text-scale': settings.textSize } as React.CSSProperties}
+    >
       {/* Background Neural Network Effect */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
@@ -512,9 +519,6 @@ export const CineMind = () => {
         <p className="text-center text-muted-foreground text-xs sm:text-sm px-2">
           Your Personal AI Movie Memory Companion
         </p>
-        <div className="flex justify-center mt-2" role="contentinfo">
-          <PrivacyPolicy />
-        </div>
       </header>
 
       {/* Main Content */}
@@ -549,21 +553,21 @@ export const CineMind = () => {
 
         {currentView === 'explanation' && movieExplanation && currentMovie && (
           <section aria-label="Movie explanation section">
-            <MovieExplanation
-              movieTitle={currentMovie.title}
-              explanation={movieExplanation}
-              onBack={handleBackToMovie}
-            />
+          <MovieExplanation
+            movieTitle={currentMovie.title}
+            explanation={movieExplanation}
+            onBack={handleBackToMovie}
+          />
           </section>
         )}
 
         {currentView === 'streaming' && currentMovie && (
           <section aria-label="Streaming availability section">
-            <StreamingAvailability
-              movieTitle={currentMovie.title}
-              options={streamingOptions}
-              onBack={handleBackToMovie}
-            />
+          <StreamingAvailability
+            movieTitle={currentMovie.title}
+            options={streamingOptions}
+            onBack={handleBackToMovie}
+          />
           </section>
         )}
 
@@ -583,30 +587,45 @@ export const CineMind = () => {
         )}
       </main>
 
-      {/* Loading Overlay */}
-      {isLoading && (
+              {/* Loading Overlay */}
+              {isLoading && (
         <div 
           className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50"
           role="status"
           aria-live="polite"
           aria-label="Loading content"
         >
-          <div className="neural-card p-8 flex flex-col items-center space-y-4">
+                  <div className="neural-card p-8 flex flex-col items-center space-y-4">
             <div 
               className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin"
               aria-hidden="true"
             />
-            <p className="text-muted-foreground">
-              {loadingMessage || "Processing your memory..."}
-            </p>
+                    <p className="text-muted-foreground">
+                      {loadingMessage || "Processing your memory..."}
+                    </p>
             <div className="flex space-x-1" aria-hidden="true">
-              <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-0" />
-              <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-150" />
-              <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-300" />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-0" />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-150" />
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-300" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+      {/* Footer */}
+      <footer className="mt-8 py-4 border-t border-border/50" role="contentinfo">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-4">
+              <span>© 2024 CineMind</span>
+              <PrivacyPolicy />
+            </div>
+            <div className="flex items-center gap-4">
+              <span>AI Movie Memory Companion</span>
             </div>
           </div>
         </div>
-      )}
+      </footer>
     </div>
   );
 };

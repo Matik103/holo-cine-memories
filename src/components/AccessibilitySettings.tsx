@@ -1,98 +1,13 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Accessibility, Eye, Volume2, MousePointer, Type } from "lucide-react";
-
-interface AccessibilitySettings {
-  textSize: number;
-  highContrast: boolean;
-  reducedMotion: boolean;
-  screenReader: boolean;
-  largeTouchTargets: boolean;
-  voiceOver: boolean;
-}
+import { useAccessibility } from "@/contexts/AccessibilityContext";
 
 export const AccessibilitySettings = () => {
-  const [settings, setSettings] = useState<AccessibilitySettings>({
-    textSize: 1,
-    highContrast: false,
-    reducedMotion: false,
-    screenReader: false,
-    largeTouchTargets: false,
-    voiceOver: false,
-  });
-
-  useEffect(() => {
-    // Load saved settings from localStorage
-    const savedSettings = localStorage.getItem('accessibility-settings');
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    }
-
-    // Check system preferences
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const prefersHighContrast = window.matchMedia('(prefers-contrast: high)').matches;
-    
-    setSettings(prev => ({
-      ...prev,
-      reducedMotion: prefersReducedMotion,
-      highContrast: prefersHighContrast,
-    }));
-  }, []);
-
-  const updateSetting = (key: keyof AccessibilitySettings, value: any) => {
-    const newSettings = { ...settings, [key]: value };
-    setSettings(newSettings);
-    localStorage.setItem('accessibility-settings', JSON.stringify(newSettings));
-    
-    // Apply settings to document
-    applyAccessibilitySettings(newSettings);
-  };
-
-  const applyAccessibilitySettings = (newSettings: AccessibilitySettings) => {
-    const root = document.documentElement;
-    
-    // Apply text size
-    root.style.setProperty('--text-scale', newSettings.textSize.toString());
-    
-    // Apply high contrast
-    if (newSettings.highContrast) {
-      root.classList.add('high-contrast');
-    } else {
-      root.classList.remove('high-contrast');
-    }
-    
-    // Apply reduced motion
-    if (newSettings.reducedMotion) {
-      root.classList.add('reduced-motion');
-    } else {
-      root.classList.remove('reduced-motion');
-    }
-    
-    // Apply large touch targets
-    if (newSettings.largeTouchTargets) {
-      root.classList.add('large-touch-targets');
-    } else {
-      root.classList.remove('large-touch-targets');
-    }
-  };
-
-  const resetToDefaults = () => {
-    const defaultSettings: AccessibilitySettings = {
-      textSize: 1,
-      highContrast: false,
-      reducedMotion: false,
-      screenReader: false,
-      largeTouchTargets: false,
-      voiceOver: false,
-    };
-    setSettings(defaultSettings);
-    localStorage.setItem('accessibility-settings', JSON.stringify(defaultSettings));
-    applyAccessibilitySettings(defaultSettings);
-  };
+  const { settings, updateSetting, resetToDefaults } = useAccessibility();
 
   return (
     <div className="space-y-6">

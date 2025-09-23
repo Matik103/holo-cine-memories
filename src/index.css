@@ -173,6 +173,58 @@ All colors MUST be HSL for neural network-inspired design.
       --ring: 0 0% 50%;
     }
   }
+
+  /* Accessibility: High contrast mode class */
+  .high-contrast {
+    --border: 0 0% 50%;
+    --ring: 0 0% 50%;
+    --foreground: 0 0% 0%;
+    --background: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 0%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 90%;
+    --secondary-foreground: 0 0% 0%;
+    --muted: 0 0% 90%;
+    --muted-foreground: 0 0% 50%;
+    --accent: 0 0% 90%;
+    --accent-foreground: 0 0% 0%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+  }
+
+  /* Accessibility: Large touch targets */
+  .large-touch-targets button,
+  .large-touch-targets [role="button"],
+  .large-touch-targets input[type="button"],
+  .large-touch-targets input[type="submit"],
+  .large-touch-targets a {
+    min-height: 48px !important;
+    min-width: 48px !important;
+    padding: 12px 16px !important;
+  }
+
+  /* Accessibility: Text scaling */
+  .text-scaled {
+    font-size: calc(1rem * var(--text-scale, 1)) !important;
+  }
+
+  /* Apply text scaling to all text elements */
+  .large-touch-targets h1,
+  .large-touch-targets h2,
+  .large-touch-targets h3,
+  .large-touch-targets h4,
+  .large-touch-targets h5,
+  .large-touch-targets h6,
+  .large-touch-targets p,
+  .large-touch-targets span,
+  .large-touch-targets div,
+  .large-touch-targets label {
+    font-size: calc(1em * var(--text-scale, 1)) !important;
+  }
 }
 
 /* Neural Network Animations */
