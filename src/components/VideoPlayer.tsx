@@ -62,45 +62,26 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
-          <div className="relative w-full h-full bg-black">
-            {/* Close Button - Following major app standards */}
-            <div 
-              className="fixed z-[999999]"
-              style={{
-                // Position below video title area, following YouTube/Netflix standards
-                top: 'env(safe-area-inset-top, 60px)',
-                right: 'env(safe-area-inset-right, 12px)',
-                // Ensure it's always within viewport
-                maxWidth: 'calc(100vw - 24px)',
-                maxHeight: 'calc(100vh - 24px)',
-                // Force this element to be on top of everything
-                position: 'fixed',
-                pointerEvents: 'auto',
-                // Fallback positioning for different screen sizes
-                minTop: '50px',
-                maxTop: '120px',
-              }}
-            >
+          <div className="flex flex-col w-full h-full bg-black">
+            {/* Dedicated Header Area with Close Button */}
+            <div className="flex items-center justify-between w-full h-16 bg-black/90 backdrop-blur-sm border-b border-white/10 px-4 z-50">
+              <div className="flex-1">
+                <h3 className="text-white text-sm font-medium truncate pr-4">
+                  {title} Trailer
+                </h3>
+              </div>
               <Button
                 onClick={handleClose}
                 variant="ghost"
                 size="sm"
-                className="w-14 h-14 sm:w-12 sm:h-12 p-0 text-white hover:bg-white/30 rounded-full bg-red-600 hover:bg-red-700 border-2 border-white shadow-2xl touch-manipulation"
-                style={{
-                  // Ensure button is always visible and clickable
-                  position: 'relative',
-                  zIndex: 999999,
-                  pointerEvents: 'auto',
-                  // Add a strong background to make it stand out
-                  backgroundColor: 'rgba(220, 38, 38, 0.9)',
-                  backdropFilter: 'blur(8px)',
-                }}
+                className="w-10 h-10 p-0 text-white hover:bg-white/20 rounded-full bg-red-600 hover:bg-red-700 border border-white/30 shadow-lg touch-manipulation flex-shrink-0"
               >
-                <X className="w-7 h-7 sm:w-6 sm:h-6 font-bold" />
+                <X className="w-5 h-5" />
               </Button>
             </div>
             
-            <div className="flex items-center justify-center h-full p-6 bg-black">
+            {/* Error Content Area */}
+            <div className="flex-1 flex items-center justify-center p-6 bg-black">
               <div className="text-center space-y-4">
                 <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center">
                   <X className="w-8 h-8 text-red-500" />
@@ -117,56 +98,37 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
-        <div className="relative w-full h-full bg-black">
-          {/* Close Button - Following major app standards */}
-          <div 
-            className="fixed z-[999999]"
-            style={{
-              // Position below video title area, following YouTube/Netflix standards
-              top: 'env(safe-area-inset-top, 60px)',
-              right: 'env(safe-area-inset-right, 12px)',
-              // Ensure it's always within viewport
-              maxWidth: 'calc(100vw - 24px)',
-              maxHeight: 'calc(100vh - 24px)',
-              // Force this element to be on top of everything
-              position: 'fixed',
-              pointerEvents: 'auto',
-              // Fallback positioning for different screen sizes
-              minTop: '50px',
-              maxTop: '120px',
-            }}
-          >
+        <div className="flex flex-col w-full h-full bg-black">
+          {/* Dedicated Header Area with Close Button */}
+          <div className="flex items-center justify-between w-full h-16 bg-black/90 backdrop-blur-sm border-b border-white/10 px-4 z-50">
+            <div className="flex-1">
+              <h3 className="text-white text-sm font-medium truncate pr-4">
+                {title} Trailer
+              </h3>
+            </div>
             <Button
               onClick={handleClose}
               variant="ghost"
               size="sm"
-              className="w-14 h-14 sm:w-12 sm:h-12 p-0 text-white hover:bg-white/30 rounded-full bg-red-600 hover:bg-red-700 border-2 border-white shadow-2xl touch-manipulation"
-              style={{
-                // Ensure button is always visible and clickable
-                position: 'relative',
-                zIndex: 999999,
-                pointerEvents: 'auto',
-                // Add a strong background to make it stand out
-                backgroundColor: 'rgba(220, 38, 38, 0.9)',
-                backdropFilter: 'blur(8px)',
-              }}
+              className="w-10 h-10 p-0 text-white hover:bg-white/20 rounded-full bg-red-600 hover:bg-red-700 border border-white/30 shadow-lg touch-manipulation flex-shrink-0"
             >
-              <X className="w-7 h-7 sm:w-6 sm:h-6 font-bold" />
+              <X className="w-5 h-5" />
             </Button>
           </div>
           
-          {/* Loading State */}
-          {isLoading && (
-            <div className="absolute inset-0 bg-black flex items-center justify-center z-10">
-              <div className="text-center space-y-4">
-                <div className="w-12 h-12 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <p className="text-white text-sm">Loading trailer...</p>
+          {/* Video Player Area - Reduced height */}
+          <div className="flex-1 relative bg-black">
+            {/* Loading State */}
+            {isLoading && (
+              <div className="absolute inset-0 bg-black flex items-center justify-center z-10">
+                <div className="text-center space-y-4">
+                  <div className="w-12 h-12 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto"></div>
+                  <p className="text-white text-sm">Loading trailer...</p>
+                </div>
               </div>
-            </div>
-          )}
-          
-          {/* YouTube Embed - Full screen mobile experience */}
-          <div className="relative w-full h-full bg-black">
+            )}
+            
+            {/* YouTube Embed - Full height of remaining space */}
             <iframe
               src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=1&playsinline=1`}
               title={`${title} Trailer`}
@@ -175,9 +137,6 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
               allowFullScreen
               onLoad={() => setIsLoading(false)}
               style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
                 width: '100%',
                 height: '100%',
                 backgroundColor: 'black'
