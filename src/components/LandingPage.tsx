@@ -299,14 +299,14 @@ export const LandingPage = ({ onStart }: { onStart: (searchQuery?: string) => vo
                       }`}
                     >
                       <Card 
-                        className={`w-full h-full cursor-pointer transition-transform duration-600 ease-out touch-manipulation select-none group card-glow card-smooth ${
-                          isFlipped ? 'rotate-y-180' : ''
-                        }`}
+                        className="w-full h-full cursor-pointer touch-manipulation select-none group card-glow card-smooth"
                         onClick={() => handleCardFlip(index)}
                       >
                         <CardContent className="p-0 h-full relative">
                           {/* Front of Card - Movie Poster */}
-                          <div className="absolute inset-0 backface-hidden">
+                          <div className={`absolute inset-0 transition-transform duration-600 ease-out ${
+                            isFlipped ? 'rotate-y-180' : 'rotate-y-0'
+                          }`}>
                             <div className="relative w-full h-full">
                               <img
                                 src={movie.poster}
@@ -331,7 +331,9 @@ export const LandingPage = ({ onStart }: { onStart: (searchQuery?: string) => vo
                           </div>
 
                           {/* Back of Card - Stunning Movie Details */}
-                          <div className="absolute inset-0 rotate-y-180 backface-hidden">
+                          <div className={`absolute inset-0 transition-transform duration-600 ease-out ${
+                            isFlipped ? 'rotate-y-0' : 'rotate-y-180'
+                          }`}>
                             <div className="w-full h-full bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-3 sm:p-4 md:p-6 rounded-lg relative overflow-hidden">
                               {/* Neural background effect */}
                               <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-50"></div>
