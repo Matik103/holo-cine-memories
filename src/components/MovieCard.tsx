@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { Calendar, Clock, Star, Play, BookOpen, Lightbulb } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export interface Movie {
   title: string;
@@ -27,6 +28,7 @@ interface MovieCardProps {
 export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindSimilarMovies }: MovieCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
+  const { dismiss } = useToast();
 
   return (
     <div className="neural-card rounded-2xl overflow-hidden">
@@ -46,7 +48,10 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
                 {movie.trailer && (
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                     <Button
-                      onClick={() => setIsVideoPlayerOpen(true)}
+                      onClick={() => {
+                        dismiss(); // Dismiss any active toasts
+                        setIsVideoPlayerOpen(true);
+                      }}
                       size="lg"
                       className="neural-button rounded-full w-12 h-12 sm:w-16 sm:h-16 p-0 touch-manipulation"
                     >
@@ -65,7 +70,10 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
                 </div>
                 {movie.trailer && (
                   <Button
-                    onClick={() => setIsVideoPlayerOpen(true)}
+                    onClick={() => {
+                      dismiss(); // Dismiss any active toasts
+                      setIsVideoPlayerOpen(true);
+                    }}
                     size="sm"
                     className="neural-button rounded-full"
                   >
@@ -175,7 +183,10 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
             {/* Primary Action - Watch Trailer */}
             {movie.trailer && (
               <Button 
-                onClick={() => setIsVideoPlayerOpen(true)}
+                onClick={() => {
+                  dismiss(); // Dismiss any active toasts
+                  setIsVideoPlayerOpen(true);
+                }}
                 className="w-full neural-button rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 h-12 touch-manipulation"
                 size="lg"
               >

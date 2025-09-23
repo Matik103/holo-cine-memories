@@ -63,23 +63,24 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
           <div className="relative w-full h-full bg-black">
-            {/* Close Button - Always visible with high z-index */}
-            <Button
-              onClick={handleClose}
-              variant="ghost"
-              size="sm"
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-[9999] text-white hover:bg-white/20 rounded-full w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation bg-black/50 backdrop-blur-sm"
+            {/* Close Button - Always visible with high z-index and better styling */}
+            <div 
+              className="fixed top-2 right-2 sm:top-4 sm:right-4 z-[99999]"
               style={{
                 // Ensure button stays within viewport on mobile
                 maxWidth: 'calc(100vw - 16px)',
                 maxHeight: 'calc(100vh - 16px)',
-                // Force button to stay on top
-                position: 'fixed',
-                pointerEvents: 'auto',
               }}
             >
-              <X className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
+              <Button
+                onClick={handleClose}
+                variant="ghost"
+                size="sm"
+                className="w-10 h-10 sm:w-12 sm:h-12 p-0 touch-manipulation bg-black/80 hover:bg-black/90 text-white border border-white/30 rounded-full shadow-lg"
+              >
+                <X className="w-5 h-5 sm:w-6 sm:h-6" />
+              </Button>
+            </div>
             
             <div className="flex items-center justify-center h-full p-6 bg-black">
               <div className="text-center space-y-4">
@@ -99,23 +100,24 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
         <div className="relative w-full h-full bg-black">
-          {/* Close Button - Always visible with high z-index */}
-          <Button
-            onClick={handleClose}
-            variant="ghost"
-            size="sm"
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-[9999] text-white hover:bg-white/20 rounded-full w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation bg-black/50 backdrop-blur-sm"
+          {/* Close Button - Always visible with high z-index and better styling */}
+          <div 
+            className="fixed top-2 right-2 sm:top-4 sm:right-4 z-[99999]"
             style={{
               // Ensure button stays within viewport on mobile
               maxWidth: 'calc(100vw - 16px)',
               maxHeight: 'calc(100vh - 16px)',
-              // Force button to stay on top of YouTube controls
-              position: 'fixed',
-              pointerEvents: 'auto',
             }}
           >
-            <X className="w-4 h-4 sm:w-5 sm:h-5" />
-          </Button>
+            <Button
+              onClick={handleClose}
+              variant="ghost"
+              size="sm"
+              className="w-10 h-10 sm:w-12 sm:h-12 p-0 touch-manipulation bg-black/80 hover:bg-black/90 text-white border border-white/30 rounded-full shadow-lg"
+            >
+              <X className="w-5 h-5 sm:w-6 sm:h-6" />
+            </Button>
+          </div>
           
           {/* Loading State */}
           {isLoading && (
