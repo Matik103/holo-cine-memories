@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User, Shield, Bell, Trash2, Download, Settings as SettingsIcon, Accessibility } from "lucide-react";
+import { ArrowLeft, User, Shield, Bell, Trash2, Download, Settings as SettingsIcon, Accessibility, FileText, HelpCircle, Info, Scale, Cookie, Database } from "lucide-react";
 import { PrivacyPolicy } from "@/components/PrivacyPolicy";
 import { AccessibilitySettings } from "@/components/AccessibilitySettings";
 
@@ -242,6 +242,108 @@ export const Settings = () => {
               <h2 className="text-lg font-semibold">Accessibility</h2>
             </div>
             <AccessibilitySettings />
+          </Card>
+
+          {/* Legal & Policies */}
+          <Card className="neural-card p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <FileText className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold">Legal & Policies</h2>
+            </div>
+            <div className="space-y-3">
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-3"
+                onClick={() => navigate("/privacy")}
+              >
+                <Shield className="w-4 h-4 mr-3 text-primary" />
+                <div className="text-left">
+                  <div className="font-medium">Privacy Policy</div>
+                  <div className="text-xs text-muted-foreground">How we collect and use your data</div>
+                </div>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-3"
+                onClick={() => navigate("/terms")}
+              >
+                <Scale className="w-4 h-4 mr-3 text-primary" />
+                <div className="text-left">
+                  <div className="font-medium">Terms of Service</div>
+                  <div className="text-xs text-muted-foreground">Rules and guidelines for using CineMind</div>
+                </div>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-3"
+                onClick={() => navigate("/license")}
+              >
+                <FileText className="w-4 h-4 mr-3 text-primary" />
+                <div className="text-left">
+                  <div className="font-medium">License Agreement</div>
+                  <div className="text-xs text-muted-foreground">Software licensing terms</div>
+                </div>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-3"
+                onClick={() => navigate("/cookies")}
+              >
+                <Cookie className="w-4 h-4 mr-3 text-primary" />
+                <div className="text-left">
+                  <div className="font-medium">Cookie Policy</div>
+                  <div className="text-xs text-muted-foreground">How we use cookies and tracking</div>
+                </div>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-3"
+                onClick={() => navigate("/data-usage")}
+              >
+                <Database className="w-4 h-4 mr-3 text-primary" />
+                <div className="text-left">
+                  <div className="font-medium">Data Usage Policy</div>
+                  <div className="text-xs text-muted-foreground">Detailed data processing information</div>
+                </div>
+              </Button>
+            </div>
+          </Card>
+
+          {/* Support & Help */}
+          <Card className="neural-card p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <HelpCircle className="w-5 h-5 text-primary" />
+              <h2 className="text-lg font-semibold">Support & Help</h2>
+            </div>
+            <div className="space-y-3">
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-3"
+                onClick={() => navigate("/support")}
+              >
+                <HelpCircle className="w-4 h-4 mr-3 text-primary" />
+                <div className="text-left">
+                  <div className="font-medium">Help Center</div>
+                  <div className="text-xs text-muted-foreground">FAQs, troubleshooting, and contact support</div>
+                </div>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                className="w-full justify-start h-auto p-3"
+                onClick={() => navigate("/marketing")}
+              >
+                <Info className="w-4 h-4 mr-3 text-primary" />
+                <div className="text-left">
+                  <div className="font-medium">About CineMind</div>
+                  <div className="text-xs text-muted-foreground">Learn more about our features and mission</div>
+                </div>
+              </Button>
+            </div>
           </Card>
 
           {/* Data Management */}

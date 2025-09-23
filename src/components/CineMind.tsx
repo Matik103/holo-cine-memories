@@ -615,14 +615,18 @@ export const CineMind = () => {
       {/* Footer */}
       <footer className="mt-8 py-4 border-t border-border/50" role="contentinfo">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <div className="flex items-center gap-4">
-              <span>© 2024 CineMind</span>
-              <PrivacyPolicy />
-            </div>
-            <div className="flex items-center gap-4">
-              <span>AI Movie Memory Companion</span>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-muted-foreground">
+            <span>© 2024 CineMind</span>
+            <span>•</span>
+            <span>AI Movie Memory Companion</span>
+            <span>•</span>
+            <Button 
+              variant="link" 
+              className="text-xs p-0 h-auto"
+              onClick={() => navigate("/settings")}
+            >
+              Settings
+            </Button>
           </div>
         </div>
       </footer>
