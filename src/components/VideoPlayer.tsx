@@ -66,17 +66,19 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     onClose();
   };
 
-  // Unified header component that always shows - with fallback positioning
+  // Unified header component that always shows - with fixed positioning for mobile
   const renderHeader = () => (
     <div 
-      className="flex items-center justify-between w-full bg-black/90 backdrop-blur-sm border-b border-white/10 px-4 z-50"
+      className="flex items-center justify-between w-full bg-black/95 backdrop-blur-sm border-b border-white/10 px-4"
       style={{
-        height: 'calc(64px + env(safe-area-inset-top, 0px))',
-        paddingTop: 'env(safe-area-inset-top, 0px)',
-        minHeight: '64px',
-        // Fallback positioning to ensure it's always visible
-        position: 'relative',
-        zIndex: 9999,
+        height: 'calc(80px + env(safe-area-inset-top, 20px))',
+        paddingTop: 'calc(env(safe-area-inset-top, 20px) + 16px)',
+        minHeight: '80px',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 999999,
       }}
     >
       <div className="flex-1">
@@ -88,11 +90,12 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
         onClick={handleClose}
         variant="ghost"
         size="sm"
-        className="w-10 h-10 p-0 text-white hover:bg-white/20 rounded-full bg-red-600 hover:bg-red-700 border border-white/30 shadow-lg touch-manipulation flex-shrink-0"
+        className="w-12 h-12 p-0 text-white hover:bg-white/20 rounded-full bg-red-600 hover:bg-red-700 border-2 border-white/50 shadow-xl touch-manipulation flex-shrink-0"
         style={{
-          // Ensure button is always clickable
           position: 'relative',
-          zIndex: 10000,
+          zIndex: 1000000,
+          minWidth: '48px',
+          minHeight: '48px',
         }}
       >
         <X className="w-5 h-5" />
@@ -108,11 +111,12 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
             {/* Unified Header - Always shows */}
             {renderHeader()}
             
-            {/* Error Content Area - Safe area adjustment */}
+            {/* Error Content Area - Adjusted for fixed header */}
             <div 
               className="flex-1 flex items-center justify-center p-6 bg-black"
               style={{
-                height: 'calc(100vh - 64px - env(safe-area-inset-top, 0px))',
+                height: 'calc(100vh - 80px - env(safe-area-inset-top, 20px) - 16px)',
+                marginTop: 'calc(80px + env(safe-area-inset-top, 20px))',
               }}
             >
               <div className="text-center space-y-4">
@@ -135,11 +139,12 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
           {/* Unified Header - Always shows */}
           {renderHeader()}
           
-          {/* Video Player Area - Reduced height with safe area adjustment */}
+            {/* Video Player Area - Adjusted height with fixed header spacing */}
           <div 
             className="flex-1 relative bg-black"
             style={{
-              height: 'calc(100vh - 64px - env(safe-area-inset-top, 0px))',
+              height: 'calc(100vh - 80px - env(safe-area-inset-top, 20px) - 16px)',
+              marginTop: 'calc(80px + env(safe-area-inset-top, 20px))',
             }}
           >
             {/* Loading State */}

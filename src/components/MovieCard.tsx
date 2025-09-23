@@ -10,10 +10,11 @@ export interface Movie {
   director: string;
   genre: string[];
   plot: string;
-  imdbRating?: number;
-  runtime?: number;
-  cast?: string[];
-  poster?: string;
+  imdbRating: number;
+  runtime: number;
+  cast: string[];
+  poster: string;
+  confidence?: number;
   trailer?: string;
 }
 
