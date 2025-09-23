@@ -150,30 +150,17 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   };
 
   const handleCardFlip = (index: number) => {
-    if (expandedCard === index) {
-      // If card is expanded, close it first
-      setExpandedCard(null);
-      setTimeout(() => {
-        setFlippedCards(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(index);
-          return newSet;
-        });
-      }, 300);
-    } else {
-      // Flip the card and expand it
-      setFlippedCards(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(index)) {
-          newSet.delete(index);
-          setExpandedCard(null);
-        } else {
-          newSet.add(index);
-          setExpandedCard(index);
-        }
-        return newSet;
-      });
-    }
+    setFlippedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(index)) {
+        newSet.delete(index);
+        setExpandedCard(null);
+      } else {
+        newSet.add(index);
+        setExpandedCard(index);
+      }
+      return newSet;
+    });
   };
 
   const handleWatchTrailer = (movie: MovieData) => {
@@ -362,7 +349,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                         className={`w-full ${isExpanded ? 'h-auto' : 'h-full'} cursor-pointer transition-transform duration-600 ease-out touch-manipulation select-none group card-glow card-smooth ${
                           isFlipped ? 'rotate-y-180' : ''
                         }`}
-                        onClick={() => !isExpanded && handleCardFlip(index)}
+                        onClick={() => handleCardFlip(index)}
                       >
                         <CardContent className={`p-0 ${isExpanded ? 'h-auto' : 'h-full'} relative`}>
                           {/* Front of Card - Movie Poster */}
@@ -392,253 +379,201 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
                           {/* Back of Card - Complete Movie Information */}
                           <div className="absolute inset-0 rotate-y-180 backface-hidden overflow-y-auto">
-                            {isExpanded ? (
-                              /* Expanded Full Details View */
-                              <div className="neural-card rounded-2xl overflow-hidden min-h-full">
-                                <div className="flex flex-col md:flex-row">
-                                  {/* Movie Poster Section */}
-                                  <div className="w-full md:w-1/3 relative group mb-4 md:mb-0">
-                                    <div className="aspect-[3/4] sm:aspect-[2/3] bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative overflow-hidden rounded-lg">
-                                      <img 
-                                        src={movie.poster} 
-                                        alt={movie.title}
-                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                        onError={(e) => {
-                                          e.currentTarget.src = '/placeholder.svg';
-                                        }}
-                                      />
-                                      {/* Trailer Play Overlay */}
-                                      {movie.trailer && (
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                          <Button
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleWatchTrailer(movie);
-                                            }}
-                                            size="lg"
-                                            className="neural-button rounded-full w-12 h-12 sm:w-16 sm:h-16 p-0 touch-manipulation"
-                                          >
-                                            <Play className="w-4 h-4 sm:w-6 sm:h-6 ml-1" />
-                                          </Button>
-                                        </div>
-                                      )}
-                                    </div>
-                                    
-                                    {/* Memory Match Indicator */}
-                                    <div className="absolute top-4 right-4">
-                                      <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
-                                        Memory Match
-                                      </Badge>
-                                    </div>
-                                    
-                                    {/* Close Button */}
-                                    <div className="absolute top-4 left-4">
-                                      <div 
-                                        className="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-black/80 transition-all duration-150 ease-out touch-manipulation select-none shadow-lg"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleCardFlip(index);
-                                        }}
-                                        title="Close details"
-                                      >
-                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Movie Details Section */}
-                                  <div className="w-full md:w-2/3 p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
-                                    <div className="space-y-2 sm:space-y-3">
-                                      <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
-                                        {movie.title}
-                                      </h2>
-                                      
-                                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm sm:text-base text-muted-foreground">
-                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                          <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                          <span>{movie.year}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                          <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                                          <span>{movie.runtime}min</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5 sm:gap-2">
-                                          <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-500 text-yellow-500" />
-                                          <span>{movie.imdbRating}/10</span>
-                                        </div>
-                                      </div>
-
-                                      <p className="text-sm sm:text-base text-muted-foreground">
-                                        Directed by <span className="text-foreground font-medium">{movie.director}</span>
-                                      </p>
-                                      
-                                      {/* Media Status */}
-                                      <div className="flex flex-wrap gap-1.5 sm:gap-2 pt-2">
-                                        <Badge variant="outline" className="text-green-600 border-green-600 text-xs sm:text-sm">
-                                          📸 Poster Available
-                                        </Badge>
-                                        {movie.trailer && (
-                                          <Badge variant="outline" className="text-red-600 border-red-600 text-xs sm:text-sm">
-                                            🎬 Trailer Available
-                                          </Badge>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Genres */}
-                                    <div className="flex flex-wrap gap-2">
-                                      {movie.genre.map((g) => (
-                                        <Badge key={g} variant="secondary" className="bg-secondary/60">
-                                          {g}
-                                        </Badge>
-                                      ))}
-                                    </div>
-
-                                    {/* Plot */}
-                                    <div className="space-y-2">
-                                      <h3 className="font-semibold text-foreground text-sm sm:text-base">Plot</h3>
-                                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                                        {movie.plot}
-                                      </p>
-                                    </div>
-
-                                    {/* Cast */}
-                                    <div className="space-y-2">
-                                      <h3 className="font-semibold text-foreground text-sm sm:text-base">Cast</h3>
-                                      <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-                                        {movie.cast.slice(0, 4).join(', ')}
-                                        {movie.cast.length > 4 && '...'}
-                                      </p>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    <div className="space-y-3 pt-3 sm:pt-4">
-                                      {/* Primary Action - Watch Trailer */}
-                                      {movie.trailer && (
-                                        <Button 
+                            <div className="neural-card rounded-2xl overflow-hidden min-h-full">
+                              <div className="flex flex-col md:flex-row">
+                                {/* Movie Poster Section */}
+                                <div className="w-full md:w-1/3 relative group mb-4 md:mb-0">
+                                  <div className="aspect-[3/4] sm:aspect-[2/3] bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative overflow-hidden rounded-lg">
+                                    <img 
+                                      src={movie.poster} 
+                                      alt={movie.title}
+                                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                      onError={(e) => {
+                                        e.currentTarget.src = '/placeholder.svg';
+                                      }}
+                                    />
+                                    {/* Trailer Play Overlay */}
+                                    {movie.trailer && (
+                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                        <Button
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             handleWatchTrailer(movie);
                                           }}
-                                          className="w-full neural-button rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 h-12 touch-manipulation"
                                           size="lg"
+                                          className="neural-button rounded-full w-12 h-12 sm:w-16 sm:h-16 p-0 touch-manipulation"
                                         >
-                                          <Play className="w-4 h-4 mr-2" />
-                                          Watch Trailer
+                                          <Play className="w-4 h-4 sm:w-6 sm:h-6 ml-1" />
                                         </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Memory Match Indicator */}
+                                  <div className="absolute top-4 right-4">
+                                    <Badge className="bg-gradient-to-r from-primary to-accent text-primary-foreground border-0">
+                                      Memory Match
+                                    </Badge>
+                                  </div>
+                                  
+                                  {/* Close Button */}
+                                  <div className="absolute top-4 left-4">
+                                    <div 
+                                      className="w-10 h-10 bg-black/60 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-black/80 transition-all duration-150 ease-out touch-manipulation select-none shadow-lg"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleCardFlip(index);
+                                      }}
+                                      title="Close details"
+                                    >
+                                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Movie Details Section */}
+                                <div className="w-full md:w-2/3 p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
+                                  <div className="space-y-2 sm:space-y-3">
+                                    <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+                                      {movie.title}
+                                    </h2>
+                                    
+                                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm sm:text-base text-muted-foreground">
+                                      <div className="flex items-center gap-1.5 sm:gap-2">
+                                        <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                        <span>{movie.year}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 sm:gap-2">
+                                        <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                                        <span>{movie.runtime}min</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 sm:gap-2">
+                                        <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-yellow-500 text-yellow-500" />
+                                        <span>{movie.imdbRating}/10</span>
+                                      </div>
+                                    </div>
+
+                                    <p className="text-sm sm:text-base text-muted-foreground">
+                                      Directed by <span className="text-foreground font-medium">{movie.director}</span>
+                                    </p>
+                                    
+                                    {/* Media Status */}
+                                    <div className="flex flex-wrap gap-1.5 sm:gap-2 pt-2">
+                                      <Badge variant="outline" className="text-green-600 border-green-600 text-xs sm:text-sm">
+                                        📸 Poster Available
+                                      </Badge>
+                                      {movie.trailer && (
+                                        <Badge variant="outline" className="text-red-600 border-red-600 text-xs sm:text-sm">
+                                          🎬 Trailer Available
+                                        </Badge>
                                       )}
+                                    </div>
+                                  </div>
+
+                                  {/* Genres */}
+                                  <div className="flex flex-wrap gap-2">
+                                    {movie.genre.map((g) => (
+                                      <Badge key={g} variant="secondary" className="bg-secondary/60">
+                                        {g}
+                                      </Badge>
+                                    ))}
+                                  </div>
+
+                                  {/* Plot */}
+                                  <div className="space-y-2">
+                                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Plot</h3>
+                                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                                      {movie.plot}
+                                    </p>
+                                  </div>
+
+                                  {/* Cast */}
+                                  <div className="space-y-2">
+                                    <h3 className="font-semibold text-foreground text-sm sm:text-base">Cast</h3>
+                                    <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                                      {movie.cast.slice(0, 4).join(', ')}
+                                      {movie.cast.length > 4 && '...'}
+                                    </p>
+                                  </div>
+
+                                  {/* Action Buttons */}
+                                  <div className="space-y-3 pt-3 sm:pt-4">
+                                    {/* Primary Action - Watch Trailer */}
+                                    {movie.trailer && (
+                                      <Button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleWatchTrailer(movie);
+                                        }}
+                                        className="w-full neural-button rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 h-12 touch-manipulation"
+                                        size="lg"
+                                      >
+                                        <Play className="w-4 h-4 mr-2" />
+                                        Watch Trailer
+                                      </Button>
+                                    )}
+                                    
+                                    {/* Secondary Actions Grid */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                      <Button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleWhereToWatch(movie);
+                                        }}
+                                        className="w-full neural-button rounded-xl h-12 touch-manipulation"
+                                        size="lg"
+                                      >
+                                        <Play className="w-4 h-4 mr-2" />
+                                        Where to Watch
+                                      </Button>
                                       
-                                      {/* Secondary Actions Grid */}
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                                        <Button 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleWhereToWatch(movie);
-                                          }}
-                                          className="w-full neural-button rounded-xl h-12 touch-manipulation"
-                                          size="lg"
-                                        >
-                                          <Play className="w-4 h-4 mr-2" />
-                                          Where to Watch
-                                        </Button>
-                                        
-                                        <Button 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleExplainMeaning(movie);
-                                          }}
-                                          variant="outline"
-                                          className="w-full rounded-xl border-border hover:bg-secondary/50 h-12 touch-manipulation"
-                                          size="lg"
-                                        >
-                                          <Lightbulb className="w-4 h-4 mr-2" />
-                                          Explain Meaning
-                                        </Button>
-                                      </div>
+                                      <Button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleExplainMeaning(movie);
+                                        }}
+                                        variant="outline"
+                                        className="w-full rounded-xl border-border hover:bg-secondary/50 h-12 touch-manipulation"
+                                        size="lg"
+                                      >
+                                        <Lightbulb className="w-4 h-4 mr-2" />
+                                        Explain Meaning
+                                      </Button>
+                                    </div>
+                                    
+                                    {/* Tertiary Actions */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                                      <Button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleSimilarMovies(movie);
+                                        }}
+                                        variant="ghost"
+                                        className="w-full rounded-xl hover:bg-secondary/30 h-12 touch-manipulation"
+                                        size="lg"
+                                      >
+                                        <BookOpen className="w-4 h-4 mr-2" />
+                                        Similar Movies
+                                      </Button>
                                       
-                                      {/* Tertiary Actions */}
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                                        <Button 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleSimilarMovies(movie);
-                                          }}
-                                          variant="ghost"
-                                          className="w-full rounded-xl hover:bg-secondary/30 h-12 touch-manipulation"
-                                          size="lg"
-                                        >
-                                          <BookOpen className="w-4 h-4 mr-2" />
-                                          Similar Movies
-                                        </Button>
-                                        
-                                        <Button 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleSearchMovie(movie);
-                                          }}
-                                          className="w-full neural-button rounded-xl bg-gradient-to-r from-primary to-accent h-12 touch-manipulation"
-                                          size="lg"
-                                        >
-                                          <Search className="w-4 h-4 mr-2" />
-                                          Search This Movie
-                                        </Button>
-                                      </div>
+                                      <Button 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleSearchMovie(movie);
+                                        }}
+                                        className="w-full neural-button rounded-xl bg-gradient-to-r from-primary to-accent h-12 touch-manipulation"
+                                        size="lg"
+                                      >
+                                        <Search className="w-4 h-4 mr-2" />
+                                        Search This Movie
+                                      </Button>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            ) : (
-                              /* Compact Preview View */
-                              <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 p-3 sm:p-6 flex flex-col justify-center items-center text-center rounded-lg relative group">
-                                {/* Flip back button */}
-                                <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
-                                  <div 
-                                    className="w-10 h-10 sm:w-8 sm:h-8 bg-white/40 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/50 active:bg-white/60 transition-all duration-150 ease-out touch-manipulation select-none shadow-lg button-futuristic"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCardFlip(index);
-                                    }}
-                                    title="Tap to go back to poster"
-                                  >
-                                    <svg className="w-5 h-5 sm:w-4 sm:h-4 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                    </svg>
-                                  </div>
-                                </div>
-                                
-                                <div className="mb-2 sm:mb-4">
-                                  <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-1 sm:mb-2 drop-shadow-lg" />
-                                  <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-1 sm:mb-2">{movie.painPoint}</h4>
-                                </div>
-                                <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-4">{movie.solution}</p>
-                                <div className="flex gap-1 sm:gap-2 mb-3">
-                                  <div className="flex items-center gap-1 text-xs text-primary">
-                                    <Search className="w-2 h-2 sm:w-3 sm:h-3" />
-                                    <span className="hidden sm:inline">Identify</span>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-xs text-accent">
-                                    <Lightbulb className="w-2 h-2 sm:w-3 sm:h-3" />
-                                    <span className="hidden sm:inline">Explain</span>
-                                  </div>
-                                  <div className="flex items-center gap-1 text-xs text-primary">
-                                    <Play className="w-2 h-2 sm:w-3 sm:h-3" />
-                                    <span className="hidden sm:inline">Watch</span>
-                                  </div>
-                                </div>
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCardFlip(index);
-                                  }}
-                                  size="sm"
-                                  className="neural-button text-xs"
-                                >
-                                  See Full Details
-                                </Button>
-                              </div>
-                            )}
+                            </div>
                           </div>
                         </CardContent>
                       </Card>
