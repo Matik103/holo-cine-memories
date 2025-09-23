@@ -63,18 +63,22 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
           <div className="relative w-full h-full bg-black">
-            {/* Close Button - Highly visible and always on top */}
+            {/* Close Button - Following major app standards */}
             <div 
-              className="fixed right-0 z-[999999] p-2 sm:p-4"
+              className="fixed z-[999999]"
               style={{
-                // Position at the same height as YouTube's title bar
-                top: 'env(safe-area-inset-top, 44px)',
-                right: 'env(safe-area-inset-right, 8px)',
-                maxWidth: 'calc(100vw - 16px)',
-                maxHeight: 'calc(100vh - 16px)',
+                // Position below video title area, following YouTube/Netflix standards
+                top: 'env(safe-area-inset-top, 60px)',
+                right: 'env(safe-area-inset-right, 12px)',
+                // Ensure it's always within viewport
+                maxWidth: 'calc(100vw - 24px)',
+                maxHeight: 'calc(100vh - 24px)',
                 // Force this element to be on top of everything
                 position: 'fixed',
                 pointerEvents: 'auto',
+                // Fallback positioning for different screen sizes
+                minTop: '50px',
+                maxTop: '120px',
               }}
             >
               <Button
@@ -114,18 +118,22 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
         <div className="relative w-full h-full bg-black">
-          {/* Close Button - Highly visible and always on top */}
+          {/* Close Button - Following major app standards */}
           <div 
-            className="fixed right-0 z-[999999] p-2 sm:p-4"
+            className="fixed z-[999999]"
             style={{
-              // Position at the same height as YouTube's title bar
-              top: 'env(safe-area-inset-top, 44px)',
-              right: 'env(safe-area-inset-right, 8px)',
-              maxWidth: 'calc(100vw - 16px)',
-              maxHeight: 'calc(100vh - 16px)',
+              // Position below video title area, following YouTube/Netflix standards
+              top: 'env(safe-area-inset-top, 60px)',
+              right: 'env(safe-area-inset-right, 12px)',
+              // Ensure it's always within viewport
+              maxWidth: 'calc(100vw - 24px)',
+              maxHeight: 'calc(100vh - 24px)',
               // Force this element to be on top of everything
               position: 'fixed',
               pointerEvents: 'auto',
+              // Fallback positioning for different screen sizes
+              minTop: '50px',
+              maxTop: '120px',
             }}
           >
             <Button
