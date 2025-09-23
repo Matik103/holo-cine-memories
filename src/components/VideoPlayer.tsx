@@ -63,15 +63,26 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
           <div className="relative w-full h-full bg-black">
-            {/* Close Button */}
-            <Button
-              onClick={handleClose}
-              variant="ghost"
-              size="sm"
-              className="absolute top-4 right-4 z-10 text-white hover:bg-white/20 rounded-full w-10 h-10 p-0"
+            {/* Close Button - Mobile optimized with safe positioning */}
+            <div 
+              className="fixed top-0 right-0 z-[99999] p-2 sm:p-4"
+              style={{
+                // Ensure button is always within safe area on mobile
+                top: 'env(safe-area-inset-top, 8px)',
+                right: 'env(safe-area-inset-right, 8px)',
+                maxWidth: 'calc(100vw - 16px)',
+                maxHeight: 'calc(100vh - 16px)',
+              }}
             >
-              <X className="w-5 h-5" />
-            </Button>
+              <Button
+                onClick={handleClose}
+                variant="ghost"
+                size="sm"
+                className="w-12 h-12 sm:w-10 sm:h-10 p-0 text-white hover:bg-white/20 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 shadow-lg touch-manipulation"
+              >
+                <X className="w-6 h-6 sm:w-5 sm:h-5" />
+              </Button>
+            </div>
             
             <div className="flex items-center justify-center h-full p-6 bg-black">
               <div className="text-center space-y-4">
@@ -91,15 +102,26 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
         <div className="relative w-full h-full bg-black">
-          {/* Close Button */}
-          <Button
-            onClick={handleClose}
-            variant="ghost"
-            size="sm"
-            className="absolute top-4 right-4 z-20 text-white hover:bg-white/20 rounded-full w-10 h-10 p-0"
+          {/* Close Button - Mobile optimized with safe positioning */}
+          <div 
+            className="fixed top-0 right-0 z-[99999] p-2 sm:p-4"
+            style={{
+              // Ensure button is always within safe area on mobile
+              top: 'env(safe-area-inset-top, 8px)',
+              right: 'env(safe-area-inset-right, 8px)',
+              maxWidth: 'calc(100vw - 16px)',
+              maxHeight: 'calc(100vh - 16px)',
+            }}
           >
-            <X className="w-5 h-5" />
-          </Button>
+            <Button
+              onClick={handleClose}
+              variant="ghost"
+              size="sm"
+              className="w-12 h-12 sm:w-10 sm:h-10 p-0 text-white hover:bg-white/20 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 shadow-lg touch-manipulation"
+            >
+              <X className="w-6 h-6 sm:w-5 sm:h-5" />
+            </Button>
+          </div>
           
           {/* Loading State */}
           {isLoading && (
