@@ -66,23 +66,39 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     onClose();
   };
 
-  // Unified header component that always shows - with fixed positioning for mobile
+  // Industry standard mobile video player header with guaranteed visibility
   const renderHeader = () => (
     <div 
-      className="flex items-center justify-between w-full bg-black/95 backdrop-blur-sm border-b border-white/10 px-4"
+      className="flex items-center justify-between w-full"
       style={{
-        height: 'calc(80px + env(safe-area-inset-top, 20px))',
-        paddingTop: 'calc(env(safe-area-inset-top, 20px) + 16px)',
-        minHeight: '80px',
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
         zIndex: 999999,
+        background: 'linear-gradient(180deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 70%, rgba(0,0,0,0.3) 100%)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        height: 'calc(60px + env(safe-area-inset-top, 20px))',
+        paddingTop: 'calc(env(safe-area-inset-top, 20px) + 8px)',
+        paddingBottom: '8px',
+        paddingLeft: '16px',
+        paddingRight: '16px',
+        minHeight: '60px',
+        boxShadow: '0 2px 20px rgba(0,0,0,0.8)',
       }}
     >
-      <div className="flex-1">
-        <h3 className="text-white text-sm font-medium truncate pr-4">
+      <div className="flex-1 pr-4">
+        <h3 
+          className="font-medium truncate"
+          style={{
+            color: '#ffffff',
+            fontSize: '16px',
+            lineHeight: '1.2',
+            textShadow: '0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6)',
+            fontWeight: '500',
+          }}
+        >
           {title || 'Movie'} Trailer
         </h3>
       </div>
@@ -90,15 +106,53 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
         onClick={handleClose}
         variant="ghost"
         size="sm"
-        className="w-12 h-12 p-0 text-white hover:bg-white/20 rounded-full bg-red-600 hover:bg-red-700 border-2 border-white/50 shadow-xl touch-manipulation flex-shrink-0"
         style={{
           position: 'relative',
           zIndex: 1000000,
-          minWidth: '48px',
-          minHeight: '48px',
+          width: '44px',
+          height: '44px',
+          minWidth: '44px',
+          minHeight: '44px',
+          borderRadius: '50%',
+          backgroundColor: 'rgba(239, 68, 68, 0.9)',
+          border: '2px solid rgba(255,255,255,0.8)',
+          color: '#ffffff',
+          padding: '0',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+          transition: 'all 0.2s ease',
+          cursor: 'pointer',
+          touchAction: 'manipulation',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.95)';
+          e.currentTarget.style.transform = 'scale(1.05)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
+          e.currentTarget.style.transform = 'scale(1)';
+        }}
+        onTouchStart={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(220, 38, 38, 0.95)';
+          e.currentTarget.style.transform = 'scale(0.95)';
+        }}
+        onTouchEnd={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.9)';
+          e.currentTarget.style.transform = 'scale(1)';
         }}
       >
-        <X className="w-5 h-5" />
+        <X 
+          style={{
+            width: '20px',
+            height: '20px',
+            strokeWidth: '2.5px',
+            filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))',
+          }}
+        />
       </Button>
     </div>
   );
@@ -111,12 +165,13 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
             {/* Unified Header - Always shows */}
             {renderHeader()}
             
-            {/* Error Content Area - Adjusted for fixed header */}
+            {/* Error Content Area - Industry standard spacing */}
             <div 
               className="flex-1 flex items-center justify-center p-6 bg-black"
               style={{
-                height: 'calc(100vh - 80px - env(safe-area-inset-top, 20px) - 16px)',
-                marginTop: 'calc(80px + env(safe-area-inset-top, 20px))',
+                height: 'calc(100vh - 60px - env(safe-area-inset-top, 20px) - 16px)',
+                marginTop: 'calc(60px + env(safe-area-inset-top, 20px) + 8px)',
+                width: '100%',
               }}
             >
               <div className="text-center space-y-4">
@@ -139,12 +194,13 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
           {/* Unified Header - Always shows */}
           {renderHeader()}
           
-            {/* Video Player Area - Adjusted height with fixed header spacing */}
+            {/* Video Player Area - Industry standard spacing */}
           <div 
             className="flex-1 relative bg-black"
             style={{
-              height: 'calc(100vh - 80px - env(safe-area-inset-top, 20px) - 16px)',
-              marginTop: 'calc(80px + env(safe-area-inset-top, 20px))',
+              height: 'calc(100vh - 60px - env(safe-area-inset-top, 20px) - 16px)',
+              marginTop: 'calc(60px + env(safe-area-inset-top, 20px) + 8px)',
+              width: '100%',
             }}
           >
             {/* Loading State */}
