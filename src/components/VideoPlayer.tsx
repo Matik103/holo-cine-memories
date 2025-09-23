@@ -63,16 +63,19 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
           <div className="relative w-full h-full bg-black">
-            {/* Close Button - Fixed positioning for mobile */}
+            {/* Close Button - Always visible with high z-index */}
             <Button
               onClick={handleClose}
               variant="ghost"
               size="sm"
-              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10 text-white hover:bg-white/20 rounded-full w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-[9999] text-white hover:bg-white/20 rounded-full w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation bg-black/50 backdrop-blur-sm"
               style={{
                 // Ensure button stays within viewport on mobile
                 maxWidth: 'calc(100vw - 16px)',
                 maxHeight: 'calc(100vh - 16px)',
+                // Force button to stay on top
+                position: 'fixed',
+                pointerEvents: 'auto',
               }}
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -96,16 +99,19 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
         <div className="relative w-full h-full bg-black">
-          {/* Close Button - Fixed positioning for mobile */}
+          {/* Close Button - Always visible with high z-index */}
           <Button
             onClick={handleClose}
             variant="ghost"
             size="sm"
-            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 text-white hover:bg-white/20 rounded-full w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation"
+            className="absolute top-2 right-2 sm:top-4 sm:right-4 z-[9999] text-white hover:bg-white/20 rounded-full w-8 h-8 sm:w-10 sm:h-10 p-0 touch-manipulation bg-black/50 backdrop-blur-sm"
             style={{
               // Ensure button stays within viewport on mobile
               maxWidth: 'calc(100vw - 16px)',
               maxHeight: 'calc(100vh - 16px)',
+              // Force button to stay on top of YouTube controls
+              position: 'fixed',
+              pointerEvents: 'auto',
             }}
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
