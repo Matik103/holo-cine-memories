@@ -39,7 +39,6 @@ export const CineMind = () => {
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [previousView, setPreviousView] = useState<ViewState | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -105,15 +104,6 @@ export const CineMind = () => {
     }
   }, [location.state?.searchQuery]);
 
-  // Handle search query from landing page after authentication
-  useEffect(() => {
-    if (user && searchQuery && !isLoading) {
-      console.log('Triggering search from landing page:', searchQuery);
-      handleSearch(searchQuery);
-      setSearchQuery(""); // Clear the search query after triggering
-    }
-  }, [user, searchQuery]);
-
   const initializeOpenAIFromSupabase = async () => {
     try {
       const { data: { secrets } } = await supabase.functions.invoke('get-secrets');
@@ -140,12 +130,7 @@ export const CineMind = () => {
     }
   };
 
-  const handleStartJourney = (searchQuery?: string) => {
-    if (searchQuery) {
-      // Store the search query in state and navigate to auth
-      // The search will be triggered after authentication
-      setSearchQuery(searchQuery);
-    }
+  const handleStartJourney = () => {
     // Redirect to authentication page
     navigate("/auth");
   };
