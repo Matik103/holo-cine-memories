@@ -63,12 +63,12 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
           <div className="relative w-full h-full bg-black">
-            {/* Close Button - Mobile optimized with safe positioning */}
+            {/* Close Button - Aligned with trailer title */}
             <div 
-              className="fixed top-0 right-0 z-[99999] p-2 sm:p-4"
+              className="fixed right-0 z-[99999] p-2 sm:p-4"
               style={{
-                // Ensure button is always within safe area on mobile
-                top: 'env(safe-area-inset-top, 8px)',
+                // Position at the same height as YouTube's title bar
+                top: 'env(safe-area-inset-top, 44px)',
                 right: 'env(safe-area-inset-right, 8px)',
                 maxWidth: 'calc(100vw - 16px)',
                 maxHeight: 'calc(100vh - 16px)',
@@ -102,12 +102,12 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <CustomDialogContent className="w-[100vw] h-[100vh] max-w-none p-0 bg-black border-0 rounded-none">
         <div className="relative w-full h-full bg-black">
-          {/* Close Button - Mobile optimized with safe positioning */}
+          {/* Close Button - Aligned with trailer title */}
           <div 
-            className="fixed top-0 right-0 z-[99999] p-2 sm:p-4"
+            className="fixed right-0 z-[99999] p-2 sm:p-4"
             style={{
-              // Ensure button is always within safe area on mobile
-              top: 'env(safe-area-inset-top, 8px)',
+              // Position at the same height as YouTube's title bar
+              top: 'env(safe-area-inset-top, 44px)',
               right: 'env(safe-area-inset-right, 8px)',
               maxWidth: 'calc(100vw - 16px)',
               maxHeight: 'calc(100vh - 16px)',
