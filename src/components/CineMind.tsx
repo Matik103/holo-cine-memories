@@ -507,7 +507,7 @@ export const CineMind = () => {
                 <span className="sm:hidden">Login</span>
               </Button>
             )}
-          </div>
+          </nav>
         </div>
         <p className="text-center text-muted-foreground text-xs sm:text-sm px-2">
           Your Personal AI Movie Memory Companion
@@ -515,7 +515,7 @@ export const CineMind = () => {
         <div className="flex justify-center mt-2" role="contentinfo">
           <PrivacyPolicy />
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
       <main className="max-w-6xl mx-auto" role="main" aria-label="Main content">
