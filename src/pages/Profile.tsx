@@ -276,17 +276,6 @@ export const Profile = () => {
                     <div className="text-sm text-muted-foreground">Genres Explored</div>
                   </div>
                 </div>
-                
-                {/* Debug Information - Remove in production */}
-                {process.env.NODE_ENV === 'development' && (
-                  <div className="mt-4 p-3 bg-secondary/30 rounded-lg text-xs">
-                    <div className="font-semibold mb-2">Debug Info:</div>
-                    <div>Movie Searches: {movieSearches.length}</div>
-                    <div>Favorite Genres (old): {preferences?.favorite_genres?.length || 0}</div>
-                    <div>Favorite Genres (new): {preferences?.cinedna_score?.favorite_genres?.length || 0}</div>
-                    <div>CineDNA Score: {JSON.stringify(preferences?.cinedna_score, null, 2)}</div>
-                  </div>
-                )}
               </div>
             </div>
 
