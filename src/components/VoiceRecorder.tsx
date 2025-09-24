@@ -74,6 +74,8 @@ export const VoiceRecorder = ({ onTranscription, disabled }: VoiceRecorderProps)
   }, [isRecording]);
 
   const processAudio = async (audioBlob: Blob) => {
+    const transcriptionStartTime = Date.now();
+    
     try {
       // Convert blob to base64
       const reader = new FileReader();
@@ -85,17 +87,42 @@ export const VoiceRecorder = ({ onTranscription, disabled }: VoiceRecorderProps)
           body: { audio: base64Audio }
         });
 
+        const transcriptionDuration = Date.now() - transcriptionStartTime;
+
         if (error) {
+          // Save analytics for failed transcription
+          await saveVoiceAnalytics({
+            query_text: '[TRANSCRIPTION_FAILED]',
+            success: false,
+            search_duration_ms: transcriptionDuration,
+            error: error.message
+          });
           throw error;
         }
 
         if (data.text && data.text.trim()) {
-          onTranscription(data.text.trim());
+          const transcribedText = data.text.trim();
+          
+          // Save analytics for successful transcription
+          await saveVoiceAnalytics({
+            query_text: transcribedText,
+            success: true,
+            search_duration_ms: transcriptionDuration
+          });
+          
+          onTranscription(transcribedText);
           toast({
             title: "Voice Captured!",
-            description: `Transcribed: "${data.text.trim()}"`
+            description: `Transcribed: "${transcribedText}"`
           });
         } else {
+          // Save analytics for no speech detected
+          await saveVoiceAnalytics({
+            query_text: '[NO_SPEECH_DETECTED]',
+            success: false,
+            search_duration_ms: transcriptionDuration
+          });
+          
           toast({
             title: "No Speech Detected",
             description: "Please try speaking more clearly.",
@@ -107,6 +134,15 @@ export const VoiceRecorder = ({ onTranscription, disabled }: VoiceRecorderProps)
       reader.readAsDataURL(audioBlob);
     } catch (error) {
       console.error('Error processing audio:', error);
+      
+      // Save analytics for processing error
+      await saveVoiceAnalytics({
+        query_text: '[PROCESSING_ERROR]',
+        success: false,
+        search_duration_ms: Date.now() - transcriptionStartTime,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
       toast({
         title: "Transcription Failed",
         description: "Unable to process voice input. Please try typing instead.",
@@ -114,6 +150,39 @@ export const VoiceRecorder = ({ onTranscription, disabled }: VoiceRecorderProps)
       });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const saveVoiceAnalytics = async (analyticsData: {
+    query_text: string;
+    success: boolean;
+    search_duration_ms: number;
+    error?: string;
+  }) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        const { error } = await supabase
+          .from('user_query_analytics')
+          .insert({
+            user_id: user.id,
+            query_text: analyticsData.query_text,
+            query_type: 'voice',
+            search_result: analyticsData.error ? { error: analyticsData.error } : null,
+            success: analyticsData.success,
+            search_duration_ms: analyticsData.search_duration_ms,
+            user_agent: navigator.userAgent
+          });
+        
+        if (error) {
+          console.error('Error saving voice analytics:', error);
+        } else {
+          console.log('Voice analytics saved successfully');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to save voice analytics:', error);
     }
   };
 

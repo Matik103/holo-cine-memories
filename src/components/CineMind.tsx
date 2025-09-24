@@ -136,6 +136,7 @@ export const CineMind = () => {
   };
 
   const handleSearch = async (query: string) => {
+    const searchStartTime = Date.now();
     setIsLoading(true);
     setLoadingMessage("Analyzing your description...");
     setRetryCount(0);
@@ -146,10 +147,29 @@ export const CineMind = () => {
     setStreamingOptions([]);
     setSimilarMovies([]);
     
+    // Prepare analytics data
+    let analyticsData = {
+      user_id: user?.id || null,
+      query_text: query,
+      query_type: 'text' as const,
+      search_result: null as any,
+      success: false,
+      confidence_score: null as number | null,
+      movie_identified: null as string | null,
+      movie_year: null as number | null,
+      genres: null as string[] | null,
+      search_duration_ms: null as number | null,
+      user_agent: navigator.userAgent
+    };
+    
     try {
       console.log('Starting search for:', query);
       const rawMovie = await identifyMovie(query);
       console.log('Raw movie response:', rawMovie);
+      
+      const searchDuration = Date.now() - searchStartTime;
+      analyticsData.search_duration_ms = searchDuration;
+      analyticsData.search_result = rawMovie;
       
       if (rawMovie && rawMovie.title && rawMovie.confidence > 0.5) {
         // Transform the data to match MovieCard interface
@@ -169,6 +189,13 @@ export const CineMind = () => {
         console.log('Transformed movie data:', movie);
         console.log('Poster URL:', movie.poster);
         console.log('Trailer URL:', movie.trailer);
+        
+        // Update analytics data with successful result
+        analyticsData.success = true;
+        analyticsData.confidence_score = rawMovie.confidence;
+        analyticsData.movie_identified = movie.title;
+        analyticsData.movie_year = movie.year;
+        analyticsData.genres = movie.genre;
         
         setCurrentMovie(movie);
         setCurrentView('movie-details');
@@ -220,6 +247,11 @@ export const CineMind = () => {
         });
       } else {
         console.log('No movie found or low confidence:', rawMovie);
+        
+        // Update analytics for unsuccessful search
+        analyticsData.success = false;
+        analyticsData.confidence_score = rawMovie?.confidence || 0;
+        
         // Handle case where API returns null title or low confidence
         if (rawMovie && rawMovie.title === null) {
           toast({
@@ -237,6 +269,10 @@ export const CineMind = () => {
       }
     } catch (error) {
       console.error('Search error:', error);
+      
+      // Update analytics for error case
+      analyticsData.success = false;
+      analyticsData.search_duration_ms = Date.now() - searchStartTime;
       
       // Provide more specific error messages
       let errorMessage = "Something went wrong";
@@ -258,6 +294,23 @@ export const CineMind = () => {
         variant: "destructive"
       });
     } finally {
+      // Save analytics data regardless of success/failure
+      if (user && analyticsData.user_id) {
+        try {
+          const { error: analyticsError } = await supabase
+            .from('user_query_analytics')
+            .insert(analyticsData);
+          
+          if (analyticsError) {
+            console.error('Error saving analytics:', analyticsError);
+          } else {
+            console.log('Analytics data saved successfully');
+          }
+        } catch (error) {
+          console.error('Failed to save analytics:', error);
+        }
+      }
+      
       setIsLoading(false);
       setLoadingMessage("");
     }

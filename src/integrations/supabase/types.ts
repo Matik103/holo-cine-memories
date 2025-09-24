@@ -193,22 +193,22 @@ export type Database = {
       }
     }
     Views: {
-      admin_query_insights: {
-        Row: {
-          avg_confidence: number | null
-          avg_duration_ms: number | null
-          date: string | null
-          movies_found: string[] | null
-          query_count: number | null
-          query_type: string | null
-          success: boolean | null
-          unique_users: number | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_admin_query_insights: {
+        Args: { end_date?: string; start_date?: string }
+        Returns: {
+          avg_confidence: number
+          avg_duration_ms: number
+          date: string
+          movies_found: string[]
+          query_count: number
+          query_type: string
+          success: boolean
+          unique_users: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
