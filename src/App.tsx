@@ -7,6 +7,14 @@ import Index from "./pages/Index";
 import { Auth } from "./pages/Auth";
 import { Profile } from "./pages/Profile";
 import { Discover } from "./pages/Discover";
+import { Settings } from "./pages/Settings";
+import { Privacy } from "./pages/Privacy";
+import { Terms } from "./pages/Terms";
+import { License } from "./pages/License";
+import { Cookies } from "./pages/Cookies";
+import { DataUsage } from "./pages/DataUsage";
+import { Help } from "./pages/Help";
+import { About } from "./pages/About";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +30,14 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/discover" element={<Discover />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/license" element={<License />} />
+          <Route path="/cookies" element={<Cookies />} />
+          <Route path="/data-usage" element={<DataUsage />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/about" element={<About />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
