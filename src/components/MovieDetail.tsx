@@ -253,11 +253,11 @@ export const MovieDetail = () => {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-4 sm:py-8 max-w-6xl">
         {/* Hero Section */}
-        <div className="grid lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid md:grid-cols-3 gap-4 sm:gap-8 mb-6 sm:mb-8">
           {/* Poster */}
-          <div className="lg:col-span-1">
+          <div className="md:col-span-1 mx-auto md:mx-0 max-w-xs md:max-w-none">
             <Card className="overflow-hidden group">
               <CardContent className="p-0 relative">
                 <div className="aspect-[2/3] relative">
@@ -276,8 +276,9 @@ export const MovieDetail = () => {
                         onClick={() => setIsVideoPlayerOpen(true)}
                         className="bg-primary/90 hover:bg-primary text-white"
                       >
-                        <Play className="w-6 h-6 mr-2" />
-                        Watch Trailer
+                        <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
+                        <span className="hidden sm:inline">Watch Trailer</span>
+                        <span className="sm:hidden">Play</span>
                       </Button>
                     </div>
                   )}
@@ -287,43 +288,43 @@ export const MovieDetail = () => {
           </div>
 
           {/* Movie Info */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="md:col-span-2 space-y-4 sm:space-y-6">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-2">{movieDetails.title}</h1>
-              <div className="flex flex-wrap items-center gap-4 mb-4">
-                <Badge variant="secondary">{movieDetails.year}</Badge>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 leading-tight">{movieDetails.title}</h1>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4">
+                <Badge variant="secondary" className="text-xs sm:text-sm">{movieDetails.year}</Badge>
                 {movieDetails.rated && (
-                  <Badge variant="outline">{movieDetails.rated}</Badge>
+                  <Badge variant="outline" className="text-xs sm:text-sm">{movieDetails.rated}</Badge>
                 )}
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <Clock className="w-4 h-4" />
+                <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                  <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                   {movieDetails.runtime}
                 </div>
                 {movieDetails.imdbRating && movieDetails.imdbRating !== 'N/A' && (
-                  <div className="flex items-center gap-1 text-sm">
-                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                  <div className="flex items-center gap-1 text-xs sm:text-sm">
+                    <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500 fill-current" />
                     <span className="font-medium">{movieDetails.imdbRating}</span>
                     <span className="text-muted-foreground">/10</span>
                   </div>
                 )}
               </div>
               
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-xs sm:text-sm">
                 <div className="flex items-start gap-2">
-                  <User className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                  <div>
+                  <User className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <span className="font-medium">Director:</span> {movieDetails.director}
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <Calendar className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                  <div>
+                  <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <span className="font-medium">Released:</span> {movieDetails.released}
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <Eye className="w-4 h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                  <div>
+                  <Eye className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                  <div className="min-w-0">
                     <span className="font-medium">Genre:</span> {movieDetails.genre}
                   </div>
                 </div>
@@ -331,62 +332,66 @@ export const MovieDetail = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
               {trailer && (
                 <Button
                   onClick={() => setIsVideoPlayerOpen(true)}
-                  className="flex-1 sm:flex-initial"
+                  className="w-full sm:flex-1 sm:max-w-fit text-sm sm:text-base"
                 >
                   <Play className="w-4 h-4 mr-2" />
                   Watch Trailer
                 </Button>
               )}
-              <Button 
-                variant="outline" 
-                className="flex-1 sm:flex-initial"
-                onClick={() => navigate('/auth')}
-              >
-                <Heart className="w-4 h-4 mr-2" />
-                Add to Favorites
-              </Button>
-              <Button 
-                variant="outline" 
-                size="icon"
-                onClick={handleShare}
-              >
-                <Share className="w-4 h-4" />
-              </Button>
+              <div className="flex gap-2 sm:gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 sm:flex-initial text-sm sm:text-base"
+                  onClick={() => navigate('/auth')}
+                >
+                  <Heart className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Add to Favorites</span>
+                  <span className="sm:hidden">Favorite</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={handleShare}
+                  className="flex-shrink-0"
+                >
+                  <Share className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             {/* Plot */}
             <div>
-              <h3 className="text-lg font-semibold mb-2">Plot</h3>
-              <p className="text-muted-foreground leading-relaxed">{movieDetails.plot}</p>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Plot</h3>
+              <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{movieDetails.plot}</p>
             </div>
 
             {/* Cast */}
             <div>
-              <h3 className="text-lg font-semibold mb-2">Cast</h3>
-              <p className="text-muted-foreground">{movieDetails.cast}</p>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">Cast</h3>
+              <p className="text-muted-foreground text-sm sm:text-base break-words">{movieDetails.cast}</p>
             </div>
           </div>
         </div>
 
         {/* AI Insights Section */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                <Award className="w-4 h-4 text-primary" />
+        <Card className="mb-6 sm:mb-8">
+          <CardContent className="p-4 sm:p-6">
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 flex items-center gap-2">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <Award className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
               </div>
-              AI-Powered Insights
+              <span className="text-base sm:text-2xl">AI-Powered Insights</span>
               {insightsLoading && (
-                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-2" />
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-2 flex-shrink-0" />
               )}
             </h2>
             
             {/* Tabs */}
-            <div className="flex gap-2 mb-6 border-b">
+            <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b overflow-x-auto">
               {[
                 { key: 'summary', label: 'Summary' },
                 { key: 'themes', label: 'Themes & Meaning' },
@@ -395,7 +400,7 @@ export const MovieDetail = () => {
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key as any)}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                  className={`px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === tab.key
                       ? 'border-primary text-primary'
                       : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -407,16 +412,16 @@ export const MovieDetail = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="space-y-4 min-h-[200px]">
+            <div className="space-y-4 min-h-[150px] sm:min-h-[200px]">
               {activeTab === 'summary' && (
                 <div>
                   {insightsLoading ? (
                     <div className="flex items-center space-x-2 text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>AI is analyzing the movie...</span>
+                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                      <span className="text-sm">AI is analyzing the movie...</span>
                     </div>
                   ) : (
-                    <p className="text-muted-foreground leading-relaxed">
+                    <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
                       {insights?.summary || 'AI insights will appear here once analysis is complete.'}
                     </p>
                   )}
@@ -428,27 +433,27 @@ export const MovieDetail = () => {
                   {insightsLoading ? (
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2 text-muted-foreground">
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Discovering themes and meanings...</span>
+                        <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                        <span className="text-sm">Discovering themes and meanings...</span>
                       </div>
                     </div>
                   ) : (
                     <>
                       <div>
-                        <h4 className="font-semibold mb-2">Main Themes</h4>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <h4 className="text-sm sm:text-base font-semibold mb-2">Main Themes</h4>
+                        <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
                           {insights?.themes || 'Theme analysis will appear here.'}
                         </p>
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-2">Symbolism & Hidden Meanings</h4>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <h4 className="text-sm sm:text-base font-semibold mb-2">Symbolism & Hidden Meanings</h4>
+                        <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
                           {insights?.symbolism || 'Symbolism analysis will appear here.'}
                         </p>
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-2">Cultural Impact</h4>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <h4 className="text-sm sm:text-base font-semibold mb-2">Cultural Impact</h4>
+                        <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
                           {insights?.culturalImpact || 'Cultural impact analysis will appear here.'}
                         </p>
                       </div>
@@ -459,20 +464,20 @@ export const MovieDetail = () => {
               
               {activeTab === 'similar' && (
                 <div>
-                  <h4 className="font-semibold mb-3">Movies You Might Like</h4>
+                  <h4 className="text-sm sm:text-base font-semibold mb-3">Movies You Might Like</h4>
                   {insightsLoading ? (
                     <div className="flex items-center space-x-2 text-muted-foreground">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Finding similar movies...</span>
+                      <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
+                      <span className="text-sm">Finding similar movies...</span>
                     </div>
                   ) : (
-                    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {insights?.similarMovies?.map((movie, index) => (
-                        <Card key={index} className="p-4 hover:bg-accent/50 transition-colors cursor-pointer">
-                          <p className="font-medium">{movie}</p>
+                        <Card key={index} className="p-3 sm:p-4 hover:bg-accent/50 transition-colors cursor-pointer">
+                          <p className="text-sm font-medium">{movie}</p>
                         </Card>
                       )) || (
-                        <p className="text-muted-foreground col-span-full">Similar movie recommendations will appear here.</p>
+                        <p className="text-muted-foreground text-sm col-span-full">Similar movie recommendations will appear here.</p>
                       )}
                     </div>
                   )}
@@ -485,22 +490,22 @@ export const MovieDetail = () => {
         {/* Where to Watch */}
         {streamingOptions.length > 0 && (
           <Card>
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4">Where to Watch</h2>
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <CardContent className="p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-4">Where to Watch</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {streamingOptions.map((option, index) => (
-                  <Card key={index} className="p-4 hover:bg-accent/50 transition-colors">
+                  <Card key={index} className="p-3 sm:p-4 hover:bg-accent/50 transition-colors">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">{option.platform}</p>
-                        <p className="text-sm text-muted-foreground capitalize">{option.type}</p>
+                      <div className="min-w-0 flex-1 mr-3">
+                        <p className="font-medium text-sm sm:text-base truncate">{option.platform}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground capitalize">{option.type}</p>
                         {option.price && (
-                          <p className="text-sm font-medium text-primary">{option.price}</p>
+                          <p className="text-xs sm:text-sm font-medium text-primary">{option.price}</p>
                         )}
                       </div>
-                      <Button size="sm" variant="outline" asChild>
+                      <Button size="sm" variant="outline" asChild className="flex-shrink-0">
                         <a href={option.url} target="_blank" rel="noopener noreferrer">
-                          <ExternalLink className="w-4 h-4" />
+                          <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
                         </a>
                       </Button>
                     </div>
