@@ -60,7 +60,7 @@ const movies: MovieData[] = [
     description: "There is no spoon.",
     painPoint: "Confused by the meaning?",
     solution: "Understand every layer of symbolism and philosophy.",
-    poster: "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BN2NmN2VhMTQtMDNiOS00NDlhLTliMjgtODE2ZTY0ODQyNDRhXkEyXkFqcGc@._V1_SX300.jpg"
   },
   {
     title: "Titanic",
@@ -91,29 +91,64 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   }, []);
 
   const fetchMoviePosters = async () => {
-    setMovieData(movies);
-    setIsLoading(false);
+    setIsLoading(true);
     
-    // Fetch trailers for each movie in the background
-    const moviesWithTrailers = await Promise.all(
-      movies.map(async (movie) => {
-        try {
-          const { data: trailerData } = await supabase.functions.invoke('movie-trailer', {
-            body: { movieTitle: movie.title, movieYear: movie.year }
-          });
-          
-          return {
-            ...movie,
-            trailer: trailerData?.trailer || null
-          };
-        } catch (error) {
-          console.error(`Error fetching trailer for ${movie.title}:`, error);
-          return movie;
+    try {
+      // Fetch trailers for each movie and set data once with all information
+      console.log('Fetching trailers for landing page movies...');
+      
+      const moviesWithTrailers = await Promise.allSettled(
+        movies.map(async (movie) => {
+          try {
+            console.log(`Fetching trailer for: ${movie.title} (${movie.year})`);
+            const { data: trailerData, error } = await supabase.functions.invoke('movie-trailer', {
+              body: { movieTitle: movie.title, movieYear: movie.year }
+            });
+            
+            if (error) {
+              console.error(`Trailer API error for ${movie.title}:`, error);
+              return movie;
+            }
+            
+            const movieWithTrailer = {
+              ...movie,
+              trailer: trailerData?.trailer || null
+            };
+            
+            if (trailerData?.trailer) {
+              console.log(`✓ Trailer found for ${movie.title}: ${trailerData.trailer.title}`);
+            } else {
+              console.log(`✗ No trailer found for ${movie.title}`);
+            }
+            
+            return movieWithTrailer;
+          } catch (error) {
+            console.error(`Error fetching trailer for ${movie.title}:`, error);
+            return movie;
+          }
+        })
+      );
+      
+      // Process results from Promise.allSettled
+      const processedMovies = moviesWithTrailers.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          console.error(`Failed to process ${movies[index].title}:`, result.reason);
+          return movies[index]; // Return original movie data as fallback
         }
-      })
-    );
-    
-    setMovieData(moviesWithTrailers);
+      });
+      
+      console.log(`Completed trailer fetching. ${processedMovies.filter(m => m.trailer).length}/${processedMovies.length} trailers found.`);
+      setMovieData(processedMovies);
+      
+    } catch (error) {
+      console.error('Error in fetchMoviePosters:', error);
+      // Fallback to original data if there's an error
+      setMovieData(movies);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCardClick = (movie: MovieData) => {
