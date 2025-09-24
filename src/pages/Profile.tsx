@@ -168,18 +168,35 @@ export const Profile = () => {
 
   const calculateCineDNAProgress = () => {
     const searchCount = movieSearches.length;
-    const genreCount = preferences?.favorite_genres?.length || 0;
     const cinednaScore = preferences?.cinedna_score;
     
-    // If we have CineDNA score data, use it for more accurate progress
+    // Use CineDNA score data if available (more accurate)
     if (cinednaScore && typeof cinednaScore === 'object') {
       const totalSearches = cinednaScore.total_searches || 0;
       const favoriteGenres = cinednaScore.favorite_genres || [];
-      return Math.min(Math.floor((totalSearches * 10 + favoriteGenres.length * 5) / 2), 100);
+      const genreCount = favoriteGenres.length;
+      
+      // Dynamic scaling algorithm that grows continuously but slows down over time
+      // Base score from searches (diminishing returns after 10 searches)
+      const searchScore = totalSearches <= 10 
+        ? totalSearches * 8 
+        : 80 + Math.log(totalSearches - 9) * 15;
+      
+      // Genre diversity bonus (diminishing returns after 8 genres)
+      const genreScore = genreCount <= 8 
+        ? genreCount * 2.5 
+        : 20 + Math.log(genreCount - 7) * 5;
+      
+      // Total score with gentle curve, allowing growth beyond traditional 100%
+      const totalScore = searchScore + genreScore;
+      
+      // Convert to percentage (aiming for ~85% at 15 searches + 10 genres)
+      return Math.floor(Math.min(totalScore * 0.8, 95));
     }
     
-    // Fallback to basic calculation
-    return Math.min(Math.floor((searchCount * 10 + genreCount * 5) / 2), 100);
+    // Fallback calculation for basic data
+    const basicScore = searchCount * 6 + (preferences?.favorite_genres?.length || 0) * 3;
+    return Math.floor(Math.min(basicScore * 0.9, 85));
   };
 
   if (loading) {
