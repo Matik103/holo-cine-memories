@@ -88,10 +88,102 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<MovieData | null>(null);
+  const [loadedPosters, setLoadedPosters] = useState<Set<string>>(new Set());
+  const [failedPosters, setFailedPosters] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchMoviePosters();
+    preloadPosters();
   }, []);
+
+  // Preload all posters to ensure they're available
+  const preloadPosters = async () => {
+    console.log('🖼️ Preloading all movie posters...');
+    
+    const preloadPromises = movies.map(async (movie) => {
+      try {
+        const img = new Image();
+        img.src = movie.poster;
+        
+        return new Promise((resolve) => {
+          img.onload = () => {
+            console.log(`✓ Preloaded poster for ${movie.title}`);
+            setLoadedPosters(prev => new Set([...prev, movie.poster]));
+            resolve(true);
+          };
+          img.onerror = () => {
+            console.warn(`⚠️ Failed to preload poster for ${movie.title}: ${movie.poster}`);
+            setFailedPosters(prev => new Set([...prev, movie.poster]));
+            resolve(false);
+          };
+          // Timeout after 10 seconds
+          setTimeout(() => {
+            console.warn(`⏰ Timeout preloading poster for ${movie.title}`);
+            setFailedPosters(prev => new Set([...prev, movie.poster]));
+            resolve(false);
+          }, 10000);
+        });
+      } catch (error) {
+        console.error(`❌ Error preloading poster for ${movie.title}:`, error);
+        setFailedPosters(prev => new Set([...prev, movie.poster]));
+        return false;
+      }
+    });
+
+    await Promise.allSettled(preloadPromises);
+    console.log('🎬 Poster preloading complete');
+  };
+
+  // Generate fallback poster URLs for each movie
+  const getFallbackPosters = (movie: MovieData) => {
+    const baseTitle = movie.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return [
+      movie.poster, // Original poster
+      `https://via.placeholder.com/300x450/1a1a1a/ffffff?text=${encodeURIComponent(movie.title)}`, // Placeholder with title
+      `https://via.placeholder.com/300x450/2d2d2d/ffffff?text=${encodeURIComponent(movie.year)}`, // Placeholder with year
+      '/placeholder.svg', // Local placeholder
+    ];
+  };
+
+  // Robust poster component with multiple fallbacks
+  const PosterImage = ({ movie, className }: { movie: MovieData; className: string }) => {
+    const [currentSrcIndex, setCurrentSrcIndex] = useState(0);
+    const [isLoading, setIsLoading] = useState(true);
+    const fallbackPosters = getFallbackPosters(movie);
+
+    const handleError = () => {
+      console.warn(`Failed to load poster ${currentSrcIndex + 1} for ${movie.title}`);
+      if (currentSrcIndex < fallbackPosters.length - 1) {
+        setCurrentSrcIndex(prev => prev + 1);
+      } else {
+        console.error(`All poster fallbacks failed for ${movie.title}`);
+        setIsLoading(false);
+      }
+    };
+
+    const handleLoad = () => {
+      console.log(`✓ Successfully loaded poster ${currentSrcIndex + 1} for ${movie.title}`);
+      setIsLoading(false);
+    };
+
+    return (
+      <div className="relative w-full h-full">
+        {isLoading && (
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        <img
+          src={fallbackPosters[currentSrcIndex]}
+          alt={`${movie.title} (${movie.year}) poster`}
+          className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
+          onError={handleError}
+          onLoad={handleLoad}
+          loading="eager" // Load immediately for better UX
+        />
+      </div>
+    );
+  };
 
   const fetchMoviePosters = async () => {
     setIsLoading(true);
@@ -203,6 +295,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         <div className="neural-card p-8 flex flex-col items-center space-y-4">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground">Loading your movie memories...</p>
+          <p className="text-xs text-muted-foreground">Preloading posters for best experience</p>
         </div>
       </div>
     );
@@ -314,20 +407,11 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                       >
                         <CardContent className="p-0 h-full relative">
                           <div className="relative w-full h-full group-hover:scale-105 transition-transform duration-300">
-                            <img
-                              src={movie.poster}
-                              alt={`${movie.title} (${movie.year}) poster`}
+                            <PosterImage
+                              movie={movie}
                               className={`w-full h-full object-cover rounded-lg ${
                                 movie.title === "Inception" ? "object-top" : ""
                               }`}
-                              onError={(e) => {
-                                console.error(`Failed to load poster for ${movie.title}: ${movie.poster}`);
-                                e.currentTarget.src = '/placeholder.svg';
-                              }}
-                              onLoad={() => {
-                                console.log(`✓ Poster loaded successfully for ${movie.title}`);
-                              }}
-                              loading="lazy"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                             
