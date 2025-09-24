@@ -318,7 +318,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                   </>
                                 ) : (
                                   <>
-                                    <Play className="w-12 h-12 mx-auto mb-2 text-primary" />
+                                <Play className="w-12 h-12 mx-auto mb-2 text-primary" />
                                     {movie.trailer ? (
                                       <>
                                         <p className="text-lg font-semibold">Watch Trailer</p>
@@ -326,8 +326,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                       </>
                                     ) : (
                                       <>
-                                        <p className="text-lg font-semibold">View Details</p>
-                                        <p className="text-sm opacity-75">Click to explore</p>
+                                <p className="text-lg font-semibold">View Details</p>
+                                <p className="text-sm opacity-75">Click to explore</p>
                                       </>
                                     )}
                                   </>
@@ -335,13 +335,13 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                 
                                 {/* Trailer Status */}
                                 {loadingTrailer !== movie.title && (
-                                  <div className="mt-3 space-y-1">
-                                    {movie.trailer ? (
-                                      <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">
-                                        ✓ Trailer Available
-                                      </Badge>
-                                    ) : null}
-                                  </div>
+                                <div className="mt-3 space-y-1">
+                                  {movie.trailer ? (
+                                    <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">
+                                      ✓ Trailer Available
+                                    </Badge>
+                                  ) : null}
+                                </div>
                                 )}
                               </div>
                             </div>

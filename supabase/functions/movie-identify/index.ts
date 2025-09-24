@@ -285,7 +285,7 @@ serve(async (req) => {
     }
 
     // Fetch poster and trailer if movie was identified
-    if (movieData.title && movieData.confidence > 0.5) {
+    if (movieData.title && movieData.confidence > 0.7) {
       console.log('Fetching media for:', movieData.title, movieData.year);
       
       // Fetch poster and trailer in parallel with timeout
@@ -315,7 +315,7 @@ serve(async (req) => {
     }
 
     // If movie identified, save search to database
-    if (movieData.title && movieData.confidence > 0.5) {
+    if (movieData.title && movieData.confidence > 0.7) {
       const authHeader = req.headers.get('Authorization');
       if (authHeader) {
         const token = authHeader.replace('Bearer ', '');
