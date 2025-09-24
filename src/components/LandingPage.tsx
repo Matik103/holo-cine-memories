@@ -153,7 +153,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           setSelectedMovie(movieWithTrailer);
           setIsVideoPlayerOpen(true);
         } else {
-          console.log(`⚠️ No trailer URL in response for ${movie.title}`);
+          console.log(`⚠️ No trailer URL in response for ${movie.title} (confidence: ${rawMovie.confidence})`);
+          console.log(`⚠️ API only fetches trailers if confidence > 0.7, but got ${rawMovie.confidence}`);
           setLoadingTrailer(null);
           // Fallback to navigation
           navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
