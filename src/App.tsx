@@ -16,6 +16,7 @@ import { DataUsage } from "./pages/DataUsage";
 import { Help } from "./pages/Help";
 import { About } from "./pages/About";
 import NotFound from "./pages/NotFound";
+import { MovieDetail } from "./components/MovieDetail";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/data-usage" element={<DataUsage />} />
           <Route path="/help" element={<Help />} />
           <Route path="/about" element={<About />} />
+          <Route path="/movie/:movieTitle" element={<MovieDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

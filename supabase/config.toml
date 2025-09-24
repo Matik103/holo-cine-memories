@@ -62,5 +62,14 @@ verify_jwt = false
 [functions.movie-recommend]
 verify_jwt = false
 
+[functions.movie-details]
+verify_jwt = false
+
+[functions.movie-trailer]
+verify_jwt = false
+
+[functions.movie-insights]
+verify_jwt = false
+
 [analytics]
 enabled = true

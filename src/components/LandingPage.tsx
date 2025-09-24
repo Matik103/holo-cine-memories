@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Brain, Play, Search, Lightbulb, Eye } from "lucide-react";
@@ -73,10 +74,10 @@ const movies: MovieData[] = [
 ];
 
 export const LandingPage = ({ onStart }: { onStart: () => void }) => {
+  const navigate = useNavigate();
   const [movieData, setMovieData] = useState<MovieData[]>([]);
   const [currentCard, setCurrentCard] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [flippedCards, setFlippedCards] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     fetchMoviePosters();
@@ -88,16 +89,9 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
     setIsLoading(false);
   };
 
-  const handleCardFlip = (index: number) => {
-    setFlippedCards(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
-      } else {
-        newSet.add(index);
-      }
-      return newSet;
-    });
+  const handleCardClick = (movie: MovieData) => {
+    const movieSlug = `${movie.title} ${movie.year}`.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
+    navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
   };
 
   const nextCard = () => {
@@ -209,87 +203,48 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
               <div className="relative w-80 h-96 sm:w-96 sm:h-[28rem] md:w-[28rem] md:h-[32rem] perspective-1000">
                 {movieData.map((movie, index) => {
                   const isActive = index === currentCard;
-                  const isFlipped = flippedCards.has(index);
                   
                   return (
                     <div
                       key={index}
                       className={`absolute inset-0 transition-all duration-500 ease-out transform ${
                         isActive 
-                          ? 'opacity-100 scale-100 z-10 translate-x-0 rotate-y-0' 
+                          ? 'opacity-100 scale-100 z-10 translate-x-0' 
                           : 'opacity-0 scale-90 z-0'
                       }`}
                     >
                       <Card 
-                        className={`w-full h-full cursor-pointer transition-transform duration-600 ease-out touch-manipulation select-none group card-glow card-smooth ${
-                          isFlipped ? 'rotate-y-180' : ''
-                        }`}
-                        onClick={() => handleCardFlip(index)}
+                        className="w-full h-full cursor-pointer transition-transform duration-300 ease-out touch-manipulation select-none group card-glow hover:scale-105"
+                        onClick={() => handleCardClick(movie)}
                       >
                         <CardContent className="p-0 h-full relative">
-                          {/* Front of Card - Movie Poster */}
-                          <div className="absolute inset-0 backface-hidden">
-                            <div className="relative w-full h-full">
-                              <img
-                                src={movie.poster}
-                                alt={movie.title}
-                                className={`w-full h-full object-cover rounded-lg transition-transform duration-300 ease-out ${
-                                  movie.title === "Inception" ? "object-top" : ""
-                                }`}
-                                onError={(e) => {
-                                  e.currentTarget.src = '/placeholder.svg';
-                                }}
-                                loading="lazy"
-                              />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                              {/* Futuristic glow effect */}
-                              <div className="absolute inset-0 bg-gradient-to-t from-transparent via-primary/5 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-                              <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
-                                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{movie.title}</h3>
-                                <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">{movie.year}</p>
-                                <p className="text-xs sm:text-sm text-gray-400 italic">"{movie.description}"</p>
+                          <div className="relative w-full h-full group-hover:scale-105 transition-transform duration-300">
+                            <img
+                              src={movie.poster}
+                              alt={movie.title}
+                              className={`w-full h-full object-cover rounded-lg ${
+                                movie.title === "Inception" ? "object-top" : ""
+                              }`}
+                              onError={(e) => {
+                                e.currentTarget.src = '/placeholder.svg';
+                              }}
+                              loading="lazy"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                            
+                            {/* Hover overlay with "View Details" */}
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                              <div className="text-center text-white">
+                                <Play className="w-12 h-12 mx-auto mb-2 text-primary" />
+                                <p className="text-lg font-semibold">View Details</p>
+                                <p className="text-sm opacity-75">Click to explore</p>
                               </div>
                             </div>
-                          </div>
-
-                          {/* Back of Card - AI Response */}
-                          <div className="absolute inset-0 rotate-y-180 backface-hidden">
-                            <div className="w-full h-full bg-gradient-to-br from-primary/20 to-accent/20 p-3 sm:p-6 flex flex-col justify-center items-center text-center rounded-lg relative group">
-                              {/* Flip back button */}
-                              <div className="absolute top-2 sm:top-4 right-2 sm:right-4">
-                                <div 
-                                  className="w-10 h-10 sm:w-8 sm:h-8 bg-white/40 rounded-full flex items-center justify-center backdrop-blur-sm cursor-pointer hover:bg-white/50 active:bg-white/60 transition-all duration-150 ease-out touch-manipulation select-none shadow-lg button-futuristic"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCardFlip(index);
-                                  }}
-                                  title="Tap to go back to poster"
-                                >
-                                  <svg className="w-5 h-5 sm:w-4 sm:h-4 text-white drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                  </svg>
-                                </div>
-                              </div>
-                              
-                              <div className="mb-2 sm:mb-4">
-                                <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary mx-auto mb-1 sm:mb-2 drop-shadow-lg" />
-                                <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-1 sm:mb-2">{movie.painPoint}</h4>
-                              </div>
-                              <p className="text-xs sm:text-sm text-gray-300 mb-2 sm:mb-4">{movie.solution}</p>
-                              <div className="flex gap-1 sm:gap-2">
-                                <div className="flex items-center gap-1 text-xs text-primary">
-                                  <Search className="w-2 h-2 sm:w-3 sm:h-3" />
-                                  <span className="hidden sm:inline">Identify</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-xs text-accent">
-                                  <Lightbulb className="w-2 h-2 sm:w-3 sm:h-3" />
-                                  <span className="hidden sm:inline">Explain</span>
-                                </div>
-                                <div className="flex items-center gap-1 text-xs text-primary">
-                                  <Play className="w-2 h-2 sm:w-3 sm:h-3" />
-                                  <span className="hidden sm:inline">Watch</span>
-                                </div>
-                              </div>
+                            
+                            <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
+                              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{movie.title}</h3>
+                              <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">{movie.year}</p>
+                              <p className="text-xs sm:text-sm text-gray-400 italic line-clamp-2">"{movie.description}"</p>
                             </div>
                           </div>
                         </CardContent>
@@ -343,8 +298,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
               Your CineMind remembers for you.
             </h3>
             <p className="text-sm sm:text-base text-muted-foreground">
-              <span className="sm:hidden">Tap any card to flip and explore</span>
-              <span className="hidden sm:inline">Tap any card above to see how CineMind solves your movie memory problems</span>
+              <span className="sm:hidden">Tap any card to explore full details</span>
+              <span className="hidden sm:inline">Click any card above to explore full movie details with AI insights</span>
             </p>
           </div>
           
