@@ -235,31 +235,38 @@ export const Profile = () => {
     
     // Use CineDNA score data if available (more accurate)
     if (cinednaScore && typeof cinednaScore === 'object') {
-      const totalSearches = cinednaScore.total_searches || 0;
+      const totalSearches = cinednaScore.total_searches || searchCount;
       const favoriteGenres = cinednaScore.favorite_genres || [];
-      const genreCount = favoriteGenres.length;
+      const genreScores = cinednaScore.genre_scores || {};
+      const decadePreferences = cinednaScore.decade_preferences || {};
       
-      // Dynamic scaling algorithm that grows continuously but slows down over time
-      // Base score from searches (diminishing returns after 10 searches)
-      const searchScore = totalSearches <= 10 
-        ? totalSearches * 8 
-        : 80 + Math.log(totalSearches - 9) * 15;
+      const genreCount = Object.keys(genreScores).length || favoriteGenres.length;
+      const decadeCount = Object.keys(decadePreferences).length;
       
-      // Genre diversity bonus (diminishing returns after 8 genres)
-      const genreScore = genreCount <= 8 
-        ? genreCount * 2.5 
-        : 20 + Math.log(genreCount - 7) * 5;
+      // Enhanced algorithm that considers multiple factors
+      // Base score from searches (faster growth initially, then slower)
+      const searchScore = totalSearches <= 5 
+        ? totalSearches * 12  // Fast growth for first 5 searches
+        : 60 + (totalSearches - 5) * 6; // Slower growth after 5
       
-      // Total score with gentle curve, allowing growth beyond traditional 100%
-      const totalScore = searchScore + genreScore;
+      // Genre diversity bonus (encourage exploring different genres)
+      const genreScore = genreCount <= 6 
+        ? genreCount * 4 
+        : 24 + (genreCount - 6) * 2;
       
-      // Convert to percentage (aiming for ~85% at 15 searches + 10 genres)
-      return Math.floor(Math.min(totalScore * 0.8, 95));
+      // Decade exploration bonus
+      const decadeScore = decadeCount * 3;
+      
+      // Total score with gentle curve
+      const totalScore = searchScore + genreScore + decadeScore;
+      
+      // Convert to percentage (aiming for ~90% at 10 searches + 8 genres + 3 decades)
+      return Math.floor(Math.min(totalScore * 0.7, 95));
     }
     
     // Fallback calculation for basic data
-    const basicScore = searchCount * 6 + (preferences?.favorite_genres?.length || 0) * 3;
-    return Math.floor(Math.min(basicScore * 0.9, 85));
+    const basicScore = searchCount * 8 + (preferences?.favorite_genres?.length || 0) * 4;
+    return Math.floor(Math.min(basicScore * 0.8, 85));
   };
 
   if (loading) {
@@ -381,8 +388,10 @@ export const Profile = () => {
                       {(() => {
                         // Try cinedna_score first (new format), then fall back to favorite_genres (old format)
                         const cinednaScore = preferences?.cinedna_score;
-                        if (cinednaScore && typeof cinednaScore === 'object' && Array.isArray(cinednaScore.favorite_genres)) {
-                          return cinednaScore.favorite_genres.length;
+                        if (cinednaScore && typeof cinednaScore === 'object') {
+                          const genreScores = cinednaScore.genre_scores || {};
+                          const favoriteGenres = cinednaScore.favorite_genres || [];
+                          return Object.keys(genreScores).length || favoriteGenres.length;
                         }
                         if (Array.isArray(preferences?.favorite_genres)) {
                           return preferences.favorite_genres.length;
@@ -393,7 +402,7 @@ export const Profile = () => {
                     <div className="text-xs sm:text-sm text-muted-foreground">Genres Explored</div>
                     {preferences?.cinedna_score?.decade_preferences && (
                       <div className="text-xs text-accent mt-1">
-                        {Object.keys(preferences.cinedna_score.decade_preferences).length} decades
+                        {Object.keys(preferences.cinedna_score.decade_preferences).length} decades explored
                       </div>
                     )}
                   </div>

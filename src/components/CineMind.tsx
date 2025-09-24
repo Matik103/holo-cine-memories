@@ -193,6 +193,21 @@ export const CineMind = () => {
               console.log('Search saved successfully to database');
               // Set flag to refresh profile page when user visits it next
               localStorage.setItem('refreshProfile', 'true');
+              
+              // Also trigger CineDNA update immediately
+              try {
+                const { error: cineDNAError } = await supabase.functions.invoke('update-cinedna', {
+                  body: { userId: user.id }
+                });
+                
+                if (cineDNAError) {
+                  console.error('Error updating CineDNA:', cineDNAError);
+                } else {
+                  console.log('CineDNA updated successfully after search');
+                }
+              } catch (error) {
+                console.error('Failed to update CineDNA:', error);
+              }
             }
           } catch (error) {
             console.error('Failed to save search to database:', error);
