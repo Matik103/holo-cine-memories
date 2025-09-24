@@ -17,6 +17,15 @@ interface StreamingAvailabilityProps {
 }
 
 export const StreamingAvailability = ({ movieTitle, options, onBack }: StreamingAvailabilityProps) => {
+  // Replace Amazon Prime URLs with affiliate link
+  const getStreamingUrl = (option: StreamingOption) => {
+    const platform = option.platform.toLowerCase();
+    if (platform.includes('amazon') || platform.includes('prime')) {
+      return 'https://www.amazon.com/Prime-Video/b?node=2676882011&tag=cinemind-20';
+    }
+    return option.url;
+  };
+
   const freeOptions = options.filter(opt => opt.type === 'free');
   const subscriptionOptions = options.filter(opt => opt.type === 'subscription');
   const rentBuyOptions = options.filter(opt => opt.type === 'rent' || opt.type === 'buy');
@@ -86,11 +95,11 @@ export const StreamingAvailability = ({ movieTitle, options, onBack }: Streaming
                   </div>
                   
                   {/* Action Button */}
-                  <Button 
-                    className="neural-button rounded-lg h-9 sm:h-10 w-full sm:w-auto touch-manipulation"
-                    onClick={() => window.open(option.url, '_blank')}
-                    size="sm"
-                  >
+                   <Button 
+                     className="neural-button rounded-lg h-9 sm:h-10 w-full sm:w-auto touch-manipulation"
+                     onClick={() => window.open(getStreamingUrl(option), '_blank')}
+                     size="sm"
+                   >
                     <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     <span className="text-xs sm:text-sm">Watch Now</span>
                   </Button>
@@ -132,12 +141,12 @@ export const StreamingAvailability = ({ movieTitle, options, onBack }: Streaming
                   </div>
                   
                   {/* Action Button */}
-                  <Button 
-                    variant="outline"
-                    className="rounded-lg border-border hover:bg-secondary/50 h-9 sm:h-10 w-full sm:w-auto touch-manipulation"
-                    onClick={() => window.open(option.url, '_blank')}
-                    size="sm"
-                  >
+                   <Button 
+                     variant="outline"
+                     className="rounded-lg border-border hover:bg-secondary/50 h-9 sm:h-10 w-full sm:w-auto touch-manipulation"
+                     onClick={() => window.open(getStreamingUrl(option), '_blank')}
+                     size="sm"
+                   >
                     <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     <span className="text-xs sm:text-sm">Go to {option.platform}</span>
                   </Button>
@@ -184,12 +193,12 @@ export const StreamingAvailability = ({ movieTitle, options, onBack }: Streaming
                   </div>
                   
                   {/* Action Button */}
-                  <Button 
-                    variant="outline"
-                    className="rounded-lg border-border hover:bg-secondary/50 h-9 sm:h-10 w-full sm:w-auto touch-manipulation"
-                    onClick={() => window.open(option.url, '_blank')}
-                    size="sm"
-                  >
+                   <Button 
+                     variant="outline"
+                     className="rounded-lg border-border hover:bg-secondary/50 h-9 sm:h-10 w-full sm:w-auto touch-manipulation"
+                     onClick={() => window.open(getStreamingUrl(option), '_blank')}
+                     size="sm"
+                   >
                     <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                     <span className="text-xs sm:text-sm">{option.type === 'rent' ? 'Rent' : 'Buy'} Now</span>
                   </Button>
