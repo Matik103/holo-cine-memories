@@ -48,6 +48,44 @@ export const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Add a refresh function that can be called from outside
+  const refreshProfile = async () => {
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        navigate("/auth");
+        return;
+      }
+
+      setUser(user);
+
+      // Fetch all data in parallel
+      const [profileRes, preferencesRes, searchesRes, favoritesRes] = await Promise.all([
+        supabase.from('profiles').select('*').eq('user_id', user.id).single(),
+        supabase.from('user_preferences').select('*').eq('user_id', user.id).single(),
+        supabase.from('movie_searches').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
+        supabase.from('favorites').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+      ]);
+
+      if (profileRes.data) setProfile(profileRes.data);
+      if (preferencesRes.data) setPreferences(preferencesRes.data);
+      if (searchesRes.data) setMovieSearches(searchesRes.data);
+      if (favoritesRes.data) setFavorites(favoritesRes.data);
+
+    } catch (error) {
+      console.error('Error loading profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load profile data",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     const getProfile = async () => {
       try {
@@ -119,6 +157,30 @@ export const Profile = () => {
 
     getProfile();
   }, [navigate, toast]);
+
+  // Listen for focus events to refresh data when user comes back to the profile
+  useEffect(() => {
+    const handleFocus = () => {
+      console.log('Profile page focused, refreshing data...');
+      refreshProfile();
+    };
+    
+    window.addEventListener('focus', handleFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
+
+  // Also refresh when navigating to this page
+  useEffect(() => {
+    // Check if we came from a search by looking at localStorage
+    const shouldRefresh = localStorage.getItem('refreshProfile');
+    if (shouldRefresh) {
+      localStorage.removeItem('refreshProfile');
+      refreshProfile();
+    }
+  }, []);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();

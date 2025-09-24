@@ -172,6 +172,33 @@ export const CineMind = () => {
         
         setCurrentMovie(movie);
         setCurrentView('movie-details');
+        
+        // Save the search to the database
+        if (user) {
+          try {
+            const { error: searchError } = await supabase
+              .from('movie_searches')
+              .insert({
+                user_id: user.id,
+                search_query: query,
+                movie_title: movie.title,
+                movie_year: movie.year,
+                movie_poster_url: movie.poster,
+                movie_plot: movie.plot
+              });
+            
+            if (searchError) {
+              console.error('Error saving search:', searchError);
+            } else {
+              console.log('Search saved successfully to database');
+              // Set flag to refresh profile page when user visits it next
+              localStorage.setItem('refreshProfile', 'true');
+            }
+          } catch (error) {
+            console.error('Failed to save search to database:', error);
+          }
+        }
+        
         toast({
           title: "Movie Found!",
           description: `Identified: ${movie.title} (${movie.year})`
