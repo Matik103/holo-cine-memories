@@ -140,9 +140,72 @@ export type Database = {
         }
         Relationships: []
       }
+      user_query_analytics: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          genres: string[] | null
+          id: string
+          movie_identified: string | null
+          movie_year: number | null
+          query_text: string
+          query_type: string
+          search_duration_ms: number | null
+          search_result: Json | null
+          success: boolean
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          genres?: string[] | null
+          id?: string
+          movie_identified?: string | null
+          movie_year?: number | null
+          query_text: string
+          query_type: string
+          search_duration_ms?: number | null
+          search_result?: Json | null
+          success?: boolean
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          genres?: string[] | null
+          id?: string
+          movie_identified?: string | null
+          movie_year?: number | null
+          query_text?: string
+          query_type?: string
+          search_duration_ms?: number | null
+          search_result?: Json | null
+          success?: boolean
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
-      [_ in never]: never
+      admin_query_insights: {
+        Row: {
+          avg_confidence: number | null
+          avg_duration_ms: number | null
+          date: string | null
+          movies_found: string[] | null
+          query_count: number | null
+          query_type: string | null
+          success: boolean | null
+          unique_users: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
