@@ -165,6 +165,43 @@ export const MovieDetail = () => {
     }
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${movieDetails?.title} (${movieDetails?.year}) - CineMind`,
+      text: `Check out ${movieDetails?.title} on CineMind - Your AI movie memory companion!`,
+      url: window.location.href
+    };
+
+    try {
+      // Try native sharing first (mobile devices)
+      if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
+        toast({
+          title: "Link copied!",
+          description: "Movie link has been copied to your clipboard.",
+        });
+      }
+    } catch (error) {
+      // Final fallback: Copy just the URL
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link copied!",
+          description: "Movie link has been copied to your clipboard.",
+        });
+      } catch (clipboardError) {
+        toast({
+          title: "Share failed",
+          description: "Unable to share or copy link. Please copy the URL manually.",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5">
@@ -304,11 +341,19 @@ export const MovieDetail = () => {
                   Watch Trailer
                 </Button>
               )}
-              <Button variant="outline" className="flex-1 sm:flex-initial">
+              <Button 
+                variant="outline" 
+                className="flex-1 sm:flex-initial"
+                onClick={() => navigate('/auth')}
+              >
                 <Heart className="w-4 h-4 mr-2" />
                 Add to Favorites
               </Button>
-              <Button variant="outline" size="icon">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={handleShare}
+              >
                 <Share className="w-4 h-4" />
               </Button>
             </div>
