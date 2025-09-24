@@ -284,26 +284,26 @@ export const Profile = () => {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <h3 className="text-lg font-semibold mb-4">Movie Memory Progress</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-4">Movie Memory Progress</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span>Memory Bank Completion</span>
-                  <span className="font-bold text-primary">{calculateCineDNAProgress()}%</span>
+                  <span className="text-sm sm:text-base">Memory Bank Completion</span>
+                  <span className="font-bold text-primary text-sm sm:text-base">{calculateCineDNAProgress()}%</span>
                 </div>
-                <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
+                <div className="w-full bg-secondary rounded-full h-2 sm:h-3 overflow-hidden">
                   <div 
-                    className="bg-gradient-to-r from-primary to-accent h-3 rounded-full neural-glow transition-all duration-1000 ease-out"
+                    className="bg-gradient-to-r from-primary to-accent h-2 sm:h-3 rounded-full neural-glow transition-all duration-1000 ease-out"
                     style={{ width: `${calculateCineDNAProgress()}%` }}
                   />
                 </div>
                 
                 {/* Enhanced Progress Insights */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="text-center p-3 rounded-lg bg-primary/5 border border-primary/10">
-                    <div className="text-2xl font-bold text-primary">{movieSearches.length}</div>
-                    <div className="text-sm text-muted-foreground">Movies Recalled</div>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4">
+                  <div className="text-center p-2 sm:p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <div className="text-xl sm:text-2xl font-bold text-primary">{movieSearches.length}</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Movies Recalled</div>
                     {movieSearches.length > 0 && (
                       <div className="text-xs text-primary mt-1">
                         +{movieSearches.filter(s => {
@@ -314,8 +314,8 @@ export const Profile = () => {
                       </div>
                     )}
                   </div>
-                  <div className="text-center p-3 rounded-lg bg-accent/5 border border-accent/10">
-                    <div className="text-2xl font-bold text-accent">
+                  <div className="text-center p-2 sm:p-3 rounded-lg bg-accent/5 border border-accent/10">
+                    <div className="text-xl sm:text-2xl font-bold text-accent">
                       {(() => {
                         // Try cinedna_score first (new format), then fall back to favorite_genres (old format)
                         const cinednaScore = preferences?.cinedna_score;
@@ -328,7 +328,7 @@ export const Profile = () => {
                         return 0;
                       })()}
                     </div>
-                    <div className="text-sm text-muted-foreground">Genres Explored</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Genres Explored</div>
                     {preferences?.cinedna_score?.decade_preferences && (
                       <div className="text-xs text-accent mt-1">
                         {Object.keys(preferences.cinedna_score.decade_preferences).length} decades
@@ -338,10 +338,10 @@ export const Profile = () => {
                 </div>
                 
                 {/* Progress Level Indicator */}
-                <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">CineDNA Level</span>
-                    <Badge variant="secondary" className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                <div className="mt-4 p-2 sm:p-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <span className="text-xs sm:text-sm font-medium">CineDNA Level</span>
+                    <Badge variant="secondary" className="bg-gradient-to-r from-primary to-accent text-primary-foreground self-start sm:self-auto">
                       {calculateCineDNAProgress() < 20 ? 'Novice' : 
                        calculateCineDNAProgress() < 40 ? 'Explorer' :
                        calculateCineDNAProgress() < 60 ? 'Enthusiast' :
@@ -353,13 +353,13 @@ export const Profile = () => {
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                Preferred Genres
+              <h3 className="text-base sm:text-lg font-semibold mb-4 flex flex-col sm:flex-row sm:items-center gap-2">
+                <span>Preferred Genres</span>
                 {(() => {
                   const cinednaScore = preferences?.cinedna_score;
                   const genreCount = cinednaScore?.favorite_genres?.length || preferences?.favorite_genres?.length || 0;
                   return genreCount > 0 && (
-                    <Badge variant="outline" className="text-xs">{genreCount} discovered</Badge>
+                    <Badge variant="outline" className="text-xs self-start sm:self-auto">{genreCount} discovered</Badge>
                   );
                 })()}
               </h3>
@@ -463,61 +463,67 @@ export const Profile = () => {
         {/* My Favorite Movies */}
         {favorites.length > 0 && (
           <Card className="neural-card p-4 sm:p-8 mb-6">
-            <div className="flex items-center gap-3 mb-4 sm:mb-6">
-              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              <h2 className="text-xl sm:text-2xl font-bold">My Favorite Movies</h2>
-              <Badge variant="secondary" className="bg-primary/10 text-primary">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 sm:mb-6">
+              <div className="flex items-center gap-3">
+                <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">My Favorite Movies</h2>
+              </div>
+              <Badge variant="secondary" className="bg-primary/10 text-primary self-start sm:self-auto">
                 {favorites.length}
               </Badge>
             </div>
 
-            <div className="grid gap-4">
+            <div className="grid gap-3 sm:gap-4">
               {favorites.map((favorite) => (
                 <div 
                   key={favorite.id}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                  className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
                 >
-                  {favorite.movie_poster_url && (
-                    <img 
-                      src={favorite.movie_poster_url} 
-                      alt={favorite.movie_title}
-                      className="w-12 h-16 object-cover rounded"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h4 className="font-semibold">
-                      {favorite.movie_title} 
-                      {favorite.movie_year && (
-                        <span className="text-muted-foreground ml-2">({favorite.movie_year})</span>
-                      )}
-                    </h4>
-                    <div className="flex items-center gap-3 mt-2">
-                      {favorite.rating && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm text-muted-foreground">Rating:</span>
-                          <div className="flex">
-                            {[...Array(5)].map((_, i) => (
-                              <Heart 
-                                key={i} 
-                                className={`w-3 h-3 ${i < favorite.rating ? 'fill-primary text-primary' : 'text-muted-foreground'}`} 
-                              />
-                            ))}
+                  <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                    {favorite.movie_poster_url && (
+                      <img 
+                        src={favorite.movie_poster_url} 
+                        alt={favorite.movie_title}
+                        className="w-16 h-20 sm:w-12 sm:h-16 object-cover rounded flex-shrink-0"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-sm sm:text-base">
+                        {favorite.movie_title} 
+                        {favorite.movie_year && (
+                          <span className="text-muted-foreground ml-1 sm:ml-2 text-xs sm:text-sm">({favorite.movie_year})</span>
+                        )}
+                      </h4>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-2">
+                        {favorite.rating && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs sm:text-sm text-muted-foreground">Rating:</span>
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <Heart 
+                                  key={i} 
+                                  className={`w-3 h-3 sm:w-3 sm:h-3 ${i < favorite.rating ? 'fill-primary text-primary' : 'text-muted-foreground'}`} 
+                                />
+                              ))}
+                            </div>
                           </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          {favorite.is_watched && (
+                            <Badge variant="outline" className="text-xs">
+                              Watched
+                            </Badge>
+                          )}
+                          <p className="text-xs text-muted-foreground">
+                            Added {new Date(favorite.created_at).toLocaleDateString()}
+                          </p>
                         </div>
-                      )}
-                      {favorite.is_watched && (
-                        <Badge variant="outline" className="text-xs">
-                          Watched
-                        </Badge>
-                      )}
+                      </div>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Added {new Date(favorite.created_at).toLocaleDateString()}
-                    </p>
                   </div>
                 </div>
               ))}
@@ -527,10 +533,10 @@ export const Profile = () => {
 
         {/* Recent Movie Memories */}
         <Card className="neural-card p-4 sm:p-8">
-          <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
             <div className="flex items-center gap-3">
               <Film className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              <h2 className="text-xl sm:text-2xl font-bold">Recent Movie Memories</h2>
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Recent Movie Memories</h2>
               {movieSearches.length > 0 && (
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
                   {movieSearches.length} memories
@@ -542,7 +548,7 @@ export const Profile = () => {
                 variant="ghost" 
                 size="sm"
                 onClick={() => navigate("/")}
-                className="text-xs"
+                className="text-xs sm:text-sm self-start sm:self-auto"
               >
                 Add More
               </Button>
@@ -550,7 +556,7 @@ export const Profile = () => {
           </div>
 
           {movieSearches.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-4 sm:space-y-6">
               {/* Group by time periods */}
               {(() => {
                 const now = new Date();
@@ -572,61 +578,63 @@ export const Profile = () => {
                 
                 return sections.map(({ title, searches, color }) => (
                   <div key={title} className="space-y-3">
-                    <h3 className={`text-sm font-semibold ${color} flex items-center gap-2`}>
+                    <h3 className={`text-sm sm:text-base font-semibold ${color} flex items-center gap-2`}>
                       {title}
                       <Badge variant="outline" className="text-xs">{searches.length}</Badge>
                     </h3>
-                    <div className="grid gap-3 pl-4 border-l-2 border-secondary">
+                    <div className="grid gap-3 pl-2 sm:pl-4 border-l-2 border-secondary">
                       {searches.map((search) => (
                         <div 
                           key={search.id}
-                          className="group flex items-center gap-4 p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-all duration-200 cursor-pointer"
+                          className="group flex flex-col sm:flex-row items-start gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-all duration-200 cursor-pointer touch-manipulation"
                           onClick={() => {
                             // Store the search query and navigate to search
                             window.localStorage.setItem('lastSearchQuery', search.search_query);
                             navigate("/");
                           }}
                         >
-                          <div className="relative">
-                            {search.movie_poster_url ? (
-                              <img 
-                                src={search.movie_poster_url} 
-                                alt={search.movie_title}
-                                className="w-12 h-16 object-cover rounded shadow-sm"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                }}
-                              />
-                            ) : (
-                              <div className="w-12 h-16 bg-secondary rounded flex items-center justify-center">
-                                <Film className="w-6 h-6 text-muted-foreground" />
-                              </div>
-                            )}
-                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <ArrowLeft className="w-3 h-3 text-primary-foreground rotate-180" />
-                            </div>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between">
-                              <h4 className="font-semibold truncate">
-                                {search.movie_title} 
-                                {search.movie_year && (
-                                  <span className="text-muted-foreground ml-2">({search.movie_year})</span>
-                                )}
-                              </h4>
-                              <div className="text-xs text-muted-foreground ml-2 flex-shrink-0">
-                                {new Date(search.created_at).toLocaleDateString()}
+                          <div className="flex items-start gap-3 w-full sm:w-auto">
+                            <div className="relative flex-shrink-0">
+                              {search.movie_poster_url ? (
+                                <img 
+                                  src={search.movie_poster_url} 
+                                  alt={search.movie_title}
+                                  className="w-16 h-20 sm:w-12 sm:h-16 object-cover rounded shadow-sm"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-16 h-20 sm:w-12 sm:h-16 bg-secondary rounded flex items-center justify-center">
+                                  <Film className="w-6 h-6 sm:w-4 sm:h-4 text-muted-foreground" />
+                                </div>
+                              )}
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <ArrowLeft className="w-3 h-3 text-primary-foreground rotate-180" />
                               </div>
                             </div>
-                            <p className="text-sm text-muted-foreground italic mt-1 truncate">
-                              "{search.search_query}"
-                            </p>
-                            {search.movie_plot && (
-                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                                {search.movie_plot}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 sm:gap-2">
+                                <h4 className="font-semibold text-sm sm:text-base leading-tight">
+                                  {search.movie_title} 
+                                  {search.movie_year && (
+                                    <span className="text-muted-foreground ml-1 sm:ml-2 text-xs sm:text-sm">({search.movie_year})</span>
+                                  )}
+                                </h4>
+                                <div className="text-xs text-muted-foreground flex-shrink-0 sm:ml-2">
+                                  {new Date(search.created_at).toLocaleDateString()}
+                                </div>
+                              </div>
+                              <p className="text-xs sm:text-sm text-muted-foreground italic mt-1 line-clamp-1 sm:line-clamp-none">
+                                "{search.search_query}"
                               </p>
-                            )}
+                              {search.movie_plot && (
+                                <p className="text-xs text-muted-foreground mt-2 line-clamp-2 sm:line-clamp-2 leading-relaxed">
+                                  {search.movie_plot}
+                                </p>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -636,17 +644,17 @@ export const Profile = () => {
               })()}
             </div>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Film className="w-8 h-8 text-primary" />
+            <div className="text-center py-8 sm:py-12 px-4">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Film className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No Movie Memories Yet</h3>
-              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              <h3 className="text-base sm:text-lg font-semibold mb-2">No Movie Memories Yet</h3>
+              <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto leading-relaxed">
                 Start searching for movies to build your personal movie memory bank and unlock your CineDNA profile!
               </p>
               <Button 
                 onClick={() => navigate("/")}
-                className="neural-button px-6"
+                className="neural-button px-4 sm:px-6 text-sm sm:text-base"
               >
                 <Film className="w-4 h-4 mr-2" />
                 Start Exploring Movies
