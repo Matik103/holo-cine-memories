@@ -3,9 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { Brain, Play, Search, Lightbulb, Eye } from "lucide-react";
+import { Brain, Search, Lightbulb, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { VideoPlayer } from "./VideoPlayer";
 
 interface MovieData {
   title: string;
@@ -81,9 +80,6 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const [movieData, setMovieData] = useState<MovieData[]>([]);
   const [currentCard, setCurrentCard] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<MovieData | null>(null);
-  const [loadingTrailer, setLoadingTrailer] = useState<string | null>(null);
 
   useEffect(() => {
     // Load movies instantly without any API calls
@@ -113,65 +109,9 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
     );
   };
 
-  const handleCardClick = async (movie: MovieData) => {
-    // If movie already has a trailer, play it immediately
-    if (movie.trailer) {
-      setSelectedMovie(movie);
-      setIsVideoPlayerOpen(true);
-      return;
-    }
-
-    // Show loading state for this specific card
-    setLoadingTrailer(movie.title);
-    
-    try {
-      console.log(`🎬 Fetching trailer for: ${movie.title} (${movie.year})`);
-      
-      // Use the same approach as the main app - call movie-identify
-      const { data: rawMovie, error } = await supabase.functions.invoke('movie-identify', {
-        body: { query: `${movie.title} ${movie.year}` }
-      });
-      
-      if (error) {
-        console.error(`❌ Error fetching trailer for ${movie.title}:`, error);
-        setLoadingTrailer(null);
-        // Fallback to navigation
-        navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
-        return;
-      }
-      
-      // Transform the data the same way as the main app
-      if (rawMovie && rawMovie.title && rawMovie.confidence > 0.5) {
-        const trailerUrl = (rawMovie as any).trailer_url;
-        
-        if (trailerUrl) {
-          console.log(`✅ Trailer found for ${movie.title}: ${trailerUrl}`);
-          const movieWithTrailer = {
-            ...movie,
-            trailer: trailerUrl
-          };
-          setSelectedMovie(movieWithTrailer);
-          setIsVideoPlayerOpen(true);
-        } else {
-          console.log(`⚠️ No trailer URL in response for ${movie.title} (confidence: ${rawMovie.confidence})`);
-          console.log(`⚠️ API only fetches trailers if confidence > 0.7, but got ${rawMovie.confidence}`);
-          setLoadingTrailer(null);
-          // Fallback to navigation
-          navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
-        }
-      } else {
-        console.log(`⚠️ Low confidence or no data for ${movie.title}:`, rawMovie);
-        setLoadingTrailer(null);
-        // Fallback to navigation
-        navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
-      }
-      
-    } catch (error) {
-      console.error(`❌ Network error fetching trailer for ${movie.title}:`, error);
-      setLoadingTrailer(null);
-      // Fallback to navigation
-      navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
-    }
+  const handleCardClick = (movie: MovieData) => {
+    // Always navigate to movie details page instead of auto-playing trailer
+    navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
   };
 
   const nextCard = () => {
@@ -307,42 +247,14 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                             
-                            {/* Hover overlay with trailer preview */}
+                            {/* Hover overlay with movie details preview */}
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                               <div className="text-center text-white">
-                                {loadingTrailer === movie.title ? (
-                                  <>
-                                    <div className="w-12 h-12 mx-auto mb-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                    <p className="text-lg font-semibold">Loading Trailer...</p>
-                                    <p className="text-sm opacity-75">Please wait</p>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Play className="w-12 h-12 mx-auto mb-2 text-primary" />
-                                    {movie.trailer ? (
-                                      <>
-                                        <p className="text-lg font-semibold">Watch Trailer</p>
-                                        <p className="text-sm opacity-75">Click to play</p>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <p className="text-lg font-semibold">View Details</p>
-                                        <p className="text-sm opacity-75">Click to explore</p>
-                                      </>
-                                    )}
-                                  </>
-                                )}
-                                
-                                {/* Trailer Status */}
-                                {loadingTrailer !== movie.title && (
-                                  <div className="mt-3 space-y-1">
-                                    {movie.trailer ? (
-                                      <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">
-                                        ✓ Trailer Available
-                                      </Badge>
-                                    ) : null}
-                                  </div>
-                                )}
+                                <>
+                                  <Eye className="w-12 h-12 mx-auto mb-2 text-primary" />
+                                  <p className="text-lg font-semibold">View Details</p>
+                                  <p className="text-sm opacity-75">Click to explore</p>
+                                </>
                               </div>
                             </div>
                             
@@ -418,19 +330,6 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           </Button>
         </div>
       </div>
-
-      {/* Video Player Modal */}
-      {selectedMovie && selectedMovie.trailer && (
-        <VideoPlayer
-          isOpen={isVideoPlayerOpen}
-          onClose={() => {
-            setIsVideoPlayerOpen(false);
-            setSelectedMovie(null);
-          }}
-          videoUrl={selectedMovie.trailer}
-          title={selectedMovie.title}
-        />
-      )}
     </div>
   );
 };
