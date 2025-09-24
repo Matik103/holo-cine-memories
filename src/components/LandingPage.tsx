@@ -334,15 +334,11 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                     <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">
                                       ✓ Trailer Available
                                     </Badge>
-                                  ) : movie.trailer === null ? (
-                                    <Badge variant="secondary" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-                                      ⚠ No Trailer Found
-                                    </Badge>
-                                  ) : (
+                                  ) : movie.trailer === undefined ? (
                                     <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/30">
                                       ... Loading Trailer
                                     </Badge>
-                                  )}
+                                  ) : null}
                                 </div>
                               </div>
                             </div>
