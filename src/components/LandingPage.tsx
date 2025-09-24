@@ -72,7 +72,7 @@ const movies: MovieData[] = [
     description: "Hakuna Matata!",
     painPoint: "Childhood memories fading?",
     solution: "Preserve and rediscover your favorite childhood films.",
-    poster: "https://m.media-amazon.com/images/M/MV5BYTYxNGMyZTYtMjE3MS00MzNjLWFjNmYtMDk3N2FmM2JiM2M1XkEyXkFqcGdeQXVyNjY5NDU4NzI@._V1_SX300.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BYjExYTM0OGYtZWY5Ni00NzZhLTlhOTEtNTBiYmE0NjZmMDQzXkEyXkFqcGdeQXVyMTQxNzMzNDI@._V1_SX300.jpg"
   }
 ];
 
