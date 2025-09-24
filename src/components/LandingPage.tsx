@@ -28,7 +28,7 @@ const movies: MovieData[] = [
     description: "I am inevitable.",
     painPoint: "Lost in the MCU timeline?",
     solution: "Track complex franchises and understand every connection.",
-    poster: "https://image.tmdb.org/t/p/w500/or06FN3Dka5tukK1e9sl16pB3iy.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_SX300.jpg"
   },
   {
     title: "Inception",
@@ -36,7 +36,7 @@ const movies: MovieData[] = [
     description: "A dream within a dream within a dream...",
     painPoint: "Ever forgot a movie like this?",
     solution: "CineMind remembers every detail, even the most complex plots.",
-    poster: "https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg"
   },
   {
     title: "Blade Runner 2049",
@@ -44,7 +44,7 @@ const movies: MovieData[] = [
     description: "More human than human is our motto.",
     painPoint: "Lost in philosophical sci-fi?",
     solution: "Get instant explanations of deep themes and symbolism.",
-    poster: "https://image.tmdb.org/t/p/w500/gajva2L0rPYkEWjzgFlBXCAVBE5.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BNzA1Njg4NzYxOV5BMl5BanBnXkFtZTgwODk5NjU3MzI@._V1_SX300.jpg"
   },
   {
     title: "The Dark Knight",
@@ -68,7 +68,7 @@ const movies: MovieData[] = [
     description: "I'm the king of the world!",
     painPoint: "Where can I watch now?",
     solution: "Get instant streaming availability across all platforms.",
-    poster: "https://image.tmdb.org/t/p/w500/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BYzYyN2FiZmUtYWYzMy00MzViLWJkZTMtOGY1ZjgzNWMwN2YxXkEyXkFqcGc@._V1_SX300.jpg"
   },
   {
     title: "The Lion King",
@@ -76,7 +76,7 @@ const movies: MovieData[] = [
     description: "Hakuna Matata!",
     painPoint: "Childhood memories fading?",
     solution: "Preserve and rediscover your favorite childhood films.",
-    poster: "https://image.tmdb.org/t/p/w500/sKCr78MXSLixwmZ8DyJLrpMsd15.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BZGRiZDZhZjItM2M3ZS00Y2IyLTk3Y2MtMWY5YjliNDFkZTJlXkEyXkFqcGc@._V1_SX300.jpg"
   }
 ];
 
@@ -94,59 +94,72 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
     setIsLoading(true);
     
     try {
-      // Fetch trailers for each movie and set data once with all information
-      console.log('Fetching trailers for landing page movies...');
+      console.log('🎬 Starting trailer fetch for all movies...');
       
-      const moviesWithTrailers = await Promise.allSettled(
-        movies.map(async (movie) => {
-          try {
-            console.log(`Fetching trailer for: ${movie.title} (${movie.year})`);
-            const { data: trailerData, error } = await supabase.functions.invoke('movie-trailer', {
-              body: { movieTitle: movie.title, movieYear: movie.year }
-            });
-            
-            if (error) {
-              console.error(`Trailer API error for ${movie.title}:`, error);
-              return movie;
-            }
-            
-            const movieWithTrailer = {
-              ...movie,
-              trailer: trailerData?.trailer || null
-            };
-            
-            if (trailerData?.trailer) {
-              console.log(`✓ Trailer found for ${movie.title}: ${trailerData.trailer.title}`);
-            } else {
-              console.log(`✗ No trailer found for ${movie.title}`);
-            }
-            
-            return movieWithTrailer;
-          } catch (error) {
-            console.error(`Error fetching trailer for ${movie.title}:`, error);
-            return movie;
+      // First show movies immediately with posters
+      setMovieData(movies);
+      setIsLoading(false);
+      
+      // Then fetch trailers in parallel with individual timeout handling
+      const trailerPromises = movies.map(async (movie, index) => {
+        const timeoutId = setTimeout(() => {
+          console.log(`⏱️ Timeout: Trailer fetch for ${movie.title} took too long`);
+        }, 10000); // 10 second timeout warning
+        
+        try {
+          console.log(`🎞️ Fetching trailer for: ${movie.title} (${movie.year})`);
+          
+          const { data: trailerData, error } = await supabase.functions.invoke('movie-trailer', {
+            body: { movieTitle: movie.title, movieYear: movie.year }
+          });
+          
+          clearTimeout(timeoutId);
+          
+          if (error) {
+            console.error(`❌ Trailer API error for ${movie.title}:`, error);
+            return { ...movie, trailer: null };
           }
-        })
-      );
-      
-      // Process results from Promise.allSettled
-      const processedMovies = moviesWithTrailers.map((result, index) => {
-        if (result.status === 'fulfilled') {
-          return result.value;
-        } else {
-          console.error(`Failed to process ${movies[index].title}:`, result.reason);
-          return movies[index]; // Return original movie data as fallback
+          
+          if (trailerData?.trailer) {
+            console.log(`✅ Trailer found for ${movie.title}: ${trailerData.trailer.title}`);
+            return {
+              ...movie,
+              trailer: trailerData.trailer
+            };
+          } else {
+            console.log(`⚠️ No trailer data returned for ${movie.title}`);
+            return { ...movie, trailer: null };
+          }
+          
+        } catch (error) {
+          clearTimeout(timeoutId);
+          console.error(`❌ Network error fetching trailer for ${movie.title}:`, error);
+          return { ...movie, trailer: null };
         }
       });
       
-      console.log(`Completed trailer fetching. ${processedMovies.filter(m => m.trailer).length}/${processedMovies.length} trailers found.`);
-      setMovieData(processedMovies);
+      // Use Promise.allSettled to ensure one failure doesn't break others
+      const results = await Promise.allSettled(trailerPromises);
+      
+      const moviesWithTrailers = results.map((result, index) => {
+        if (result.status === 'fulfilled') {
+          return result.value;
+        } else {
+          console.error(`❌ Failed to process ${movies[index].title}:`, result.reason);
+          return { ...movies[index], trailer: null };
+        }
+      });
+      
+      const successCount = moviesWithTrailers.filter(m => m.trailer).length;
+      console.log(`🎉 Trailer fetching complete: ${successCount}/${moviesWithTrailers.length} trailers found`);
+      
+      // Update state with trailers
+      setMovieData(moviesWithTrailers);
       
     } catch (error) {
-      console.error('Error in fetchMoviePosters:', error);
-      // Fallback to original data if there's an error
+      console.error('❌ Critical error in fetchMoviePosters:', error);
+      // Ensure we always show the basic movie data even if trailer fetching fails completely
       setMovieData(movies);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -283,12 +296,16 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                           <div className="relative w-full h-full group-hover:scale-105 transition-transform duration-300">
                             <img
                               src={movie.poster}
-                              alt={movie.title}
+                              alt={`${movie.title} (${movie.year}) poster`}
                               className={`w-full h-full object-cover rounded-lg ${
                                 movie.title === "Inception" ? "object-top" : ""
                               }`}
                               onError={(e) => {
+                                console.error(`Failed to load poster for ${movie.title}: ${movie.poster}`);
                                 e.currentTarget.src = '/placeholder.svg';
+                              }}
+                              onLoad={() => {
+                                console.log(`✓ Poster loaded successfully for ${movie.title}`);
                               }}
                               loading="lazy"
                             />
@@ -300,13 +317,23 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                 <Play className="w-12 h-12 mx-auto mb-2 text-primary" />
                                 <p className="text-lg font-semibold">View Details</p>
                                 <p className="text-sm opacity-75">Click to explore</p>
-                                {movie.trailer && (
-                                  <div className="mt-2">
-                                    <Badge variant="secondary" className="text-xs">
-                                      Trailer Available
+                                
+                                {/* Trailer Status */}
+                                <div className="mt-3 space-y-1">
+                                  {movie.trailer ? (
+                                    <Badge variant="secondary" className="text-xs bg-green-500/20 text-green-400 border-green-500/30">
+                                      ✓ Trailer Available
                                     </Badge>
-                                  </div>
-                                )}
+                                  ) : movie.trailer === null ? (
+                                    <Badge variant="secondary" className="text-xs bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
+                                      ⚠ No Trailer Found
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-400 border-blue-500/30">
+                                      ... Loading Trailer
+                                    </Badge>
+                                  )}
+                                </div>
                               </div>
                             </div>
                             
