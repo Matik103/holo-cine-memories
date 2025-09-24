@@ -44,11 +44,36 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
   // Extract YouTube video ID from URL with better error handling
   useEffect(() => {
     if (videoUrl && isOpen) {
-      const match = videoUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-      if (match && match[1]) {
-        setVideoId(match[1]);
+      console.log('Processing video URL:', videoUrl);
+      
+      let extractedVideoId = null;
+      
+      // Handle different YouTube URL formats
+      if (videoUrl.includes('youtube.com/embed/')) {
+        // Format: https://www.youtube.com/embed/VIDEO_ID
+        const match = videoUrl.match(/youtube\.com\/embed\/([^?&\n]+)/);
+        extractedVideoId = match ? match[1] : null;
+      } else if (videoUrl.includes('youtube.com/watch?v=')) {
+        // Format: https://www.youtube.com/watch?v=VIDEO_ID
+        const match = videoUrl.match(/youtube\.com\/watch\?v=([^&\n?#]+)/);
+        extractedVideoId = match ? match[1] : null;
+      } else if (videoUrl.includes('youtu.be/')) {
+        // Format: https://youtu.be/VIDEO_ID
+        const match = videoUrl.match(/youtu\.be\/([^?&\n]+)/);
+        extractedVideoId = match ? match[1] : null;
+      } else {
+        // Try to extract any video ID pattern as fallback
+        const match = videoUrl.match(/([a-zA-Z0-9_-]{11})/);
+        extractedVideoId = match ? match[1] : null;
+      }
+      
+      console.log('Extracted video ID:', extractedVideoId);
+      
+      if (extractedVideoId) {
+        setVideoId(extractedVideoId);
         setHasError(false);
       } else {
+        console.error('Failed to extract video ID from URL:', videoUrl);
         setVideoId(null);
         setHasError(true);
       }
@@ -218,7 +243,22 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
                 <div className="w-16 h-16 mx-auto bg-red-500/20 rounded-full flex items-center justify-center">
                   <X className="w-8 h-8 text-red-500" />
                 </div>
-                <p className="text-white">Unable to load video</p>
+                <div className="space-y-2">
+                  <p className="text-white text-lg">Unable to load video</p>
+                  <p className="text-gray-400 text-sm">The trailer may not be available or there was a network error.</p>
+                  {videoUrl && (
+                    <div className="mt-4">
+                      <Button
+                        onClick={() => window.open(videoUrl.replace('embed/', 'watch?v='), '_blank')}
+                        variant="outline"
+                        size="sm"
+                        className="text-white border-white/20 hover:bg-white/10"
+                      >
+                        Watch on YouTube
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -261,16 +301,25 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
             
             {/* YouTube Embed - Full height of remaining space */}
             <iframe
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=1&playsinline=1`}
+              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}`}
               title={`${title} Trailer`}
               className="w-full h-full bg-black"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
-              onLoad={() => setIsLoading(false)}
+              onLoad={() => {
+                console.log('YouTube iframe loaded successfully');
+                setIsLoading(false);
+              }}
+              onError={(e) => {
+                console.error('YouTube iframe failed to load:', e);
+                setHasError(true);
+                setIsLoading(false);
+              }}
               style={{
                 width: '100%',
                 height: '100%',
-                backgroundColor: 'black'
+                backgroundColor: 'black',
+                border: 'none'
               }}
             />
           </div>
