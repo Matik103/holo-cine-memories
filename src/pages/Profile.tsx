@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings, BarChart3 } from "lucide-react";
+import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings } from "lucide-react";
 
 interface MovieSearch {
   id: string;
@@ -306,17 +306,6 @@ export const Profile = () => {
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
             </Button>
-            {/* Admin Analytics - only show for your user ID */}
-            {user?.id === '2fad0c82-4637-4718-905e-f90509625cb4' && (
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate("/admin")}
-                className="flex items-center gap-2 text-sm sm:text-base text-accent"
-              >
-                <BarChart3 className="w-4 h-4" />
-                <span className="hidden sm:inline">Analytics</span>
-              </Button>
-            )}
             <Button 
               variant="outline" 
               onClick={handleSignOut}
