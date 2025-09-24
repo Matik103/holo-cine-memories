@@ -14,12 +14,7 @@ interface MovieData {
   description: string;
   painPoint: string;
   solution: string;
-  trailer?: {
-    videoId: string;
-    title: string;
-    embedUrl: string;
-    thumbnail: string;
-  };
+  trailer?: string; // Simple string URL like main app
 }
 
 const movies: MovieData[] = [
@@ -132,7 +127,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
     try {
       console.log(`🎬 Fetching trailer for: ${movie.title} (${movie.year})`);
       
-      const { data: movieData, error } = await supabase.functions.invoke('movie-identify', {
+      // Use the same approach as the main app - call movie-identify
+      const { data: rawMovie, error } = await supabase.functions.invoke('movie-identify', {
         body: { query: `${movie.title} ${movie.year}` }
       });
       
@@ -144,16 +140,26 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         return;
       }
       
-      if (movieData && movieData.trailer_url) {
-        console.log(`✅ Trailer found for ${movie.title}`);
-        const movieWithTrailer = {
-          ...movie,
-          trailer: movieData.trailer_url
-        };
-        setSelectedMovie(movieWithTrailer);
-        setIsVideoPlayerOpen(true);
+      // Transform the data the same way as the main app
+      if (rawMovie && rawMovie.title && rawMovie.confidence > 0.5) {
+        const trailerUrl = (rawMovie as any).trailer_url;
+        
+        if (trailerUrl) {
+          console.log(`✅ Trailer found for ${movie.title}: ${trailerUrl}`);
+          const movieWithTrailer = {
+            ...movie,
+            trailer: trailerUrl
+          };
+          setSelectedMovie(movieWithTrailer);
+          setIsVideoPlayerOpen(true);
+        } else {
+          console.log(`⚠️ No trailer URL in response for ${movie.title}`);
+          setLoadingTrailer(null);
+          // Fallback to navigation
+          navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
+        }
       } else {
-        console.log(`⚠️ No trailer found for ${movie.title}`);
+        console.log(`⚠️ Low confidence or no data for ${movie.title}:`, rawMovie);
         setLoadingTrailer(null);
         // Fallback to navigation
         navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
