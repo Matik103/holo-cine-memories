@@ -45,7 +45,7 @@ const movies: MovieData[] = [
     description: "Why so serious?",
     painPoint: "Want to rewatch this instantly?",
     solution: "Find where to watch any movie, anywhere, anytime.",
-    poster: "https://image.tmdb.org/t/p/w500/qJ2tW6WMUDux911r6m7haRef0WH.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SX300.jpg"
   },
   {
     title: "The Matrix",
