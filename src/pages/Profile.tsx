@@ -13,6 +13,7 @@ interface MovieSearch {
   movie_title: string;
   movie_year: number;
   movie_poster_url: string;
+  movie_plot?: string;
   created_at: string;
 }
 
@@ -291,18 +292,29 @@ export const Profile = () => {
                   <span>Memory Bank Completion</span>
                   <span className="font-bold text-primary">{calculateCineDNAProgress()}%</span>
                 </div>
-                <div className="w-full bg-secondary rounded-full h-3">
+                <div className="w-full bg-secondary rounded-full h-3 overflow-hidden">
                   <div 
-                    className="bg-gradient-to-r from-primary to-accent h-3 rounded-full neural-glow"
+                    className="bg-gradient-to-r from-primary to-accent h-3 rounded-full neural-glow transition-all duration-1000 ease-out"
                     style={{ width: `${calculateCineDNAProgress()}%` }}
                   />
                 </div>
+                
+                {/* Enhanced Progress Insights */}
                 <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="text-center">
+                  <div className="text-center p-3 rounded-lg bg-primary/5 border border-primary/10">
                     <div className="text-2xl font-bold text-primary">{movieSearches.length}</div>
                     <div className="text-sm text-muted-foreground">Movies Recalled</div>
+                    {movieSearches.length > 0 && (
+                      <div className="text-xs text-primary mt-1">
+                        +{movieSearches.filter(s => {
+                          const dayAgo = new Date();
+                          dayAgo.setDate(dayAgo.getDate() - 1);
+                          return new Date(s.created_at) > dayAgo;
+                        }).length} today
+                      </div>
+                    )}
                   </div>
-                  <div className="text-center">
+                  <div className="text-center p-3 rounded-lg bg-accent/5 border border-accent/10">
                     <div className="text-2xl font-bold text-accent">
                       {(() => {
                         // Try cinedna_score first (new format), then fall back to favorite_genres (old format)
@@ -317,42 +329,131 @@ export const Profile = () => {
                       })()}
                     </div>
                     <div className="text-sm text-muted-foreground">Genres Explored</div>
+                    {preferences?.cinedna_score?.decade_preferences && (
+                      <div className="text-xs text-accent mt-1">
+                        {Object.keys(preferences.cinedna_score.decade_preferences).length} decades
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Progress Level Indicator */}
+                <div className="mt-4 p-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">CineDNA Level</span>
+                    <Badge variant="secondary" className="bg-gradient-to-r from-primary to-accent text-primary-foreground">
+                      {calculateCineDNAProgress() < 20 ? 'Novice' : 
+                       calculateCineDNAProgress() < 40 ? 'Explorer' :
+                       calculateCineDNAProgress() < 60 ? 'Enthusiast' :
+                       calculateCineDNAProgress() < 80 ? 'Connoisseur' : 'Master'}
+                    </Badge>
                   </div>
                 </div>
               </div>
             </div>
 
             <div>
-              <h3 className="text-lg font-semibold mb-4">Preferred Genres</h3>
-              <div className="flex flex-wrap gap-2">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                Preferred Genres
                 {(() => {
-                  // Try cinedna_score first (new format), then fall back to favorite_genres (old format)
                   const cinednaScore = preferences?.cinedna_score;
-                  let genresToDisplay = [];
+                  const genreCount = cinednaScore?.favorite_genres?.length || preferences?.favorite_genres?.length || 0;
+                  return genreCount > 0 && (
+                    <Badge variant="outline" className="text-xs">{genreCount} discovered</Badge>
+                  );
+                })()}
+              </h3>
+              <div className="space-y-3">
+                {(() => {
+                  // Get genres with their scores for ranking
+                  const cinednaScore = preferences?.cinedna_score;
+                  let genresWithScores = [];
                   
-                  if (cinednaScore && typeof cinednaScore === 'object' && Array.isArray(cinednaScore.favorite_genres)) {
-                    genresToDisplay = cinednaScore.favorite_genres;
+                  if (cinednaScore && typeof cinednaScore === 'object') {
+                    if (cinednaScore.genre_scores && typeof cinednaScore.genre_scores === 'object') {
+                      // New format: has genre scores
+                      genresWithScores = Object.entries(cinednaScore.genre_scores)
+                        .map(([genre, score]) => ({ genre, score: Number(score) }))
+                        .sort((a, b) => b.score - a.score);
+                    } else if (Array.isArray(cinednaScore.favorite_genres)) {
+                      // New format: just favorite genres array
+                      genresWithScores = cinednaScore.favorite_genres.map(genre => ({ genre, score: 50 }));
+                    }
                   } else if (Array.isArray(preferences?.favorite_genres)) {
-                    genresToDisplay = preferences.favorite_genres;
+                    // Old format: just favorite genres array
+                    genresWithScores = preferences.favorite_genres.map(genre => ({ genre, score: 50 }));
                   }
                   
-                  return genresToDisplay.length > 0 ? 
-                    genresToDisplay.map((genre) => (
-                      <Badge key={genre} variant="secondary" className="bg-primary/10 text-primary">
-                        {genre}
-                      </Badge>
-                    )) :
-                    <p className="text-muted-foreground italic">
-                      Keep searching movies to build your genre preferences!
-                    </p>;
+                  if (genresWithScores.length === 0) {
+                    return (
+                      <div className="text-center py-6 px-4 rounded-lg bg-secondary/20 border-2 border-dashed border-secondary">
+                        <Film className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-muted-foreground italic text-sm">
+                          Keep searching movies to build your genre preferences!
+                        </p>
+                      </div>
+                    );
+                  }
+                  
+                  return (
+                    <div className="space-y-2">
+                      {genresWithScores.slice(0, 8).map(({ genre, score }, index) => {
+                        const isTopGenre = index < 3;
+                        const percentage = Math.min(score, 100);
+                        return (
+                          <div key={genre} className="flex items-center gap-3 p-2 rounded-lg bg-secondary/20 hover:bg-secondary/30 transition-colors">
+                            <div className="flex items-center gap-2 flex-1">
+                              <div className={`w-2 h-2 rounded-full ${isTopGenre ? 'bg-primary' : 'bg-accent'}`} />
+                              <Badge 
+                                variant={isTopGenre ? "secondary" : "outline"} 
+                                className={`${isTopGenre ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary/50'}`}
+                              >
+                                {genre}
+                              </Badge>
+                              {index === 0 && <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">Top Choice</Badge>}
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
+                                <div 
+                                  className={`h-full rounded-full transition-all duration-500 ${isTopGenre ? 'bg-primary' : 'bg-accent'}`}
+                                  style={{ width: `${percentage}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground w-8">{percentage}%</span>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      
+                      {genresWithScores.length > 8 && (
+                        <div className="text-center pt-2">
+                          <Badge variant="outline" className="text-xs text-muted-foreground">
+                            +{genresWithScores.length - 8} more genres discovered
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                  );
                 })()}
               </div>
-              {preferences?.preferred_mood && (
-                <div className="mt-4">
-                  <h4 className="font-semibold">Current Mood Preference</h4>
-                  <Badge variant="outline" className="mt-2">
-                    {preferences.preferred_mood}
-                  </Badge>
+              
+              {/* Mood Analysis */}
+              {preferences?.cinedna_score?.mood_preferences && Object.keys(preferences.cinedna_score.mood_preferences).length > 0 && (
+                <div className="mt-6 pt-4 border-t border-secondary">
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Brain className="w-4 h-4" />
+                    Mood Patterns
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.entries(preferences.cinedna_score.mood_preferences)
+                      .sort(([,a], [,b]) => (Number(b) || 0) - (Number(a) || 0))
+                      .slice(0, 4)
+                      .map(([mood, score]) => (
+                        <Badge key={mood} variant="outline" className="bg-accent/10 text-accent border-accent/20">
+                          {mood} ({Math.round(Number(score) || 0)}%)
+                        </Badge>
+                      ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -426,56 +527,128 @@ export const Profile = () => {
 
         {/* Recent Movie Memories */}
         <Card className="neural-card p-4 sm:p-8">
-          <div className="flex items-center gap-3 mb-4 sm:mb-6">
-            <Film className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-            <h2 className="text-xl sm:text-2xl font-bold">Recent Movie Memories</h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <div className="flex items-center gap-3">
+              <Film className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              <h2 className="text-xl sm:text-2xl font-bold">Recent Movie Memories</h2>
+              {movieSearches.length > 0 && (
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                  {movieSearches.length} memories
+                </Badge>
+              )}
+            </div>
+            {movieSearches.length > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate("/")}
+                className="text-xs"
+              >
+                Add More
+              </Button>
+            )}
           </div>
 
           {movieSearches.length > 0 ? (
-            <div className="grid gap-4">
-              {movieSearches.map((search) => (
-                <div 
-                  key={search.id}
-                  className="flex items-center gap-4 p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
-                >
-                  {search.movie_poster_url && (
-                    <img 
-                      src={search.movie_poster_url} 
-                      alt={search.movie_title}
-                      className="w-12 h-16 object-cover rounded"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h4 className="font-semibold">
-                      {search.movie_title} 
-                      {search.movie_year && (
-                        <span className="text-muted-foreground ml-2">({search.movie_year})</span>
-                      )}
-                    </h4>
-                    <p className="text-sm text-muted-foreground italic">
-                      "{search.search_query}"
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {new Date(search.created_at).toLocaleDateString()}
-                    </p>
+            <div className="space-y-4">
+              {/* Group by time periods */}
+              {(() => {
+                const now = new Date();
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+                
+                const todaySearches = movieSearches.filter(s => new Date(s.created_at) >= today);
+                const weekSearches = movieSearches.filter(s => {
+                  const searchDate = new Date(s.created_at);
+                  return searchDate >= weekAgo && searchDate < today;
+                });
+                const olderSearches = movieSearches.filter(s => new Date(s.created_at) < weekAgo);
+                
+                const sections = [
+                  { title: "Today", searches: todaySearches, color: "text-primary" },
+                  { title: "This Week", searches: weekSearches, color: "text-accent" },
+                  { title: "Earlier", searches: olderSearches, color: "text-muted-foreground" }
+                ].filter(section => section.searches.length > 0);
+                
+                return sections.map(({ title, searches, color }) => (
+                  <div key={title} className="space-y-3">
+                    <h3 className={`text-sm font-semibold ${color} flex items-center gap-2`}>
+                      {title}
+                      <Badge variant="outline" className="text-xs">{searches.length}</Badge>
+                    </h3>
+                    <div className="grid gap-3 pl-4 border-l-2 border-secondary">
+                      {searches.map((search) => (
+                        <div 
+                          key={search.id}
+                          className="group flex items-center gap-4 p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-all duration-200 cursor-pointer"
+                          onClick={() => {
+                            // Store the search query and navigate to search
+                            window.localStorage.setItem('lastSearchQuery', search.search_query);
+                            navigate("/");
+                          }}
+                        >
+                          <div className="relative">
+                            {search.movie_poster_url ? (
+                              <img 
+                                src={search.movie_poster_url} 
+                                alt={search.movie_title}
+                                className="w-12 h-16 object-cover rounded shadow-sm"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                }}
+                              />
+                            ) : (
+                              <div className="w-12 h-16 bg-secondary rounded flex items-center justify-center">
+                                <Film className="w-6 h-6 text-muted-foreground" />
+                              </div>
+                            )}
+                            <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <ArrowLeft className="w-3 h-3 text-primary-foreground rotate-180" />
+                            </div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <h4 className="font-semibold truncate">
+                                {search.movie_title} 
+                                {search.movie_year && (
+                                  <span className="text-muted-foreground ml-2">({search.movie_year})</span>
+                                )}
+                              </h4>
+                              <div className="text-xs text-muted-foreground ml-2 flex-shrink-0">
+                                {new Date(search.created_at).toLocaleDateString()}
+                              </div>
+                            </div>
+                            <p className="text-sm text-muted-foreground italic mt-1 truncate">
+                              "{search.search_query}"
+                            </p>
+                            {search.movie_plot && (
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                {search.movie_plot}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <Heart className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">
-                Start searching for movies to build your personal movie memory bank!
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Film className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No Movie Memories Yet</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Start searching for movies to build your personal movie memory bank and unlock your CineDNA profile!
               </p>
               <Button 
                 onClick={() => navigate("/")}
-                className="mt-4 neural-button"
+                className="neural-button px-6"
               >
+                <Film className="w-4 h-4 mr-2" />
                 Start Exploring Movies
               </Button>
             </div>
