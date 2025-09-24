@@ -49,6 +49,15 @@ enable_signup = true
 enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
+
+[auth.email.template.confirmation]
+subject = "Confirm your signup"
+content_path = ""
+template = "https://otaqvhoopxyinfzphzxh.supabase.co/functions/v1/send-auth-emails"
+
+[auth.email.template.recovery]
+subject = "Reset your password"
+content_path = ""
 template = "https://otaqvhoopxyinfzphzxh.supabase.co/functions/v1/send-auth-emails"
 
 [functions.movie-identify]
