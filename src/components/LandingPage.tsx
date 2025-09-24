@@ -116,88 +116,53 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   };
 
   const fetchMovieData = async () => {
-    setIsLoading(true);
-    
-    try {
-      console.log('🎬 Fetching movie data using main app approach...');
-      
-      // Use the same approach as the main app - fetch all data in parallel
-      const moviePromises = movies.map(async (movie, index) => {
-        try {
-          console.log(`🎞️ [${index + 1}/${movies.length}] Fetching data for: ${movie.title} (${movie.year})`);
-          
-          // Use movie-identify function like the main app does
-          const { data: movieData, error } = await supabase.functions.invoke('movie-identify', {
-            body: { query: `${movie.title} ${movie.year}` }
-          });
-          
-          if (error) {
-            console.error(`❌ Error fetching data for ${movie.title}:`, error);
-            return { ...movie, trailer: null };
-          }
-          
-          if (movieData && movieData.title && movieData.confidence > 0.7) {
-            console.log(`✅ Data found for ${movie.title}: poster=${!!movieData.poster_url}, trailer=${!!movieData.trailer_url}`);
-            return {
-              ...movie,
-              poster: movieData.poster_url || movie.poster, // Use fetched poster or fallback to original
-              trailer: movieData.trailer_url || null
-            };
-          } else {
-            console.log(`⚠️ No data returned for ${movie.title}`);
-            return { ...movie, trailer: null };
-          }
-          
-        } catch (error) {
-          console.error(`❌ Network error fetching data for ${movie.title}:`, error);
-          return { ...movie, trailer: null };
-        }
-      });
-      
-      // Wait for all requests to complete
-      console.log('⏳ Waiting for all movie data to load...');
-      const results = await Promise.allSettled(moviePromises);
-      
-      const updatedMovies = results.map((result, index) => {
-        if (result.status === 'fulfilled') {
-          return result.value;
-        } else {
-          console.error(`❌ Failed to fetch data for ${movies[index].title}:`, result.reason);
-          return { ...movies[index], trailer: null };
-        }
-      });
-      
-      const successCount = updatedMovies.filter(m => m.trailer).length;
-      console.log(`🎉 Movie data loading complete: ${successCount}/${updatedMovies.length} trailers found`);
-      console.log(`📊 Success rate: ${Math.round((successCount / updatedMovies.length) * 100)}%`);
-      
-      // Log detailed results
-      updatedMovies.forEach((movie) => {
-        const status = movie.trailer ? '✅' : '❌';
-        const trailerInfo = movie.trailer ? 'Trailer available' : 'No trailer';
-        console.log(`${status} ${movie.title} (${movie.year}): ${trailerInfo}`);
-      });
-      
-      setMovieData(updatedMovies);
-      setIsLoading(false);
-      
-    } catch (error) {
-      console.error('❌ Error in fetchMovieData:', error);
-      // Fallback to original movies
-      setMovieData([...movies]);
-      setIsLoading(false);
-    }
+    // Load movies instantly without fetching trailers upfront
+    console.log('🎬 Loading movies instantly...');
+    setMovieData([...movies]);
+    setIsLoading(false);
   };
 
-  const handleCardClick = (movie: MovieData) => {
-    // If movie has a trailer, play it
+  const handleCardClick = async (movie: MovieData) => {
+    // If movie already has a trailer, play it immediately
     if (movie.trailer) {
       setSelectedMovie(movie);
       setIsVideoPlayerOpen(true);
-    } else {
-      // Fallback to navigation if no trailer available
-    const movieSlug = `${movie.title} ${movie.year}`.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
-    navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
+      return;
+    }
+
+    // Otherwise, fetch trailer on-demand
+    try {
+      console.log(`🎬 Fetching trailer for: ${movie.title} (${movie.year})`);
+      
+      const { data: movieData, error } = await supabase.functions.invoke('movie-identify', {
+        body: { query: `${movie.title} ${movie.year}` }
+      });
+      
+      if (error) {
+        console.error(`❌ Error fetching trailer for ${movie.title}:`, error);
+        // Fallback to navigation
+        navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
+        return;
+      }
+      
+      if (movieData && movieData.trailer_url) {
+        console.log(`✅ Trailer found for ${movie.title}`);
+        const movieWithTrailer = {
+          ...movie,
+          trailer: movieData.trailer_url
+        };
+        setSelectedMovie(movieWithTrailer);
+        setIsVideoPlayerOpen(true);
+      } else {
+        console.log(`⚠️ No trailer found for ${movie.title}`);
+        // Fallback to navigation
+        navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
+      }
+      
+    } catch (error) {
+      console.error(`❌ Network error fetching trailer for ${movie.title}:`, error);
+      // Fallback to navigation
+      navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
     }
   };
 
@@ -215,7 +180,6 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         <div className="neural-card p-8 flex flex-col items-center space-y-4">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground">Loading your movie memories...</p>
-          <p className="text-xs text-muted-foreground">Fetching trailers and posters</p>
         </div>
       </div>
     );
