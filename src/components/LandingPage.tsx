@@ -88,182 +88,102 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState<MovieData | null>(null);
-  const [loadedPosters, setLoadedPosters] = useState<Set<string>>(new Set());
-  const [failedPosters, setFailedPosters] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    fetchMoviePosters();
-    preloadPosters();
+    fetchMovieData();
   }, []);
 
-  // Preload all posters to ensure they're available
-  const preloadPosters = async () => {
-    console.log('🖼️ Preloading all movie posters...');
-    
-    const preloadPromises = movies.map(async (movie) => {
-      try {
-        const img = new Image();
-        img.src = movie.poster;
-        
-        return new Promise((resolve) => {
-          img.onload = () => {
-            console.log(`✓ Preloaded poster for ${movie.title}`);
-            setLoadedPosters(prev => new Set([...prev, movie.poster]));
-            resolve(true);
-          };
-          img.onerror = () => {
-            console.warn(`⚠️ Failed to preload poster for ${movie.title}: ${movie.poster}`);
-            setFailedPosters(prev => new Set([...prev, movie.poster]));
-            resolve(false);
-          };
-          // Timeout after 10 seconds
-          setTimeout(() => {
-            console.warn(`⏰ Timeout preloading poster for ${movie.title}`);
-            setFailedPosters(prev => new Set([...prev, movie.poster]));
-            resolve(false);
-          }, 10000);
-        });
-      } catch (error) {
-        console.error(`❌ Error preloading poster for ${movie.title}:`, error);
-        setFailedPosters(prev => new Set([...prev, movie.poster]));
-        return false;
-      }
-    });
 
-    await Promise.allSettled(preloadPromises);
-    console.log('🎬 Poster preloading complete');
-  };
-
-  // Generate fallback poster URLs for each movie
-  const getFallbackPosters = (movie: MovieData) => {
-    const baseTitle = movie.title.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return [
-      movie.poster, // Original poster
-      `https://via.placeholder.com/300x450/1a1a1a/ffffff?text=${encodeURIComponent(movie.title)}`, // Placeholder with title
-      `https://via.placeholder.com/300x450/2d2d2d/ffffff?text=${encodeURIComponent(movie.year)}`, // Placeholder with year
-      '/placeholder.svg', // Local placeholder
-    ];
-  };
-
-  // Robust poster component with multiple fallbacks
+  // Simple poster component with fallback
   const PosterImage = ({ movie, className }: { movie: MovieData; className: string }) => {
-    const [currentSrcIndex, setCurrentSrcIndex] = useState(0);
-    const [isLoading, setIsLoading] = useState(true);
-    const fallbackPosters = getFallbackPosters(movie);
-
-    const handleError = () => {
-      console.warn(`Failed to load poster ${currentSrcIndex + 1} for ${movie.title}`);
-      if (currentSrcIndex < fallbackPosters.length - 1) {
-        setCurrentSrcIndex(prev => prev + 1);
-      } else {
-        console.error(`All poster fallbacks failed for ${movie.title}`);
-        setIsLoading(false);
-      }
-    };
-
-    const handleLoad = () => {
-      console.log(`✓ Successfully loaded poster ${currentSrcIndex + 1} for ${movie.title}`);
-      setIsLoading(false);
-    };
+    const [imageError, setImageError] = useState(false);
 
     return (
-      <div className="relative w-full h-full">
-        {isLoading && (
-          <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted flex items-center justify-center">
-            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        )}
-        <img
-          src={fallbackPosters[currentSrcIndex]}
-          alt={`${movie.title} (${movie.year}) poster`}
-          className={`${className} ${isLoading ? 'opacity-0' : 'opacity-100'} transition-opacity duration-300`}
-          onError={handleError}
-          onLoad={handleLoad}
-          loading="eager" // Load immediately for better UX
-        />
-      </div>
+      <img
+        src={imageError ? '/placeholder.svg' : movie.poster}
+        alt={`${movie.title} (${movie.year}) poster`}
+        className={className}
+        onError={() => {
+          console.warn(`Failed to load poster for ${movie.title}: ${movie.poster}`);
+          setImageError(true);
+        }}
+        onLoad={() => {
+          console.log(`✓ Poster loaded for ${movie.title}`);
+        }}
+        loading="eager"
+      />
     );
   };
 
-  const fetchMoviePosters = async () => {
+  const fetchMovieData = async () => {
     setIsLoading(true);
     
     try {
-      console.log('🎬 Starting fresh trailer fetch for all movies...');
+      console.log('🎬 Fetching movie data using main app approach...');
       
-      // Clear any cached data and show movies immediately with posters
-      setMovieData([...movies]); // Use spread to ensure fresh state
-      setIsLoading(false);
-      
-      // Enhanced trailer fetching with aggressive retry
-      console.log('🚀 Launching enhanced trailer search...');
-      const trailerPromises = movies.map(async (movie, index) => {
-        const startTime = Date.now();
-        
+      // Use the same approach as the main app - fetch all data in parallel
+      const moviePromises = movies.map(async (movie, index) => {
         try {
-          console.log(`🎞️ [${index + 1}/${movies.length}] Fetching trailer for: ${movie.title} (${movie.year})`);
+          console.log(`🎞️ [${index + 1}/${movies.length}] Fetching data for: ${movie.title} (${movie.year})`);
           
-          const { data: trailerData, error } = await supabase.functions.invoke('movie-trailer', {
-            body: { movieTitle: movie.title, movieYear: movie.year }
+          // Use movie-identify function like the main app does
+          const { data: movieData, error } = await supabase.functions.invoke('movie-identify', {
+            body: { query: `${movie.title} ${movie.year}` }
           });
           
-          const duration = Date.now() - startTime;
-          
           if (error) {
-            console.error(`❌ Trailer API error for ${movie.title}:`, error);
+            console.error(`❌ Error fetching data for ${movie.title}:`, error);
             return { ...movie, trailer: null };
           }
           
-          if (trailerData?.trailer) {
-            console.log(`✅ [${duration}ms] Trailer found for ${movie.title}: "${trailerData.trailer.title}" (Score: ${trailerData.trailer.score || 'N/A'})`);
+          if (movieData && movieData.title && movieData.confidence > 0.7) {
+            console.log(`✅ Data found for ${movie.title}: poster=${!!movieData.poster_url}, trailer=${!!movieData.trailer_url}`);
             return {
               ...movie,
-              trailer: trailerData.trailer
+              poster: movieData.poster_url || movie.poster, // Use fetched poster or fallback to original
+              trailer: movieData.trailer_url || null
             };
           } else {
-            console.log(`⚠️ [${duration}ms] No trailer data returned for ${movie.title}`);
+            console.log(`⚠️ No data returned for ${movie.title}`);
             return { ...movie, trailer: null };
           }
           
         } catch (error) {
-          const duration = Date.now() - startTime;
-          console.error(`❌ [${duration}ms] Network error fetching trailer for ${movie.title}:`, error);
+          console.error(`❌ Network error fetching data for ${movie.title}:`, error);
           return { ...movie, trailer: null };
         }
       });
       
-      // Use Promise.allSettled to ensure resilience
-      console.log('⏳ Waiting for all trailer searches to complete...');
-      const results = await Promise.allSettled(trailerPromises);
+      // Wait for all requests to complete
+      console.log('⏳ Waiting for all movie data to load...');
+      const results = await Promise.allSettled(moviePromises);
       
-      const moviesWithTrailers = results.map((result, index) => {
+      const updatedMovies = results.map((result, index) => {
         if (result.status === 'fulfilled') {
           return result.value;
         } else {
-          console.error(`❌ Failed to process ${movies[index].title}:`, result.reason);
+          console.error(`❌ Failed to fetch data for ${movies[index].title}:`, result.reason);
           return { ...movies[index], trailer: null };
         }
       });
       
-      const successCount = moviesWithTrailers.filter(m => m.trailer).length;
-      const totalTime = Date.now();
-      
-      console.log(`🎉 Trailer fetching complete: ${successCount}/${moviesWithTrailers.length} trailers found`);
-      console.log(`📊 Success rate: ${Math.round((successCount / moviesWithTrailers.length) * 100)}%`);
+      const successCount = updatedMovies.filter(m => m.trailer).length;
+      console.log(`🎉 Movie data loading complete: ${successCount}/${updatedMovies.length} trailers found`);
+      console.log(`📊 Success rate: ${Math.round((successCount / updatedMovies.length) * 100)}%`);
       
       // Log detailed results
-      moviesWithTrailers.forEach((movie, index) => {
+      updatedMovies.forEach((movie) => {
         const status = movie.trailer ? '✅' : '❌';
-        const trailerInfo = movie.trailer ? `"${movie.trailer.title}"` : 'No trailer';
+        const trailerInfo = movie.trailer ? 'Trailer available' : 'No trailer';
         console.log(`${status} ${movie.title} (${movie.year}): ${trailerInfo}`);
       });
       
-      // Update state with trailers - force re-render
-      setMovieData([...moviesWithTrailers]);
+      setMovieData(updatedMovies);
+      setIsLoading(false);
       
     } catch (error) {
-      console.error('❌ Critical error in fetchMoviePosters:', error);
-      // Ensure we always show the basic movie data even if trailer fetching fails completely
+      console.error('❌ Error in fetchMovieData:', error);
+      // Fallback to original movies
       setMovieData([...movies]);
       setIsLoading(false);
     }
@@ -271,13 +191,13 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
   const handleCardClick = (movie: MovieData) => {
     // If movie has a trailer, play it
-    if (movie.trailer && movie.trailer.embedUrl) {
+    if (movie.trailer) {
       setSelectedMovie(movie);
       setIsVideoPlayerOpen(true);
     } else {
       // Fallback to navigation if no trailer available
-      const movieSlug = `${movie.title} ${movie.year}`.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
-      navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
+    const movieSlug = `${movie.title} ${movie.year}`.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
+    navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
     }
   };
 
@@ -295,7 +215,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         <div className="neural-card p-8 flex flex-col items-center space-y-4">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           <p className="text-muted-foreground">Loading your movie memories...</p>
-          <p className="text-xs text-muted-foreground">Preloading posters for best experience</p>
+          <p className="text-xs text-muted-foreground">Fetching trailers and posters</p>
         </div>
       </div>
     );
@@ -426,8 +346,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                                   </>
                                 ) : (
                                   <>
-                                    <p className="text-lg font-semibold">View Details</p>
-                                    <p className="text-sm opacity-75">Click to explore</p>
+                                <p className="text-lg font-semibold">View Details</p>
+                                <p className="text-sm opacity-75">Click to explore</p>
                                   </>
                                 )}
                                 
@@ -527,7 +447,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
             setIsVideoPlayerOpen(false);
             setSelectedMovie(null);
           }}
-          videoUrl={selectedMovie.trailer.embedUrl}
+          videoUrl={selectedMovie.trailer}
           title={selectedMovie.title}
         />
       )}
