@@ -16,6 +16,16 @@ interface MovieSearch {
   created_at: string;
 }
 
+interface FavoriteMovie {
+  id: string;
+  movie_title: string;
+  movie_year: number;
+  movie_poster_url: string;
+  rating: number;
+  is_watched: boolean;
+  created_at: string;
+}
+
 interface UserProfile {
   display_name: string;
   avatar_url?: string;
@@ -32,6 +42,7 @@ export const Profile = () => {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [movieSearches, setMovieSearches] = useState<MovieSearch[]>([]);
+  const [favorites, setFavorites] = useState<FavoriteMovie[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -80,6 +91,17 @@ export const Profile = () => {
 
         if (searchesData) {
           setMovieSearches(searchesData);
+        }
+
+        // Fetch favorites
+        const { data: favoritesData } = await supabase
+          .from('favorites')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (favoritesData) {
+          setFavorites(favoritesData);
         }
 
       } catch (error) {
@@ -319,6 +341,71 @@ export const Profile = () => {
             </div>
           </div>
         </Card>
+
+        {/* My Favorite Movies */}
+        {favorites.length > 0 && (
+          <Card className="neural-card p-4 sm:p-8 mb-6">
+            <div className="flex items-center gap-3 mb-4 sm:mb-6">
+              <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              <h2 className="text-xl sm:text-2xl font-bold">My Favorite Movies</h2>
+              <Badge variant="secondary" className="bg-primary/10 text-primary">
+                {favorites.length}
+              </Badge>
+            </div>
+
+            <div className="grid gap-4">
+              {favorites.map((favorite) => (
+                <div 
+                  key={favorite.id}
+                  className="flex items-center gap-4 p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
+                >
+                  {favorite.movie_poster_url && (
+                    <img 
+                      src={favorite.movie_poster_url} 
+                      alt={favorite.movie_title}
+                      className="w-12 h-16 object-cover rounded"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <div className="flex-1">
+                    <h4 className="font-semibold">
+                      {favorite.movie_title} 
+                      {favorite.movie_year && (
+                        <span className="text-muted-foreground ml-2">({favorite.movie_year})</span>
+                      )}
+                    </h4>
+                    <div className="flex items-center gap-3 mt-2">
+                      {favorite.rating && (
+                        <div className="flex items-center gap-1">
+                          <span className="text-sm text-muted-foreground">Rating:</span>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <Heart 
+                                key={i} 
+                                className={`w-3 h-3 ${i < favorite.rating ? 'fill-primary text-primary' : 'text-muted-foreground'}`} 
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {favorite.is_watched && (
+                        <Badge variant="outline" className="text-xs">
+                          Watched
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Added {new Date(favorite.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* Recent Movie Memories */}
         <Card className="neural-card p-4 sm:p-8">
