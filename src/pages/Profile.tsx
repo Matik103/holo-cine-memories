@@ -266,11 +266,15 @@ export const Profile = () => {
                   <div className="text-center">
                     <div className="text-2xl font-bold text-accent">
                       {(() => {
+                        // Try cinedna_score first (new format), then fall back to favorite_genres (old format)
                         const cinednaScore = preferences?.cinedna_score;
-                        if (cinednaScore && typeof cinednaScore === 'object' && cinednaScore.favorite_genres) {
+                        if (cinednaScore && typeof cinednaScore === 'object' && Array.isArray(cinednaScore.favorite_genres)) {
                           return cinednaScore.favorite_genres.length;
                         }
-                        return preferences?.favorite_genres?.length || 0;
+                        if (Array.isArray(preferences?.favorite_genres)) {
+                          return preferences.favorite_genres.length;
+                        }
+                        return 0;
                       })()}
                     </div>
                     <div className="text-sm text-muted-foreground">Genres Explored</div>
@@ -282,16 +286,27 @@ export const Profile = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Preferred Genres</h3>
               <div className="flex flex-wrap gap-2">
-                {preferences?.favorite_genres?.length ? 
-                  preferences.favorite_genres.map((genre) => (
-                    <Badge key={genre} variant="secondary" className="bg-primary/10 text-primary">
-                      {genre}
-                    </Badge>
-                  )) :
-                  <p className="text-muted-foreground italic">
-                    Keep searching movies to build your genre preferences!
-                  </p>
-                }
+                {(() => {
+                  // Try cinedna_score first (new format), then fall back to favorite_genres (old format)
+                  const cinednaScore = preferences?.cinedna_score;
+                  let genresToDisplay = [];
+                  
+                  if (cinednaScore && typeof cinednaScore === 'object' && Array.isArray(cinednaScore.favorite_genres)) {
+                    genresToDisplay = cinednaScore.favorite_genres;
+                  } else if (Array.isArray(preferences?.favorite_genres)) {
+                    genresToDisplay = preferences.favorite_genres;
+                  }
+                  
+                  return genresToDisplay.length > 0 ? 
+                    genresToDisplay.map((genre) => (
+                      <Badge key={genre} variant="secondary" className="bg-primary/10 text-primary">
+                        {genre}
+                      </Badge>
+                    )) :
+                    <p className="text-muted-foreground italic">
+                      Keep searching movies to build your genre preferences!
+                    </p>;
+                })()}
               </div>
               {preferences?.preferred_mood && (
                 <div className="mt-4">
