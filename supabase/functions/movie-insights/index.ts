@@ -71,16 +71,33 @@ Provide insights about its themes, symbolism, cultural impact, and suggest 3 sim
 
     try {
       const content = data.choices[0].message.content;
+      console.log('Raw OpenAI response:', content);
       
-      // Try to extract JSON from the response
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      // Clean the content by removing markdown and extra formatting
+      let cleanContent = content;
+      
+      // Remove markdown code blocks if present
+      if (content.includes('```json')) {
+        cleanContent = content.replace(/```json\s*/g, '').replace(/```\s*$/g, '');
+      } else if (content.includes('```')) {
+        cleanContent = content.replace(/```\s*/g, '').replace(/```\s*$/g, '');
+      }
+      
+      // Remove any trailing commas before closing braces/brackets
+      cleanContent = cleanContent.replace(/,(\s*[}\]])/g, '$1');
+      
+      // Try to extract JSON from the response using regex
+      const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         insights = JSON.parse(jsonMatch[0]);
       } else {
         throw new Error('No JSON found in response');
       }
+      
+      console.log('Successfully parsed insights:', insights);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', parseError);
+      console.error('Content that failed to parse:', data.choices[0].message.content);
       
       // Fallback insights
       insights = {

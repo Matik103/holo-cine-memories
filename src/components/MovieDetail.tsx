@@ -72,6 +72,7 @@ export const MovieDetail = () => {
   const [insights, setInsights] = useState<Insights | null>(null);
   const [streamingOptions, setStreamingOptions] = useState<StreamingOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [insightsLoading, setInsightsLoading] = useState(true);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'themes' | 'similar'>('summary');
 
@@ -86,6 +87,7 @@ export const MovieDetail = () => {
 
     try {
       setIsLoading(true);
+      setInsightsLoading(true);
       
       // Extract year from movie title if present (e.g., "Inception 2010" -> "Inception", "2010")
       const titleMatch = movieTitle.match(/^(.+?)\s+(\d{4})$/);
@@ -94,8 +96,8 @@ export const MovieDetail = () => {
 
       console.log('Fetching data for:', title, year);
 
-      // Fetch movie details, trailer, insights, and streaming options in parallel
-      const [detailsResponse, trailerResponse, streamingResponse] = await Promise.all([
+      // Fetch essential data first (details, trailer, streaming) in parallel for immediate display
+      const [detailsResponse, trailerResponse, streamingResponse] = await Promise.allSettled([
         supabase.functions.invoke('movie-details', {
           body: { movieTitle: title, movieYear: year }
         }),
@@ -108,33 +110,47 @@ export const MovieDetail = () => {
       ]);
 
       // Handle movie details
-      if (detailsResponse.data?.movieDetails) {
-        setMovieDetails(detailsResponse.data.movieDetails);
+      if (detailsResponse.status === 'fulfilled' && detailsResponse.value.data?.movieDetails) {
+        setMovieDetails(detailsResponse.value.data.movieDetails);
         
-        // Fetch insights after we have the plot
-        const insightsResponse = await supabase.functions.invoke('movie-insights', {
-          body: { 
-            movieTitle: title, 
-            movieYear: year,
-            moviePlot: detailsResponse.data.movieDetails.plot
+        // Load insights in the background after basic data is shown
+        setTimeout(async () => {
+          try {
+            const insightsResponse = await supabase.functions.invoke('movie-insights', {
+              body: { 
+                movieTitle: title, 
+                movieYear: year,
+                moviePlot: detailsResponse.value.data.movieDetails.plot
+              }
+            });
+            
+            if (insightsResponse.data?.insights) {
+              setInsights(insightsResponse.data.insights);
+            }
+          } catch (insightsError) {
+            console.error('Error loading insights:', insightsError);
+          } finally {
+            setInsightsLoading(false);
           }
-        });
+        }, 100); // Small delay to show main content first
         
-        if (insightsResponse.data?.insights) {
-          setInsights(insightsResponse.data.insights);
-        }
       } else {
         throw new Error('Failed to fetch movie details');
       }
 
       // Handle trailer
-      if (trailerResponse.data?.trailer) {
-        setTrailer(trailerResponse.data.trailer);
+      if (trailerResponse.status === 'fulfilled' && trailerResponse.value.data?.trailer) {
+        setTrailer(trailerResponse.value.data.trailer);
       }
 
-      // Handle streaming options
-      if (streamingResponse.data?.streamingOptions) {
-        setStreamingOptions(streamingResponse.data.streamingOptions);
+      // Handle streaming options - check both possible response formats
+      if (streamingResponse.status === 'fulfilled') {
+        const streamingData = streamingResponse.value.data;
+        if (Array.isArray(streamingData)) {
+          setStreamingOptions(streamingData);
+        } else if (streamingData?.streamingOptions) {
+          setStreamingOptions(streamingData.streamingOptions);
+        }
       }
 
     } catch (error) {
@@ -312,78 +328,114 @@ export const MovieDetail = () => {
         </div>
 
         {/* AI Insights Section */}
-        {insights && (
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <Award className="w-4 h-4 text-primary" />
-                </div>
-                AI-Powered Insights
-              </h2>
-              
-              {/* Tabs */}
-              <div className="flex gap-2 mb-6 border-b">
-                {[
-                  { key: 'summary', label: 'Summary' },
-                  { key: 'themes', label: 'Themes & Meaning' },
-                  { key: 'similar', label: 'Similar Movies' }
-                ].map(tab => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key as any)}
-                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                      activeTab === tab.key
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                <Award className="w-4 h-4 text-primary" />
               </div>
+              AI-Powered Insights
+              {insightsLoading && (
+                <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-2" />
+              )}
+            </h2>
+            
+            {/* Tabs */}
+            <div className="flex gap-2 mb-6 border-b">
+              {[
+                { key: 'summary', label: 'Summary' },
+                { key: 'themes', label: 'Themes & Meaning' },
+                { key: 'similar', label: 'Similar Movies' }
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === tab.key
+                      ? 'border-primary text-primary'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
 
-              {/* Tab Content */}
-              <div className="space-y-4">
-                {activeTab === 'summary' && (
-                  <div>
-                    <p className="text-muted-foreground leading-relaxed">{insights.summary}</p>
-                  </div>
-                )}
-                
-                {activeTab === 'themes' && (
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2">Main Themes</h4>
-                      <p className="text-muted-foreground leading-relaxed">{insights.themes}</p>
+            {/* Tab Content */}
+            <div className="space-y-4 min-h-[200px]">
+              {activeTab === 'summary' && (
+                <div>
+                  {insightsLoading ? (
+                    <div className="flex items-center space-x-2 text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>AI is analyzing the movie...</span>
                     </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Symbolism & Hidden Meanings</h4>
-                      <p className="text-muted-foreground leading-relaxed">{insights.symbolism}</p>
+                  ) : (
+                    <p className="text-muted-foreground leading-relaxed">
+                      {insights?.summary || 'AI insights will appear here once analysis is complete.'}
+                    </p>
+                  )}
+                </div>
+              )}
+              
+              {activeTab === 'themes' && (
+                <div className="space-y-4">
+                  {insightsLoading ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2 text-muted-foreground">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Discovering themes and meanings...</span>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Cultural Impact</h4>
-                      <p className="text-muted-foreground leading-relaxed">{insights.culturalImpact}</p>
+                  ) : (
+                    <>
+                      <div>
+                        <h4 className="font-semibold mb-2">Main Themes</h4>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {insights?.themes || 'Theme analysis will appear here.'}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Symbolism & Hidden Meanings</h4>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {insights?.symbolism || 'Symbolism analysis will appear here.'}
+                        </p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2">Cultural Impact</h4>
+                        <p className="text-muted-foreground leading-relaxed">
+                          {insights?.culturalImpact || 'Cultural impact analysis will appear here.'}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+              
+              {activeTab === 'similar' && (
+                <div>
+                  <h4 className="font-semibold mb-3">Movies You Might Like</h4>
+                  {insightsLoading ? (
+                    <div className="flex items-center space-x-2 text-muted-foreground">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Finding similar movies...</span>
                     </div>
-                  </div>
-                )}
-                
-                {activeTab === 'similar' && (
-                  <div>
-                    <h4 className="font-semibold mb-3">Movies You Might Like</h4>
+                  ) : (
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                      {insights.similarMovies.map((movie, index) => (
+                      {insights?.similarMovies?.map((movie, index) => (
                         <Card key={index} className="p-4 hover:bg-accent/50 transition-colors cursor-pointer">
                           <p className="font-medium">{movie}</p>
                         </Card>
-                      ))}
+                      )) || (
+                        <p className="text-muted-foreground col-span-full">Similar movie recommendations will appear here.</p>
+                      )}
                     </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                  )}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Where to Watch */}
         {streamingOptions.length > 0 && (
