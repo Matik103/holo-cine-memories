@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Brain, Play, Search, Lightbulb, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { VideoPlayer } from "./VideoPlayer";
 
 interface MovieData {
   title: string;
@@ -85,6 +86,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const [movieData, setMovieData] = useState<MovieData[]>([]);
   const [currentCard, setCurrentCard] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<MovieData | null>(null);
 
   useEffect(() => {
     fetchMoviePosters();
@@ -175,8 +178,15 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   };
 
   const handleCardClick = (movie: MovieData) => {
-    const movieSlug = `${movie.title} ${movie.year}`.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
-    navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
+    // If movie has a trailer, play it
+    if (movie.trailer && movie.trailer.embedUrl) {
+      setSelectedMovie(movie);
+      setIsVideoPlayerOpen(true);
+    } else {
+      // Fallback to navigation if no trailer available
+      const movieSlug = `${movie.title} ${movie.year}`.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '-').toLowerCase();
+      navigate(`/movie/${encodeURIComponent(movie.title + ' ' + movie.year)}`);
+    }
   };
 
   const nextCard = () => {
@@ -321,12 +331,21 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                             
-                            {/* Hover overlay with "View Details" and trailer preview */}
+                            {/* Hover overlay with trailer preview */}
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                               <div className="text-center text-white">
                                 <Play className="w-12 h-12 mx-auto mb-2 text-primary" />
-                                <p className="text-lg font-semibold">View Details</p>
-                                <p className="text-sm opacity-75">Click to explore</p>
+                                {movie.trailer ? (
+                                  <>
+                                    <p className="text-lg font-semibold">Watch Trailer</p>
+                                    <p className="text-sm opacity-75">Click to play</p>
+                                  </>
+                                ) : (
+                                  <>
+                                    <p className="text-lg font-semibold">View Details</p>
+                                    <p className="text-sm opacity-75">Click to explore</p>
+                                  </>
+                                )}
                                 
                                 {/* Trailer Status */}
                                 <div className="mt-3 space-y-1">
@@ -415,6 +434,19 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           </Button>
         </div>
       </div>
+
+      {/* Video Player Modal */}
+      {selectedMovie && selectedMovie.trailer && (
+        <VideoPlayer
+          isOpen={isVideoPlayerOpen}
+          onClose={() => {
+            setIsVideoPlayerOpen(false);
+            setSelectedMovie(null);
+          }}
+          videoUrl={selectedMovie.trailer.embedUrl}
+          title={selectedMovie.title}
+        />
+      )}
     </div>
   );
 };
