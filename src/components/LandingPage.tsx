@@ -76,7 +76,7 @@ const movies: MovieData[] = [
     description: "Hakuna Matata!",
     painPoint: "Childhood memories fading?",
     solution: "Preserve and rediscover your favorite childhood films.",
-    poster: "https://m.media-amazon.com/images/M/MV5BZGRiZDZhZjItM2M3ZS00Y2IyLTk3Y2MtMWY5YjliNDFkZTJlXkEyXkFqcGc@._V1_SX300.jpg"
+    poster: "https://m.media-amazon.com/images/M/MV5BYTYxNGMyZTYtMjE3MS00MzNjLWFjNmYtMDk3N2FmM2JiM2M1XkEyXkFqcGdeQXVyNjY5NDU4NzI@._V1_SX300.jpg"
   }
 ];
 
@@ -94,26 +94,25 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
     setIsLoading(true);
     
     try {
-      console.log('🎬 Starting trailer fetch for all movies...');
+      console.log('🎬 Starting fresh trailer fetch for all movies...');
       
-      // First show movies immediately with posters
-      setMovieData(movies);
+      // Clear any cached data and show movies immediately with posters
+      setMovieData([...movies]); // Use spread to ensure fresh state
       setIsLoading(false);
       
-      // Then fetch trailers in parallel with individual timeout handling
+      // Enhanced trailer fetching with aggressive retry
+      console.log('🚀 Launching enhanced trailer search...');
       const trailerPromises = movies.map(async (movie, index) => {
-        const timeoutId = setTimeout(() => {
-          console.log(`⏱️ Timeout: Trailer fetch for ${movie.title} took too long`);
-        }, 10000); // 10 second timeout warning
+        const startTime = Date.now();
         
         try {
-          console.log(`🎞️ Fetching trailer for: ${movie.title} (${movie.year})`);
+          console.log(`🎞️ [${index + 1}/${movies.length}] Fetching trailer for: ${movie.title} (${movie.year})`);
           
           const { data: trailerData, error } = await supabase.functions.invoke('movie-trailer', {
             body: { movieTitle: movie.title, movieYear: movie.year }
           });
           
-          clearTimeout(timeoutId);
+          const duration = Date.now() - startTime;
           
           if (error) {
             console.error(`❌ Trailer API error for ${movie.title}:`, error);
@@ -121,24 +120,25 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           }
           
           if (trailerData?.trailer) {
-            console.log(`✅ Trailer found for ${movie.title}: ${trailerData.trailer.title}`);
+            console.log(`✅ [${duration}ms] Trailer found for ${movie.title}: "${trailerData.trailer.title}" (Score: ${trailerData.trailer.score || 'N/A'})`);
             return {
               ...movie,
               trailer: trailerData.trailer
             };
           } else {
-            console.log(`⚠️ No trailer data returned for ${movie.title}`);
+            console.log(`⚠️ [${duration}ms] No trailer data returned for ${movie.title}`);
             return { ...movie, trailer: null };
           }
           
         } catch (error) {
-          clearTimeout(timeoutId);
-          console.error(`❌ Network error fetching trailer for ${movie.title}:`, error);
+          const duration = Date.now() - startTime;
+          console.error(`❌ [${duration}ms] Network error fetching trailer for ${movie.title}:`, error);
           return { ...movie, trailer: null };
         }
       });
       
-      // Use Promise.allSettled to ensure one failure doesn't break others
+      // Use Promise.allSettled to ensure resilience
+      console.log('⏳ Waiting for all trailer searches to complete...');
       const results = await Promise.allSettled(trailerPromises);
       
       const moviesWithTrailers = results.map((result, index) => {
@@ -151,15 +151,25 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
       });
       
       const successCount = moviesWithTrailers.filter(m => m.trailer).length;
-      console.log(`🎉 Trailer fetching complete: ${successCount}/${moviesWithTrailers.length} trailers found`);
+      const totalTime = Date.now();
       
-      // Update state with trailers
-      setMovieData(moviesWithTrailers);
+      console.log(`🎉 Trailer fetching complete: ${successCount}/${moviesWithTrailers.length} trailers found`);
+      console.log(`📊 Success rate: ${Math.round((successCount / moviesWithTrailers.length) * 100)}%`);
+      
+      // Log detailed results
+      moviesWithTrailers.forEach((movie, index) => {
+        const status = movie.trailer ? '✅' : '❌';
+        const trailerInfo = movie.trailer ? `"${movie.trailer.title}"` : 'No trailer';
+        console.log(`${status} ${movie.title} (${movie.year}): ${trailerInfo}`);
+      });
+      
+      // Update state with trailers - force re-render
+      setMovieData([...moviesWithTrailers]);
       
     } catch (error) {
       console.error('❌ Critical error in fetchMoviePosters:', error);
       // Ensure we always show the basic movie data even if trailer fetching fails completely
-      setMovieData(movies);
+      setMovieData([...movies]);
       setIsLoading(false);
     }
   };
