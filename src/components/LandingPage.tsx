@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { Brain, Play, Search, Lightbulb, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,6 +13,12 @@ interface MovieData {
   description: string;
   painPoint: string;
   solution: string;
+  trailer?: {
+    videoId: string;
+    title: string;
+    embedUrl: string;
+    thumbnail: string;
+  };
 }
 
 const movies: MovieData[] = [
@@ -84,9 +91,29 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   }, []);
 
   const fetchMoviePosters = async () => {
-    // For now, use the hardcoded posters. Later we can implement OMDb API
     setMovieData(movies);
     setIsLoading(false);
+    
+    // Fetch trailers for each movie in the background
+    const moviesWithTrailers = await Promise.all(
+      movies.map(async (movie) => {
+        try {
+          const { data: trailerData } = await supabase.functions.invoke('movie-trailer', {
+            body: { movieTitle: movie.title, movieYear: movie.year }
+          });
+          
+          return {
+            ...movie,
+            trailer: trailerData?.trailer || null
+          };
+        } catch (error) {
+          console.error(`Error fetching trailer for ${movie.title}:`, error);
+          return movie;
+        }
+      })
+    );
+    
+    setMovieData(moviesWithTrailers);
   };
 
   const handleCardClick = (movie: MovieData) => {
@@ -232,12 +259,19 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                             
-                            {/* Hover overlay with "View Details" */}
+                            {/* Hover overlay with "View Details" and trailer preview */}
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                               <div className="text-center text-white">
                                 <Play className="w-12 h-12 mx-auto mb-2 text-primary" />
                                 <p className="text-lg font-semibold">View Details</p>
                                 <p className="text-sm opacity-75">Click to explore</p>
+                                {movie.trailer && (
+                                  <div className="mt-2">
+                                    <Badge variant="secondary" className="text-xs">
+                                      Trailer Available
+                                    </Badge>
+                                  </div>
+                                )}
                               </div>
                             </div>
                             
