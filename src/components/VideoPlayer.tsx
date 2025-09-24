@@ -98,7 +98,7 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
       size="sm"
       style={{
         position: 'fixed',
-        top: 'calc(env(safe-area-inset-top, 0px) + 16px)',
+        top: 'calc(env(safe-area-inset-top, 0px) + 60px)', // Increased from 16px to 60px for better visibility
         right: '16px',
         zIndex: 999999999, // Maximum priority - never hidden
         width: '44px',
