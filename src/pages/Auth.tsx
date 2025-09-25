@@ -121,21 +121,45 @@ export const Auth = () => {
 
 
   useEffect(() => {
-    // Set up auth state listener to handle password recovery
+    // Check URL parameters first to detect password recovery
+    const checkPasswordRecovery = () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const type = hashParams.get('type');
+      
+      if (type === 'recovery') {
+        console.log('Password recovery detected from URL - showing reset form');
+        setShowPasswordReset(true);
+        return true;
+      }
+      return false;
+    };
+
+    // Check for password recovery immediately
+    const isPasswordRecovery = checkPasswordRecovery();
+
+    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state change:', event, session?.user?.email);
       
       // Handle password recovery event from Supabase
       if (event === 'PASSWORD_RECOVERY') {
-        console.log('Password recovery event detected - showing reset form');
+        console.log('PASSWORD_RECOVERY event detected - showing reset form');
         setShowPasswordReset(true);
         return;
       }
       
-      // Handle successful sign-in (redirect to app)
-      if (event === 'SIGNED_IN' && session && !showPasswordReset) {
-        console.log('User signed in, redirecting to app');
-        navigate("/");
+      // Handle successful sign-in - only redirect if NOT in password recovery mode
+      if (event === 'SIGNED_IN' && session) {
+        // Double-check we're not in password recovery mode
+        const currentHashParams = new URLSearchParams(window.location.hash.substring(1));
+        const isRecovery = currentHashParams.get('type') === 'recovery' || showPasswordReset;
+        
+        if (!isRecovery) {
+          console.log('Normal sign in, redirecting to app');
+          navigate("/");
+        } else {
+          console.log('Sign in during password recovery - staying on reset form');
+        }
       }
       
       // Handle sign-out
