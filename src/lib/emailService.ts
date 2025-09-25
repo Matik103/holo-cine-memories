@@ -4,7 +4,7 @@ interface EmailData {
   to: string;
   subject: string;
   html: string;
-  type: 'signup' | 'password_reset';
+  type: 'signup' | 'recovery';
   userData?: {
     full_name?: string;
   };
@@ -68,7 +68,7 @@ class EmailService {
       to: email,
       subject: 'Reset Your CineMind Password',
       html: this.getPasswordResetTemplate(userData?.full_name || 'there', resetUrl),
-      type: 'password_reset',
+      type: 'recovery',
       userData
     });
   }
