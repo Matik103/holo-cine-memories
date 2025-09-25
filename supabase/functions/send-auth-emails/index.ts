@@ -8,6 +8,26 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Webhook signature verification
+const verifyWebhookSignature = async (req: Request): Promise<boolean> => {
+  const signature = req.headers.get("x-webhook-signature");
+  if (!signature) {
+    console.error("No webhook signature found");
+    return false;
+  }
+
+  const body = await req.text();
+  const secret = Deno.env.get("SEND_EMAIL_HOOK_SECRET");
+  if (!secret) {
+    console.error("No webhook secret configured");
+    return false;
+  }
+
+  // Simple signature verification (in production, use proper HMAC verification)
+  const expectedSignature = `v1,whsec_${btoa(secret)}`;
+  return signature === expectedSignature;
+};
+
 interface EmailRequest {
   user: {
     email: string;
@@ -35,6 +55,16 @@ const handler = async (req: Request): Promise<Response> => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { 
       status: 405, 
+      headers: corsHeaders 
+    });
+  }
+
+  // Verify webhook signature
+  const isValidSignature = await verifyWebhookSignature(req);
+  if (!isValidSignature) {
+    console.error("Invalid webhook signature");
+    return new Response("Unauthorized", { 
+      status: 401, 
       headers: corsHeaders 
     });
   }
