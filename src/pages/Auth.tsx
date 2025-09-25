@@ -80,16 +80,17 @@ export const Auth = () => {
     }
 
     try {
-      // Extract token from URL hash (Supabase password reset links use hash)
+      // Extract tokens from URL hash (after Supabase verification)
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       const refreshToken = hashParams.get('refresh_token');
       
       console.log('Hash params:', Object.fromEntries(hashParams.entries()));
       console.log('Access token:', accessToken ? 'present' : 'missing');
+      console.log('Refresh token:', refreshToken ? 'present' : 'missing');
       
       if (accessToken && refreshToken) {
-        // Set the session using the tokens from the URL
+        // Set the session using the tokens from Supabase verification
         const { data, error } = await supabase.auth.setSession({
           access_token: accessToken,
           refresh_token: refreshToken
@@ -98,6 +99,8 @@ export const Auth = () => {
         if (error) {
           throw new Error("Invalid or expired reset link. Please request a new password reset.");
         }
+
+        console.log('Session set successfully:', data.session?.user?.email);
 
         // Now update the password
         const { error: updateError } = await supabase.auth.updateUser({
@@ -131,8 +134,12 @@ export const Auth = () => {
 
       // Clear form and go back to sign in
       setNewPassword("");
-      setConfirmPassword("");
+      setConfirmPassword("");  
       setShowPasswordReset(false);
+      
+      // Clear the URL hash to remove the tokens
+      window.location.hash = '';
+      
     } catch (error: any) {
       console.error("Password update error:", error);
       toast({
@@ -154,14 +161,13 @@ export const Auth = () => {
     console.log('URL params:', Object.fromEntries(urlParams.entries()));
     console.log('Hash params:', Object.fromEntries(hashParams.entries()));
     
-    // Check for password reset indicators - prioritize hash params which Supabase uses
-    const isPasswordReset = hashParams.get('type') === 'recovery' ||
-                           hashParams.has('access_token') ||
-                           urlParams.get('type') === 'recovery' ||
-                           urlParams.get('reset') === 'true';
+    // Check for password reset indicators - look for access_token and type=recovery from Supabase verification
+    const accessToken = hashParams.get('access_token');
+    const refreshToken = hashParams.get('refresh_token');
+    const type = hashParams.get('type');
     
-    if (isPasswordReset) {
-      console.log('Password reset detected from URL/hash');
+    if (accessToken && refreshToken && type === 'recovery') {
+      console.log('Password reset detected from Supabase verification');
       setShowPasswordReset(true);
       return;
     }
@@ -183,9 +189,8 @@ export const Auth = () => {
         const currentUrlParams = new URLSearchParams(window.location.search);
         
         // Double-check we're not in password reset mode
-        const stillInPasswordReset = currentHashParams.get('type') === 'recovery' ||
-                                    currentHashParams.has('access_token') ||
-                                    currentUrlParams.get('type') === 'recovery';
+        const stillInPasswordReset = currentHashParams.get('type') === 'recovery' &&
+                                   currentHashParams.has('access_token');
         
         if (!stillInPasswordReset) {
           console.log('Normal sign in, redirecting to app');
