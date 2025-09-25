@@ -181,7 +181,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const { data, error } = await resend.emails.send({
-      from: "CineMind <support@cinemind.tech>",
+      from: "CineMind <noreply@cinemind.tech>",
       to: [email],
       subject,
       html,
