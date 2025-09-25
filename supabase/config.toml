@@ -52,7 +52,7 @@ double_confirm_changes = false
 enable_confirmations = false
 secure_email_change_enabled = false
 
-# SMTP disabled - using custom email service instead
+# SMTP disabled - using webhook instead
 # [auth.email.smtp]
 # host = "smtp.resend.com"
 # port = 465
@@ -61,11 +61,11 @@ secure_email_change_enabled = false
 # admin_email = "support@cinemind.tech"
 # sender_name = "CineMind"
 
-# Webhook disabled - using SMTP instead
-# [auth.hook.send_email]
-# enabled = true
-# uri = "https://otaqvhoopxyinfzphzxh.supabase.co/functions/v1/send-auth-emails"
-# secrets = "v1,whsec_MWExYmFiOTI4NTBlMGQ0MmFlYTQ5NWU5MzNmMDRmYWUwYWQ2NjMyM2EyYWZhYjUwNGQ5ODM4NjE4M2VmNWM2Ngo="
+# Enable webhook to handle all auth emails through our custom function
+[auth.hook.send_email]
+enabled = true
+uri = "https://otaqvhoopxyinfzphzxh.supabase.co/functions/v1/send-auth-emails"
+secrets = "v1,whsec_MWExYmFiOTI4NTBlMGQ0MmFlYTQ5NWU5MzNmMDRmYWUwYWQ2NjMyM2EyYWZhYjUwNGQ5ODM4NjE4M2VmNWM2Nwo="
 
 [functions.movie-identify]
 verify_jwt = false

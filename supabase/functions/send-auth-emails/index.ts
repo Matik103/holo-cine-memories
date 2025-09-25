@@ -62,8 +62,12 @@ const handler = async (req: Request): Promise<Response> => {
   // Log all headers for debugging
   console.log("Request headers:", Object.fromEntries(req.headers.entries()));
   
-  // Skip webhook signature verification for custom email service
-  // This allows our custom email service to call this function directly
+  // Verify webhook signature when called by Supabase
+  const isValidWebhook = await verifyWebhookSignature(req.clone());
+  if (!isValidWebhook) {
+    console.log("Invalid webhook signature, treating as custom call");
+    // Allow custom calls from our emailService for backward compatibility
+  }
 
   try {
     const body: EmailRequest = await req.json();
