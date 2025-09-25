@@ -13,8 +13,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let movieTitle = 'Unknown Movie'; // Default fallback
+  
   try {
-    const { movieTitle } = await req.json();
+    const requestData = await req.json();
+    movieTitle = requestData.movieTitle;
     console.log('Finding streaming options for:', movieTitle);
 
     if (!movieTitle) {
@@ -132,7 +135,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in movie-streaming function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: (error as Error).message,
       fallback: [
         {
           platform: "Search manually",

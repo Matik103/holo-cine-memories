@@ -55,7 +55,7 @@ async function searchMoviesByGenre(genre: string, year?: number): Promise<any[]>
       return [];
     }
   } catch (error) {
-    if (error.name === 'AbortError') {
+    if ((error as Error).name === 'AbortError') {
       console.log(`OMDb request timeout for genre: ${genre}`);
     } else {
       console.error(`Error searching movies for genre "${genre}":`, error);
@@ -104,7 +104,7 @@ async function getMovieDetails(imdbId: string): Promise<any | null> {
       return null;
     }
   } catch (error) {
-    if (error.name === 'AbortError') {
+    if ((error as Error).name === 'AbortError') {
       console.log(`OMDb request timeout for IMDB ID: ${imdbId}`);
     } else {
       console.error(`Error getting movie details for IMDB ID "${imdbId}":`, error);

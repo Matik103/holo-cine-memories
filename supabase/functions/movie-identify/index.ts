@@ -72,7 +72,7 @@ async function fetchMoviePoster(title: string, year?: number): Promise<string | 
         }
       }
     } catch (error) {
-      if (error.name === 'AbortError') {
+      if ((error as Error).name === 'AbortError') {
         console.log(`OMDb request timeout for "${searchQuery}"`);
       } else {
         console.error(`Error fetching poster for "${searchQuery}":`, error);
@@ -151,7 +151,7 @@ async function fetchMovieTrailer(title: string, year?: number): Promise<string |
       return null;
     }
   } catch (error) {
-    if (error.name === 'AbortError') {
+    if ((error as Error).name === 'AbortError') {
       console.log('YouTube request timeout for:', title);
     } else {
       console.error('Error fetching trailer from YouTube:', error);
@@ -363,7 +363,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in movie-identify function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: (error as Error).message,
       title: null,
       confidence: 0.0 
     }), {

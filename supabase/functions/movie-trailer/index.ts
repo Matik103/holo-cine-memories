@@ -166,7 +166,7 @@ serve(async (req) => {
         }
         
       } catch (error) {
-        console.error(`❌ Query ${i + 1} failed:`, error.message);
+        console.error(`❌ Query ${i + 1} failed:`, (error as Error).message);
         continue;
       }
     }
@@ -216,7 +216,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('❌ Critical error in movie-trailer function:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to fetch trailer', details: error.message }),
+      JSON.stringify({ error: 'Failed to fetch trailer', details: (error as Error).message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
