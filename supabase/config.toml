@@ -48,15 +48,16 @@ enable_signup = true
 [auth.email]
 enable_signup = true
 double_confirm_changes = true
-enable_confirmations = true
+enable_confirmations = false
 
-[auth.email.smtp]
-host = "smtp.resend.com"
-port = 465
-user = "resend"
-pass = "RESEND_API_KEY"
-admin_email = "support@cinemind.tech"
-sender_name = "CineMind"
+# SMTP disabled - using custom email service instead
+# [auth.email.smtp]
+# host = "smtp.resend.com"
+# port = 465
+# user = "resend"
+# pass = "RESEND_API_KEY"
+# admin_email = "support@cinemind.tech"
+# sender_name = "CineMind"
 
 # Webhook disabled - using SMTP instead
 # [auth.hook.send_email]

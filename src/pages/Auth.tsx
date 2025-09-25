@@ -293,7 +293,22 @@ export const Auth = () => {
     try {
       console.log("Attempting to sign up user:", { email, fullName });
       
-      // First, create the user account (without email confirmation)
+      // Send custom confirmation email FIRST (before creating account)
+      try {
+        await emailService.sendSignupConfirmation(email, { full_name: fullName });
+        console.log("Custom confirmation email sent successfully");
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError);
+        toast({
+          title: "Email Failed",
+          description: "Failed to send confirmation email. Please try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      
+      // Then create the user account (Supabase will handle this without sending emails)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -301,8 +316,7 @@ export const Auth = () => {
           data: {
             full_name: fullName,
           },
-          // Disable email confirmation - we'll handle it ourselves
-          emailRedirectTo: `${window.location.origin}/`,
+          // No email redirect - we handle emails ourselves
         },
       });
 
@@ -334,21 +348,10 @@ export const Auth = () => {
       }
 
       if (data.user) {
-        // Send custom confirmation email via Resend
-        try {
-          await emailService.sendSignupConfirmation(email, { full_name: fullName });
-          
-          toast({
-            title: "Account Created!",
-            description: "Please check your email and click the confirmation link to complete your registration.",
-          });
-        } catch (emailError) {
-          console.error("Email sending failed:", emailError);
-          toast({
-            title: "Account Created!",
-            description: "Account created but email confirmation failed. Please try signing in.",
-          });
-        }
+        toast({
+          title: "Account Created!",
+          description: "Please check your email and click the confirmation link to complete your registration.",
+        });
         
         // Clear form
         setEmail("");
