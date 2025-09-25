@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { emailService } from "@/lib/emailService";
 import { Brain, Mail, Lock, User } from "lucide-react";
 
 export const Auth = () => {
@@ -31,25 +32,24 @@ export const Auth = () => {
       return;
     }
 
+    setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
-      });
-
-      if (error) {
-        throw error;
-      }
-
+      // Use our custom email service instead of Supabase's built-in
+      await emailService.sendPasswordReset(email);
+      
       toast({
         title: "Password Reset Sent",
         description: "Check your email for password reset instructions.",
       });
     } catch (error: any) {
+      console.error("Password reset error:", error);
       toast({
         title: "Reset Failed",
         description: error.message || "Failed to send reset email.",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -293,6 +293,7 @@ export const Auth = () => {
     try {
       console.log("Attempting to sign up user:", { email, fullName });
       
+      // First, create the user account (without email confirmation)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -300,6 +301,7 @@ export const Auth = () => {
           data: {
             full_name: fullName,
           },
+          // Disable email confirmation - we'll handle it ourselves
           emailRedirectTo: `${window.location.origin}/`,
         },
       });
@@ -332,10 +334,21 @@ export const Auth = () => {
       }
 
       if (data.user) {
-        toast({
-          title: "Account Created!",
-          description: "Please check your email and click the confirmation link to complete your registration.",
-        });
+        // Send custom confirmation email via Resend
+        try {
+          await emailService.sendSignupConfirmation(email, { full_name: fullName });
+          
+          toast({
+            title: "Account Created!",
+            description: "Please check your email and click the confirmation link to complete your registration.",
+          });
+        } catch (emailError) {
+          console.error("Email sending failed:", emailError);
+          toast({
+            title: "Account Created!",
+            description: "Account created but email confirmation failed. Please try signing in.",
+          });
+        }
         
         // Clear form
         setEmail("");

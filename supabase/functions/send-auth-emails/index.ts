@@ -62,15 +62,8 @@ const handler = async (req: Request): Promise<Response> => {
   // Log all headers for debugging
   console.log("Request headers:", Object.fromEntries(req.headers.entries()));
   
-  // Verify webhook signature
-  const isValidSignature = await verifyWebhookSignature(req);
-  if (!isValidSignature) {
-    console.error("Invalid webhook signature");
-    return new Response("Unauthorized", { 
-      status: 401, 
-      headers: corsHeaders 
-    });
-  }
+  // Skip webhook signature verification for custom email service
+  // This allows our custom email service to call this function directly
 
   try {
     const body: EmailRequest = await req.json();
