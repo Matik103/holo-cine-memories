@@ -27,6 +27,9 @@ const handler = async (req: Request): Promise<Response> => {
     });
   }
 
+  // Skip JWT verification for password reset (this is a public endpoint)
+  console.log("Processing password reset request");
+
   try {
     const { email, token, newPassword }: ResetPasswordRequest = await req.json();
     
