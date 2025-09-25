@@ -50,15 +50,18 @@ enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
 
-[auth.email.template.confirmation]
-subject = "Confirm your signup"
-content_path = ""
-template = "https://otaqvhoopxyinfzphzxh.supabase.co/functions/v1/send-auth-emails"
+[auth.email.smtp]
+host = "https://otaqvhoopxyinfzphzxh.supabase.co"
+port = 443
+user = ""
+pass = ""
+admin_email = "support@cinemind.tech"
+sender_name = "CineMind"
 
-[auth.email.template.recovery]
-subject = "Reset your password"
-content_path = ""
-template = "https://otaqvhoopxyinfzphzxh.supabase.co/functions/v1/send-auth-emails"
+[auth.hook.send_email]
+enabled = true
+uri = "https://otaqvhoopxyinfzphzxh.supabase.co/functions/v1/send-auth-emails"
+secrets = "SEND_EMAIL_HOOK_SECRET"
 
 [functions.movie-identify]
 verify_jwt = false
