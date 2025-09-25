@@ -57,7 +57,12 @@ class EmailService {
   }
 
   async sendPasswordReset(email: string, userData?: { full_name?: string }) {
-    const resetUrl = `${window.location.origin}/auth?type=recovery&email=${encodeURIComponent(email)}`;
+    // Generate a custom reset token and store it
+    const resetToken = this.generateResetToken();
+    const resetUrl = `${window.location.origin}/auth?type=recovery&token=${resetToken}&email=${encodeURIComponent(email)}`;
+    
+    // Store the reset token temporarily (you might want to store this in a database)
+    localStorage.setItem(`reset_token_${email}`, resetToken);
     
     return this.sendEmail({
       to: email,
@@ -66,6 +71,11 @@ class EmailService {
       type: 'password_reset',
       userData
     });
+  }
+
+  private generateResetToken(): string {
+    // Generate a simple reset token (in production, use a more secure method)
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 
   private getSignupTemplate(displayName: string, confirmationUrl: string): string {
