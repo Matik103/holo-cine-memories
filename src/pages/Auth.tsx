@@ -340,33 +340,18 @@ export const Auth = () => {
           // Don't fail the signup if email fails
         }
 
-        // Since users are auto-confirmed, they can sign in immediately
-        if (data.session) {
-          toast({
-            title: "Welcome to CineMind!",
-            description: "Your account has been created successfully.",
-          });
-          
-          // Clear form and navigate to app
-          setEmail("");
-          setPassword("");
-          setFullName("");
-          navigate("/");
-        } else {
-          toast({
-            title: "Account Created!",
-            description: "Your account has been created. You can now sign in.",
-          });
-          
-          // Clear form and switch to sign in
-          setEmail("");
-          setPassword("");
-          setFullName("");
-          const signInTab = document.querySelector('[value="signin"]') as HTMLElement;
-          if (signInTab) {
-            signInTab.click();
-          }
-        }
+        toast({
+          title: "Welcome to CineMind!",
+          description: "Your account has been created successfully.",
+        });
+        
+        // Clear form
+        setEmail("");
+        setPassword("");
+        setFullName("");
+        
+        // Since confirmations are disabled, users can access the app immediately
+        navigate("/");
       } else {
         toast({
           title: "Sign Up Failed",
