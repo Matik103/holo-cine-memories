@@ -79,7 +79,9 @@ const handler = async (req: Request): Promise<Response> => {
     let subject: string;
     let html: string;
 
-    const confirmationUrl = `${site_url}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
+    // Use Supabase's verification endpoint instead of frontend route
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const confirmationUrl = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
     const displayName = user.user_metadata?.full_name || "there";
 
     if (email_action_type === "signup") {
