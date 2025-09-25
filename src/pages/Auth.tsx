@@ -21,7 +21,7 @@ export const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Handle forgot password - Use Supabase's built-in flow
+  // Handle forgot password - Use our custom email service
   const handleForgotPassword = async () => {
     if (!email) {
       toast({
@@ -34,14 +34,8 @@ export const Auth = () => {
 
     setLoading(true);
     try {
-      // Use Supabase's built-in password reset which will trigger our webhook
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
-      });
-
-      if (error) {
-        throw error;
-      }
+      // Use our custom email service instead of Supabase
+      await emailService.sendPasswordReset(email);
       
       toast({
         title: "Password Reset Sent",
@@ -318,7 +312,22 @@ export const Auth = () => {
     try {
       console.log("Attempting to sign up user:", { email, fullName });
       
-      // Create the user account first (users are now auto-confirmed)
+      // Send custom confirmation email FIRST (before creating account)
+      try {
+        await emailService.sendSignupConfirmation(email, { full_name: fullName });
+        console.log("Custom confirmation email sent successfully");
+      } catch (emailError) {
+        console.error("Email sending failed:", emailError);
+        toast({
+          title: "Email Failed",
+          description: "Failed to send confirmation email. Please try again.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      
+      // Then create the user account (Supabase will handle this without sending emails)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -326,6 +335,7 @@ export const Auth = () => {
           data: {
             full_name: fullName,
           },
+          // No email redirect - we handle emails ourselves
         },
       });
 
@@ -356,18 +366,9 @@ export const Auth = () => {
       }
 
       if (data.user) {
-        // Send welcome email after successful account creation
-        try {
-          await emailService.sendSignupConfirmation(email, { full_name: fullName });
-          console.log("Welcome email sent successfully");
-        } catch (emailError) {
-          console.error("Welcome email failed:", emailError);
-          // Don't fail the signup if email fails
-        }
-
         toast({
           title: "Welcome to CineMind!",
-          description: "Your account has been created successfully.",
+          description: "Your account has been created successfully. Check your email for confirmation.",
         });
         
         // Clear form
