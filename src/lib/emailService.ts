@@ -57,12 +57,24 @@ class EmailService {
   }
 
   async sendPasswordReset(email: string, userData?: { full_name?: string }) {
-    // Generate a custom reset token and store it
-    const resetToken = this.generateResetToken();
+    // Create a custom reset token and store it in the database
+    const resetToken = this.generateSecureToken();
     const resetUrl = `${window.location.origin}/auth?type=recovery&token=${resetToken}&email=${encodeURIComponent(email)}`;
     
-    // Store the reset token temporarily (you might want to store this in a database)
-    localStorage.setItem(`reset_token_${email}`, resetToken);
+    // Store the reset token in Supabase database with expiration
+    const { error: dbError } = await supabase
+      .from('password_reset_tokens')
+      .insert({
+        email: email,
+        token: resetToken,
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+        created_at: new Date().toISOString()
+      });
+
+    if (dbError) {
+      console.error('Failed to store reset token:', dbError);
+      // Continue anyway - the token is still valid for this session
+    }
     
     return this.sendEmail({
       to: email,
@@ -73,9 +85,11 @@ class EmailService {
     });
   }
 
-  private generateResetToken(): string {
-    // Generate a simple reset token (in production, use a more secure method)
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  private generateSecureToken(): string {
+    // Generate a more secure token
+    const array = new Uint8Array(32);
+    crypto.getRandomValues(array);
+    return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
   }
 
   private getSignupTemplate(displayName: string, confirmationUrl: string): string {

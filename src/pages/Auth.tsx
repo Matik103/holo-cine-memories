@@ -86,35 +86,49 @@ export const Auth = () => {
     }
 
     try {
-      // Extract tokens from URL hash (after Supabase verification)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
+      // Check for custom reset token in URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      const email = urlParams.get('email');
       
-      console.log('Hash params:', Object.fromEntries(hashParams.entries()));
-      console.log('Access token:', accessToken ? 'present' : 'missing');
-      console.log('Refresh token:', refreshToken ? 'present' : 'missing');
+      console.log('URL params:', { token: token ? 'present' : 'missing', email });
       
-      if (accessToken && refreshToken) {
-        // Set the session using the tokens from Supabase verification
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken
-        });
+      if (token && email) {
+        // Verify the custom reset token
+        const { data: tokenData, error: tokenError } = await supabase
+          .from('password_reset_tokens')
+          .select('*')
+          .eq('token', token)
+          .eq('email', email)
+          .gt('expires_at', new Date().toISOString())
+          .is('used_at', null)
+          .single();
 
-        if (error) {
+        if (tokenError || !tokenData) {
           throw new Error("Invalid or expired reset link. Please request a new password reset.");
         }
 
-        console.log('Session set successfully:', data.session?.user?.email);
+        // Mark token as used
+        await supabase
+          .from('password_reset_tokens')
+          .update({ used_at: new Date().toISOString() })
+          .eq('id', tokenData.id);
 
-        // Now update the password
-        const { error: updateError } = await supabase.auth.updateUser({
-          password: newPassword
+        // Call our custom reset password function
+        const { data: resetData, error: resetError } = await supabase.functions.invoke('reset-password', {
+          body: {
+            email: email,
+            token: token,
+            newPassword: newPassword
+          }
         });
 
-        if (updateError) {
-          throw updateError;
+        if (resetError) {
+          throw new Error(resetError.message || "Failed to reset password");
+        }
+
+        if (!resetData.success) {
+          throw new Error(resetData.error || "Failed to reset password");
         }
       } else {
         // Fallback: try to get current session
