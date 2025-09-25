@@ -78,14 +78,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     const { user, email_data } = body;
     const { email } = user;
-    const { token_hash, redirect_to, email_action_type, site_url } = email_data;
+    const { token, token_hash, redirect_to, email_action_type, site_url } = email_data;
 
     let subject: string;
     let html: string;
 
-    // Use Supabase's verification endpoint instead of frontend route
+    // For recovery emails, redirect to our auth page with the token
+    // For signup emails, use Supabase's verification endpoint  
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const confirmationUrl = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
+    let confirmationUrl: string;
+    
+    if (email_action_type === "recovery") {
+      // For password reset, redirect directly to auth page with token in hash
+      confirmationUrl = `${redirect_to}#access_token=${token}&type=${email_action_type}`;
+    } else {
+      // For signup confirmation, use Supabase's verification endpoint
+      confirmationUrl = `${supabaseUrl}/auth/v1/verify?token=${token_hash}&type=${email_action_type}&redirect_to=${encodeURIComponent(redirect_to)}`;
+    }
+    
     const displayName = user.user_metadata?.full_name || "there";
 
     if (email_action_type === "signup") {
