@@ -21,7 +21,7 @@ export const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Handle forgot password - COMPLETELY CUSTOM (no Supabase calls)
+  // Handle forgot password - Use Supabase's built-in flow
   const handleForgotPassword = async () => {
     if (!email) {
       toast({
@@ -34,8 +34,14 @@ export const Auth = () => {
 
     setLoading(true);
     try {
-      // Send custom email directly - no Supabase involvement
-      await emailService.sendPasswordReset(email);
+      // Use Supabase's built-in password reset which will trigger our webhook
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Password Reset Sent",

@@ -25,6 +25,8 @@ const verifyWebhookSignature = async (req: Request): Promise<boolean> => {
 
   // Simple signature verification (in production, use proper HMAC verification)
   const expectedSignature = `v1,whsec_${btoa(secret)}`;
+  console.log("Expected signature:", expectedSignature);
+  console.log("Received signature:", signature);
   return signature === expectedSignature;
 };
 
