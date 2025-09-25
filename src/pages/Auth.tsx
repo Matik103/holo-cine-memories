@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { emailService } from "@/lib/emailService";
 import { Brain, Mail, Lock, User } from "lucide-react";
 
 export const Auth = () => {
@@ -21,7 +20,7 @@ export const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Handle forgot password - Use our custom email service
+  // Handle forgot password - Use Supabase's built-in recovery
   const handleForgotPassword = async () => {
     if (!email) {
       toast({
@@ -34,8 +33,13 @@ export const Auth = () => {
 
     setLoading(true);
     try {
-      // Use our custom email service instead of Supabase
-      await emailService.sendPasswordReset(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Password Reset Sent",
@@ -80,65 +84,13 @@ export const Auth = () => {
     }
 
     try {
-      // Check for custom reset token in URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const token = urlParams.get('token');
-      const email = urlParams.get('email');
-      
-      console.log('URL params:', { token: token ? 'present' : 'missing', email });
-      
-      if (token && email) {
-        // Verify the custom reset token
-        const { data: tokenData, error: tokenError } = await supabase
-          .from('password_reset_tokens')
-          .select('*')
-          .eq('token', token)
-          .eq('email', email)
-          .gt('expires_at', new Date().toISOString())
-          .is('used_at', null)
-          .single();
+      // Use Supabase's session-based password update
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
 
-        if (tokenError || !tokenData) {
-          throw new Error("Invalid or expired reset link. Please request a new password reset.");
-        }
-
-        // Mark token as used
-        await supabase
-          .from('password_reset_tokens')
-          .update({ used_at: new Date().toISOString() })
-          .eq('id', tokenData.id);
-
-        // Call our custom reset password function
-        const { data: resetData, error: resetError } = await supabase.functions.invoke('reset-password', {
-          body: {
-            email: email,
-            token: token,
-            newPassword: newPassword
-          }
-        });
-
-        if (resetError) {
-          throw new Error(resetError.message || "Failed to reset password");
-        }
-
-        if (!resetData.success) {
-          throw new Error(resetData.error || "Failed to reset password");
-        }
-      } else {
-        // Fallback: try to get current session
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError || !session) {
-          throw new Error("No valid session found. Please request a new password reset.");
-        }
-
-        const { error } = await supabase.auth.updateUser({
-          password: newPassword
-        });
-
-        if (error) {
-          throw error;
-        }
+      if (error) {
+        throw error;
       }
 
       toast({
@@ -146,19 +98,20 @@ export const Auth = () => {
         description: "Your password has been successfully updated.",
       });
 
-      // Clear form and go back to sign in
+      // Clear form and redirect to app
       setNewPassword("");
       setConfirmPassword("");  
       setShowPasswordReset(false);
       
-      // Clear the URL hash to remove the tokens
-      window.location.hash = '';
+      // Clear the URL hash and navigate to home
+      window.history.replaceState(null, '', window.location.pathname);
+      navigate("/");
       
     } catch (error: any) {
       console.error("Password update error:", error);
       toast({
         title: "Update Failed",
-        description: error.message || "Failed to update password.",
+        description: error.message || "Failed to update password. Please request a new reset link.",
         variant: "destructive",
       });
     } finally {
@@ -168,53 +121,32 @@ export const Auth = () => {
 
 
   useEffect(() => {
-    // Check URL parameters for password reset on initial load
-    const urlParams = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    
-    console.log('URL params:', Object.fromEntries(urlParams.entries()));
-    console.log('Hash params:', Object.fromEntries(hashParams.entries()));
-    
-    // Check for password reset indicators - look for access_token and type=recovery from Supabase verification
-    const accessToken = hashParams.get('access_token');
-    const refreshToken = hashParams.get('refresh_token');
-    const type = hashParams.get('type');
-    
-    if (accessToken && refreshToken && type === 'recovery') {
-      console.log('Password reset detected from Supabase verification');
-      setShowPasswordReset(true);
-      return;
-    }
-
-    // Set up auth state listener
+    // Set up auth state listener to handle password recovery
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state change:', event, session?.user?.email);
       
-      // Handle password recovery event specifically
+      // Handle password recovery event from Supabase
       if (event === 'PASSWORD_RECOVERY') {
-        console.log('Password recovery event detected');
+        console.log('Password recovery event detected - showing reset form');
         setShowPasswordReset(true);
         return;
       }
       
-      // For regular sign-in, check if we're not in password reset mode
-      if (session && !showPasswordReset) {
-        const currentHashParams = new URLSearchParams(window.location.hash.substring(1));
-        const currentUrlParams = new URLSearchParams(window.location.search);
-        
-        // Double-check we're not in password reset mode
-        const stillInPasswordReset = currentHashParams.get('type') === 'recovery' &&
-                                   currentHashParams.has('access_token');
-        
-        if (!stillInPasswordReset) {
-          console.log('Normal sign in, redirecting to app');
-          navigate("/");
-        }
+      // Handle successful sign-in (redirect to app)
+      if (event === 'SIGNED_IN' && session && !showPasswordReset) {
+        console.log('User signed in, redirecting to app');
+        navigate("/");
+      }
+      
+      // Handle sign-out
+      if (event === 'SIGNED_OUT') {
+        console.log('User signed out');
+        setShowPasswordReset(false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, showPasswordReset]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -312,22 +244,7 @@ export const Auth = () => {
     try {
       console.log("Attempting to sign up user:", { email, fullName });
       
-      // Send custom confirmation email FIRST (before creating account)
-      try {
-        await emailService.sendSignupConfirmation(email, { full_name: fullName });
-        console.log("Custom confirmation email sent successfully");
-      } catch (emailError) {
-        console.error("Email sending failed:", emailError);
-        toast({
-          title: "Email Failed",
-          description: "Failed to send confirmation email. Please try again.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-      
-      // Then create the user account (Supabase will handle this without sending emails)
+      // Send confirmation email using Supabase's system
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -335,7 +252,7 @@ export const Auth = () => {
           data: {
             full_name: fullName,
           },
-          // No email redirect - we handle emails ourselves
+          emailRedirectTo: `${window.location.origin}/auth`,
         },
       });
 
