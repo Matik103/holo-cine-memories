@@ -293,22 +293,7 @@ export const Auth = () => {
     try {
       console.log("Attempting to sign up user:", { email, fullName });
       
-      // Send custom confirmation email FIRST (before creating account)
-      try {
-        await emailService.sendSignupConfirmation(email, { full_name: fullName });
-        console.log("Custom confirmation email sent successfully");
-      } catch (emailError) {
-        console.error("Email sending failed:", emailError);
-        toast({
-          title: "Email Failed",
-          description: "Failed to send confirmation email. Please try again.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-      
-      // Then create the user account (Supabase will handle this without sending emails)
+      // Create the user account first (users are now auto-confirmed)
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -316,7 +301,6 @@ export const Auth = () => {
           data: {
             full_name: fullName,
           },
-          // No email redirect - we handle emails ourselves
         },
       });
 
@@ -344,21 +328,45 @@ export const Auth = () => {
         } else {
           throw error;
         }
-        return;
       }
 
       if (data.user) {
-        toast({
-          title: "Account Created!",
-          description: "Please check your email and click the confirmation link to complete your registration.",
-        });
-        
-        // Clear form
-        setEmail("");
-        setPassword("");
-        setFullName("");
-        
-        // Don't navigate - user needs to confirm email first
+        // Send welcome email after successful account creation
+        try {
+          await emailService.sendSignupConfirmation(email, { full_name: fullName });
+          console.log("Welcome email sent successfully");
+        } catch (emailError) {
+          console.error("Welcome email failed:", emailError);
+          // Don't fail the signup if email fails
+        }
+
+        // Since users are auto-confirmed, they can sign in immediately
+        if (data.session) {
+          toast({
+            title: "Welcome to CineMind!",
+            description: "Your account has been created successfully.",
+          });
+          
+          // Clear form and navigate to app
+          setEmail("");
+          setPassword("");
+          setFullName("");
+          navigate("/");
+        } else {
+          toast({
+            title: "Account Created!",
+            description: "Your account has been created. You can now sign in.",
+          });
+          
+          // Clear form and switch to sign in
+          setEmail("");
+          setPassword("");
+          setFullName("");
+          const signInTab = document.querySelector('[value="signin"]') as HTMLElement;
+          if (signInTab) {
+            signInTab.click();
+          }
+        }
       } else {
         toast({
           title: "Sign Up Failed",
