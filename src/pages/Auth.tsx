@@ -630,7 +630,11 @@ export const Auth = () => {
             
             <div className="mt-6">
               <Button
-                onClick={() => navigate("/")}
+                onClick={() => {
+                  // Set guest mode flag and navigate to main app
+                  localStorage.setItem('guestMode', 'true');
+                  navigate("/");
+                }}
                 variant="outline"
                 className="w-full"
               >

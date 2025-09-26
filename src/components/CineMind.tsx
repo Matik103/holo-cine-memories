@@ -26,6 +26,7 @@ interface StreamingOption {
 export const CineMind = () => {
   const [user, setUser] = useState<any>(null);
   const [showLanding, setShowLanding] = useState(true);
+  const [isGuestMode, setIsGuestMode] = useState(false);
   const [currentView, setCurrentView] = useState<ViewState>('search');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -44,6 +45,13 @@ export const CineMind = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check for guest mode
+    const guestMode = localStorage.getItem('guestMode') === 'true';
+    if (guestMode) {
+      setIsGuestMode(true);
+      setShowLanding(false);
+    }
+
     // Check authentication state
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
@@ -63,6 +71,8 @@ export const CineMind = () => {
         }
         
         setShowLanding(false); // Skip landing page if user is authenticated
+        setIsGuestMode(false); // Clear guest mode when user signs in
+        localStorage.removeItem('guestMode'); // Clear guest mode flag
         // Initialize OpenAI with the main API key from Supabase
         initializeOpenAIFromSupabase();
       }
@@ -87,6 +97,8 @@ export const CineMind = () => {
         }
         
         setShowLanding(false);
+        setIsGuestMode(false); // Clear guest mode when user signs in
+        localStorage.removeItem('guestMode'); // Clear guest mode flag
         initializeOpenAIFromSupabase();
       }
     });
@@ -134,6 +146,7 @@ export const CineMind = () => {
     // Redirect to authentication page
     navigate("/auth");
   };
+
 
   const handleSearch = async (query: string) => {
     const searchStartTime = Date.now();
@@ -509,8 +522,13 @@ export const CineMind = () => {
                          hashParams.get('type') === 'recovery' ||
                          hashParams.has('access_token');
 
-  // Show landing page for password reset sessions or when showLanding is true
-  if (isPasswordReset || showLanding) {
+  // Show landing page only for password reset sessions
+  if (isPasswordReset) {
+    return <LandingPage onStart={handleStartJourney} />;
+  }
+
+  // Show landing page only if user is not authenticated, not in guest mode, and showLanding is true
+  if (showLanding && !user && !isGuestMode) {
     return <LandingPage onStart={handleStartJourney} />;
   }
 
