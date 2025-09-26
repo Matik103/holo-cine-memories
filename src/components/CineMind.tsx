@@ -501,11 +501,6 @@ export const CineMind = () => {
     }
   };
 
-  // Show landing page first
-  if (showLanding) {
-    return <LandingPage onStart={handleStartJourney} />;
-  }
-
   // Check if this is a password reset session
   const urlParams = new URLSearchParams(window.location.search);
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -513,8 +508,8 @@ export const CineMind = () => {
                          urlParams.get('reset') === 'true' ||
                          hashParams.get('type') === 'recovery' ||
                          hashParams.has('access_token');
-  
-  // Show authentication page only if it's a password reset
+
+  // Show landing page only for password reset sessions
   if (isPasswordReset) {
     return <LandingPage onStart={handleStartJourney} />;
   }
