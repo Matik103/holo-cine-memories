@@ -147,9 +147,9 @@ export const CineMind = () => {
     setStreamingOptions([]);
     setSimilarMovies([]);
     
-    // Prepare analytics data
-    let analyticsData = {
-      user_id: user?.id || null,
+    // Prepare analytics data (only for authenticated users)
+    let analyticsData = user ? {
+      user_id: user.id,
       query_text: query,
       query_type: 'text' as const,
       search_result: null as any,
@@ -160,7 +160,7 @@ export const CineMind = () => {
       genres: null as string[] | null,
       search_duration_ms: null as number | null,
       user_agent: navigator.userAgent
-    };
+    } : null;
     
     try {
       console.log('Starting search for:', query);
@@ -191,11 +191,13 @@ export const CineMind = () => {
         console.log('Trailer URL:', movie.trailer);
         
         // Update analytics data with successful result
-        analyticsData.success = true;
-        analyticsData.confidence_score = rawMovie.confidence;
-        analyticsData.movie_identified = movie.title;
-        analyticsData.movie_year = movie.year;
-        analyticsData.genres = movie.genre;
+        if (analyticsData) {
+          analyticsData.success = true;
+          analyticsData.confidence_score = rawMovie.confidence;
+          analyticsData.movie_identified = movie.title;
+          analyticsData.movie_year = movie.year;
+          analyticsData.genres = movie.genre;
+        }
         
         setCurrentMovie(movie);
         setCurrentView('movie-details');
@@ -249,8 +251,10 @@ export const CineMind = () => {
         console.log('No movie found or low confidence:', rawMovie);
         
         // Update analytics for unsuccessful search
-        analyticsData.success = false;
-        analyticsData.confidence_score = rawMovie?.confidence || 0;
+        if (analyticsData) {
+          analyticsData.success = false;
+          analyticsData.confidence_score = rawMovie?.confidence || 0;
+        }
         
         // Handle case where API returns null title or low confidence
         if (rawMovie && rawMovie.title === null) {
@@ -271,8 +275,10 @@ export const CineMind = () => {
       console.error('Search error:', error);
       
       // Update analytics for error case
-      analyticsData.success = false;
-      analyticsData.search_duration_ms = Date.now() - searchStartTime;
+      if (analyticsData) {
+        analyticsData.success = false;
+        analyticsData.search_duration_ms = Date.now() - searchStartTime;
+      }
       
       // Provide more specific error messages
       let errorMessage = "Something went wrong";
@@ -295,7 +301,7 @@ export const CineMind = () => {
       });
     } finally {
       // Save analytics data regardless of success/failure
-      if (user && analyticsData.user_id) {
+      if (user && analyticsData && analyticsData.user_id) {
         try {
           const { error: analyticsError } = await supabase
             .from('user_query_analytics')
@@ -508,8 +514,8 @@ export const CineMind = () => {
                          hashParams.get('type') === 'recovery' ||
                          hashParams.has('access_token');
   
-  // Show authentication page if user is not logged in or if it's a password reset
-  if (!user || isPasswordReset) {
+  // Show authentication page only if it's a password reset
+  if (isPasswordReset) {
     return <LandingPage onStart={handleStartJourney} />;
   }
 
@@ -566,13 +572,21 @@ export const CineMind = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button
-                onClick={() => navigate("/auth")}
-                className="neural-button text-xs sm:text-sm px-2 sm:px-4"
-              >
-                <span className="hidden sm:inline">Sign In</span>
-                <span className="sm:hidden">Login</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => navigate("/auth")}
+                  variant="outline"
+                  className="text-xs sm:text-sm px-2 sm:px-4"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  onClick={() => navigate("/auth")}
+                  className="neural-button text-xs sm:text-sm px-2 sm:px-4"
+                >
+                  Sign Up
+                </Button>
+              </div>
             )}
           </div>
         </div>

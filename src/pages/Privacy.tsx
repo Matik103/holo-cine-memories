@@ -97,7 +97,23 @@ export const Privacy = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Contact Us</h2>
+            <h2 className="text-xl font-semibold mb-4">5. Your Rights & Account Management</h2>
+            <p className="text-muted-foreground mb-4">
+              You have the right to control your personal information:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li><strong>Account Deletion:</strong> You can delete your account and all associated data at any time through the Settings page in the app.</li>
+              <li><strong>Data Access:</strong> You can view and manage your data through your profile page.</li>
+              <li><strong>Data Correction:</strong> You can update your profile information at any time.</li>
+              <li><strong>Data Portability:</strong> You can export your data by contacting us directly.</li>
+            </ul>
+            <p className="text-muted-foreground mt-4">
+              When you delete your account, we will permanently remove all your personal information, search history, preferences, and any other data associated with your account from our systems.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">6. Contact Us</h2>
             <p className="text-muted-foreground">
               If you have any questions about this Privacy Policy, please contact us at:
             </p>
