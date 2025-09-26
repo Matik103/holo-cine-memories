@@ -87,6 +87,16 @@ export const Privacy = () => {
           </section>
 
           <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">5. Posters & Media Sources</h2>
+            <p className="text-muted-foreground mb-4">
+              CineMind uses the OMDb API to display movie posters, descriptions, and metadata. All media elements are provided by OMDb and remain the property of their respective owners.
+            </p>
+            <p className="text-muted-foreground">
+              For more information about OMDb, please visit: <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">https://www.omdbapi.com</a>
+            </p>
+          </section>
+
+          <section className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Contact Us</h2>
             <p className="text-muted-foreground">
               If you have any questions about this Privacy Policy, please contact us at:
