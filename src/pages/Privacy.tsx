@@ -79,7 +79,11 @@ export const Privacy = () => {
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
               <li><a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">YouTube Terms of Service</a></li>
+              <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Google Privacy Policy</a></li>
             </ul>
+            <p className="text-muted-foreground mt-4">
+              You may revoke CineMind's access to your YouTube data at any time via your <a href="https://security.google.com/settings/security/permissions" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Google Security Settings</a>.
+            </p>
           </section>
 
           <section className="mb-8">
