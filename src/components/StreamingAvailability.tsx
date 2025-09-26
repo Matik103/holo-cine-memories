@@ -17,12 +17,7 @@ interface StreamingAvailabilityProps {
 }
 
 export const StreamingAvailability = ({ movieTitle, options, onBack }: StreamingAvailabilityProps) => {
-  // Replace Amazon Prime URLs with affiliate link
   const getStreamingUrl = (option: StreamingOption) => {
-    const platform = option.platform.toLowerCase();
-    if (platform.includes('amazon') || platform.includes('prime')) {
-      return 'https://www.amazon.com/Prime-Video/b?node=2676882011&tag=cinemind-20';
-    }
     return option.url;
   };
 
