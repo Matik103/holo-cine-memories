@@ -509,8 +509,8 @@ export const CineMind = () => {
                          hashParams.get('type') === 'recovery' ||
                          hashParams.has('access_token');
 
-  // Show landing page only for password reset sessions
-  if (isPasswordReset) {
+  // Show landing page for password reset sessions or when showLanding is true
+  if (isPasswordReset || showLanding) {
     return <LandingPage onStart={handleStartJourney} />;
   }
 

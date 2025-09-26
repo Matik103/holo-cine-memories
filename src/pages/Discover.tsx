@@ -65,7 +65,6 @@ export const Discover = () => {
       toast({
         title: "Sign in Required",
         description: "Please sign in to add movies to your favorites.",
-        variant: "destructive",
       });
       return;
     }
