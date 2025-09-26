@@ -181,8 +181,10 @@ export const CineMind = () => {
       console.log('Raw movie response:', rawMovie);
       
       const searchDuration = Date.now() - searchStartTime;
-      analyticsData.search_duration_ms = searchDuration;
-      analyticsData.search_result = rawMovie;
+      if (analyticsData) {
+        analyticsData.search_duration_ms = searchDuration;
+        analyticsData.search_result = rawMovie;
+      }
       
       if (rawMovie && rawMovie.title && rawMovie.confidence > 0.5) {
         // Transform the data to match MovieCard interface
