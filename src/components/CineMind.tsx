@@ -49,6 +49,11 @@ export const CineMind = () => {
     const guestMode = localStorage.getItem('guestMode') === 'true';
     if (guestMode) {
       setIsGuestMode(true);
+    }
+
+    // Check if user wants to skip landing page
+    const skipLanding = localStorage.getItem('skipLanding') === 'true';
+    if (skipLanding) {
       setShowLanding(false);
     }
 
@@ -73,6 +78,7 @@ export const CineMind = () => {
         setShowLanding(false); // Skip landing page if user is authenticated
         setIsGuestMode(false); // Clear guest mode when user signs in
         localStorage.removeItem('guestMode'); // Clear guest mode flag
+        localStorage.removeItem('skipLanding'); // Clear skip landing flag
         // Initialize OpenAI with the main API key from Supabase
         initializeOpenAIFromSupabase();
       }
@@ -99,6 +105,7 @@ export const CineMind = () => {
         setShowLanding(false);
         setIsGuestMode(false); // Clear guest mode when user signs in
         localStorage.removeItem('guestMode'); // Clear guest mode flag
+        localStorage.removeItem('skipLanding'); // Clear skip landing flag
         initializeOpenAIFromSupabase();
       }
     });
@@ -529,8 +536,8 @@ export const CineMind = () => {
     return <LandingPage onStart={handleStartJourney} />;
   }
 
-  // Show landing page only if user is not authenticated, not in guest mode, and showLanding is true
-  if (showLanding && !user && !isGuestMode) {
+  // Show landing page if showLanding is true (for all users initially)
+  if (showLanding) {
     return <LandingPage onStart={handleStartJourney} />;
   }
 

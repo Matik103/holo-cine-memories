@@ -543,6 +543,8 @@ export const Auth = () => {
                       onClick={() => {
                         // Set guest mode flag and navigate to main app
                         localStorage.setItem('guestMode', 'true');
+                        // Clear the landing page flag to show main app
+                        localStorage.setItem('skipLanding', 'true');
                         navigate("/");
                       }}
                       variant="outline"
