@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Brain, Mail, Lock, User } from "lucide-react";
@@ -17,6 +18,7 @@ export const Auth = () => {
   const [showPasswordReset, setShowPasswordReset] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -241,6 +243,17 @@ export const Auth = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Validate privacy policy agreement
+    if (!agreeToPrivacy) {
+      toast({
+        title: "Privacy Policy Required",
+        description: "Please agree to our Privacy Policy to continue.",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     // Validate password length
     if (password.length < 6) {
@@ -565,10 +578,36 @@ export const Auth = () => {
                   </div>
                 </div>
 
+                {/* Privacy Policy Agreement */}
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="privacy-agreement"
+                      checked={agreeToPrivacy}
+                      onCheckedChange={(checked) => setAgreeToPrivacy(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <div className="text-sm text-muted-foreground leading-relaxed">
+                      <Label htmlFor="privacy-agreement" className="cursor-pointer">
+                        I agree to the{" "}
+                        <Link 
+                          to="/privacy" 
+                          className="text-primary hover:underline font-medium"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Privacy Policy
+                        </Link>
+                        {" "}and understand that CineMind will collect and process my personal information (name, email, password) to provide personalized movie recommendations and improve the service.
+                      </Label>
+                    </div>
+                  </div>
+                </div>
+
                 <Button 
                   type="submit" 
                   className="w-full neural-button"
-                  disabled={loading}
+                  disabled={loading || !agreeToPrivacy}
                 >
                   {loading ? "Creating Account..." : "Create Account"}
                 </Button>
