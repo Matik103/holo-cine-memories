@@ -682,5 +682,36 @@ All colors MUST be HSL for neural network-inspired design.
   animation-delay: 300ms;
 }
 
+/* Loading screen animations */
+@keyframes loading-pulse {
+  0%, 100% { 
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% { 
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes loading-bounce {
+  0%, 80%, 100% { 
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.loading-pulse {
+  animation: loading-pulse 2s ease-in-out infinite;
+}
+
+.loading-bounce {
+  animation: loading-bounce 1.4s ease-in-out infinite;
+}
+
 /* Close the components layer */
 }

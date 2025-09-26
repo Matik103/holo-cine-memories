@@ -6,6 +6,7 @@ import { MovieExplanation } from "./MovieExplanation";
 import { StreamingAvailability } from "./StreamingAvailability";
 import { SimilarMovies } from "./SimilarMovies";
 import { LandingPage } from "./LandingPage";
+import { LoadingScreen } from "./LoadingScreen";
 import { initializeOpenAI, identifyMovie, explainMovie, getStreamingOptions, findSimilarMovies } from "@/lib/openai";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +28,7 @@ export const CineMind = () => {
   const [user, setUser] = useState<any>(null);
   const [showLanding, setShowLanding] = useState(true);
   const [isGuestMode, setIsGuestMode] = useState(false);
+  const [isAppLoading, setIsAppLoading] = useState(true);
   const [currentView, setCurrentView] = useState<ViewState>('search');
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -57,6 +59,19 @@ export const CineMind = () => {
       setShowLanding(false);
     }
 
+    // Set a minimum loading time for better UX
+    const minLoadingTime = 1500; // 1.5 seconds
+    const startTime = Date.now();
+    
+    const finishLoading = () => {
+      const elapsed = Date.now() - startTime;
+      const remainingTime = Math.max(0, minLoadingTime - elapsed);
+      
+      setTimeout(() => {
+        setIsAppLoading(false);
+      }, remainingTime);
+    };
+
     // Check authentication state
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
@@ -82,6 +97,9 @@ export const CineMind = () => {
         // Initialize OpenAI with the main API key from Supabase
         initializeOpenAIFromSupabase();
       }
+      
+      // Finish loading when auth state is determined
+      finishLoading();
     });
 
     // Check initial session
@@ -108,6 +126,9 @@ export const CineMind = () => {
         localStorage.removeItem('skipLanding'); // Clear skip landing flag
         initializeOpenAIFromSupabase();
       }
+      
+      // Finish loading when initial session is checked
+      finishLoading();
     });
 
     return () => subscription.unsubscribe();
@@ -522,6 +543,11 @@ export const CineMind = () => {
       setLoadingMessage("");
     }
   };
+
+  // Show loading screen while app is initializing
+  if (isAppLoading) {
+    return <LoadingScreen />;
+  }
 
   // Check if this is a password reset session
   const urlParams = new URLSearchParams(window.location.search);
