@@ -23,42 +23,63 @@ export const Privacy = () => {
 
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <p className="text-sm text-muted-foreground mb-6">
-            Last updated: {new Date().toLocaleDateString()}
+            Last updated: September 27, 2025
+          </p>
+
+          <p className="text-muted-foreground mb-6">
+            CineMind ("we," "our," or "us") values your privacy. This Privacy Policy explains what information we collect, how we use it, and the choices you have when using our app.
           </p>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Information We Collect</h2>
+            <h2 className="text-xl font-semibold mb-4">1. Information We Collect</h2>
             <p className="text-muted-foreground mb-4">
-              We collect information you provide directly to us, such as when you create an account, 
-              use our movie discovery features, or contact us for support.
+              We collect the following types of information:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Account information (email, display name)</li>
-              <li>Movie preferences and search history</li>
-              <li>Usage data and analytics</li>
-              <li>Device information and technical data</li>
+              <li><strong>Account Information:</strong> email address, display name, and any profile information you choose to provide.</li>
+              <li><strong>Search & Preferences:</strong> movies you search for, save, or interact with to improve recommendations.</li>
+              <li><strong>Usage Data & Analytics:</strong> in-app activity, interactions, crash logs, and performance metrics.</li>
+              <li><strong>Device Information:</strong> device type, operating system, app version, and technical identifiers.</li>
+            </ul>
+            <p className="text-muted-foreground mt-4">
+              We do not collect sensitive personal information such as payment details, biometric data, or precise location.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">2. How We Use Your Information</h2>
+            <p className="text-muted-foreground mb-4">
+              We use your information to:
+            </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li>Provide personalized movie and TV recommendations.</li>
+              <li>Display posters, trailers, and "Where to Watch" information.</li>
+              <li>Improve AI-powered discovery features.</li>
+              <li>Respond to support requests and troubleshoot issues.</li>
+              <li>Protect against fraud, abuse, and security risks.</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">How We Use Your Information</h2>
+            <h2 className="text-xl font-semibold mb-4">3. Data Sharing & Third-Party Services</h2>
             <p className="text-muted-foreground mb-4">
-              We use the information we collect to provide, maintain, and improve our services:
+              We do not sell or rent your personal information. However, we may share limited data in the following cases:
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Personalize movie recommendations</li>
-              <li>Improve our AI-powered features</li>
-              <li>Provide customer support</li>
-              <li>Ensure security and prevent fraud</li>
+              <li><strong>Service Providers:</strong> We may use trusted third parties (e.g., analytics providers) to help us operate our app.</li>
+              <li><strong>Legal Requirements:</strong> We may disclose data if required by law or to protect our rights and users' safety.</li>
+              <li><strong>Third-Party Links:</strong> Our app may include links to external services such as Hulu, Apple TV, Vudu, or YouTube. These services may collect their own data. We are not responsible for their privacy practices, and we encourage you to review their privacy policies.</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Data Sharing</h2>
-            <p className="text-muted-foreground">
-              We do not sell, trade, or otherwise transfer your personal information to third parties 
-              without your consent, except as described in this privacy policy or as required by law.
+            <h2 className="text-xl font-semibold mb-4">4. YouTube API Services</h2>
+            <p className="text-muted-foreground mb-4">
+              CineMind uses the YouTube API Services to display trailers and video content. By using CineMind, you are also agreeing to the:
             </p>
+            <ul className="list-disc pl-6 text-muted-foreground space-y-2">
+              <li><a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">YouTube Terms of Service</a></li>
+            </ul>
           </section>
 
           <section className="mb-8">

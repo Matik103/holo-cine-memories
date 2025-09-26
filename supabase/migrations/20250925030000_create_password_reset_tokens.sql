@@ -31,3 +31,5 @@ CREATE POLICY "Users can update their own reset tokens" ON password_reset_tokens
 -- Create policy to allow users to delete their own tokens
 CREATE POLICY "Users can delete their own reset tokens" ON password_reset_tokens
   FOR DELETE USING (true);
+
+
