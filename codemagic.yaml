@@ -52,6 +52,10 @@ workflows:
           set -e
           set -x
           
+          # Install Xcode Command Line Tools
+          xcode-select --install || true
+          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
+          
           # Install ImageMagick for icon generation
           brew install imagemagick
           
@@ -129,12 +133,12 @@ workflows:
           }
           EOF
           
-          # Generate icons from brain favicon
-          if [ -f "public/favicon.png" ]; then
-            convert public/favicon.png -resize 1024x1024 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
-            convert public/favicon.png -resize 512x512 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
-            convert public/favicon.png -resize 1024x1024 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
-            convert public/favicon.png -resize 1536x1536 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
+          # Generate icons from app icon
+          if [ -f "public/app-icon.png" ]; then
+            convert public/app-icon.png -resize 1024x1024 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+            convert public/app-icon.png -resize 512x512 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
+            convert public/app-icon.png -resize 1024x1024 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
+            convert public/app-icon.png -resize 1536x1536 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
           fi
           
       - name: Set up code signing settings
