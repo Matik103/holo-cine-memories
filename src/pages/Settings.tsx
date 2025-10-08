@@ -184,7 +184,7 @@ export const Settings = () => {
 
         {/* App Version */}
         <div className="text-center text-xs text-muted-foreground">
-          <p>CineMind v1.0.0</p>
+          <p>CineMind v1.0.2</p>
           <p className="mt-1">Your Personal AI Movie Memory Companion</p>
         </div>
       </div>
