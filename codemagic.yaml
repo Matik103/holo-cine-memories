@@ -52,13 +52,6 @@ workflows:
           set -e
           set -x
           
-          # Install Xcode Command Line Tools
-          xcode-select --install || true
-          sudo xcode-select --switch /Applications/Xcode.app/Contents/Developer
-          
-          # Install ImageMagick for icon generation
-          brew install imagemagick
-          
           # Create asset directories
           mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
           mkdir -p ios/App/App/Assets.xcassets/LaunchImage.launchimage
@@ -133,12 +126,12 @@ workflows:
           }
           EOF
           
-          # Generate icons from app icon
+          # Generate icons using sips (native macOS tool)
           if [ -f "public/app-icon.png" ]; then
-            convert public/app-icon.png -resize 1024x1024 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
-            convert public/app-icon.png -resize 512x512 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
-            convert public/app-icon.png -resize 1024x1024 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
-            convert public/app-icon.png -resize 1536x1536 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
+            sips -z 1024 1024 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+            sips -z 512 512 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
+            sips -z 1024 1024 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
+            sips -z 1536 1536 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
           fi
           
       - name: Set up code signing settings
