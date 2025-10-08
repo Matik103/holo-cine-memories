@@ -4,7 +4,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Capacitor } from '@capacitor/core';
 
-export const MobileAppInit = () => {
+const MobileAppInit = () => {
   useEffect(() => {
     const initMobileApp = async () => {
       if (!Capacitor.isNativePlatform()) return;
@@ -44,3 +44,5 @@ export const MobileAppInit = () => {
 
   return null;
 };
+
+export default MobileAppInit;
