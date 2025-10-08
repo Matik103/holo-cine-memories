@@ -147,11 +147,24 @@ workflows:
           echo "Checking for provisioning profiles..."
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles found"
           
-          # Update project to use manual signing
+          # Extract provisioning profile UUID
+          PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
+          if [ -f "$PROFILE_PATH" ]; then
+            PROFILE_UUID=$(grep -a -A 1 'UUID' "$PROFILE_PATH" | grep -o '[0-9a-f-]\{36\}' | head -1)
+            echo "Found provisioning profile UUID: $PROFILE_UUID"
+          fi
+          
+          # Update project to use manual signing with specific profile
           cd ios/App
           
-          # Set CODE_SIGN_STYLE to Manual in project.pbxproj
+          # Set CODE_SIGN_STYLE to Manual and configure provisioning profile
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
+          
+          # Add provisioning profile specifier if UUID found
+          if [ ! -z "$PROFILE_UUID" ]; then
+            # Add PROVISIONING_PROFILE_SPECIFIER for Release configuration
+            sed -i '' "/Release.*{/,/}/ s/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Manual;\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_UUID\";/" App.xcodeproj/project.pbxproj
+          fi
           
           cd ../..
           
