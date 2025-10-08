@@ -134,9 +134,26 @@ workflows:
             sips -z 1536 1536 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
           fi
           
+      - name: Clean Derived Data
+        script: |
+          rm -rf ~/Library/Developer/Xcode/DerivedData/*
+          xcodebuild clean -workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME" -configuration Release
+          
       - name: Set up code signing settings
         script: |
           xcode-project use-profiles
+          
+          # Verify provisioning profiles are installed
+          echo "Checking for provisioning profiles..."
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles found"
+          
+          # Update project to use manual signing
+          cd ios/App
+          
+          # Set CODE_SIGN_STYLE to Manual in project.pbxproj
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
+          
+          cd ../..
           
       - name: Verify CocoaPods installation
         script: |
