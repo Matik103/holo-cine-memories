@@ -1,0 +1,243 @@
+workflows:
+  ios-workflow:
+    name: iOS Build and Deploy
+    instance_type: mac_mini_m1
+    max_build_duration: 60
+    environment:
+      xcode: 15.0.1
+      node: 18
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+      groups:
+        - app_store_credentials
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm ci
+          
+      - name: Build web assets
+        script: |
+          npm run build
+          
+      - name: Sync Capacitor
+        script: |
+          npx cap sync ios
+          
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios/App
+          
+          # Create empty Podfile.lock if it doesn't exist
+          if [ ! -f Podfile.lock ]; then
+            touch Podfile.lock
+          fi
+          
+          # Workaround for static frameworks
+          echo "use_frameworks! :linkage => :static" > Podfile.tmp
+          cat Podfile >> Podfile.tmp
+          mv Podfile.tmp Podfile
+          
+          # Install pods with verbose output
+          pod install --verbose --repo-update
+          
+          cd ../..
+          
+      - name: Fix iOS Assets
+        script: |
+          set -e
+          set -x
+          
+          # Install ImageMagick for icon generation
+          brew install imagemagick
+          
+          # Create asset directories
+          mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
+          mkdir -p ios/App/App/Assets.xcassets/LaunchImage.launchimage
+          mkdir -p ios/App/App/Assets.xcassets/AccentColor.colorset
+          
+          # Create AppIcon Contents.json
+          cat > ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json << 'EOF'
+          {
+            "images": [
+              {
+                "filename": "AppIcon-1024.png",
+                "idiom": "universal",
+                "platform": "ios",
+                "size": "1024x1024"
+              }
+            ],
+            "info": {
+              "author": "xcode",
+              "version": 1
+            }
+          }
+          EOF
+          
+          # Create LaunchImage Contents.json
+          cat > ios/App/App/Assets.xcassets/LaunchImage.launchimage/Contents.json << 'EOF'
+          {
+            "images": [
+              {
+                "idiom": "universal",
+                "filename": "LaunchImage.png",
+                "scale": "1x"
+              },
+              {
+                "idiom": "universal",
+                "filename": "LaunchImage@2x.png",
+                "scale": "2x"
+              },
+              {
+                "idiom": "universal",
+                "filename": "LaunchImage@3x.png",
+                "scale": "3x"
+              }
+            ],
+            "info": {
+              "author": "xcode",
+              "version": 1
+            }
+          }
+          EOF
+          
+          # Create AccentColor Contents.json
+          cat > ios/App/App/Assets.xcassets/AccentColor.colorset/Contents.json << 'EOF'
+          {
+            "colors": [
+              {
+                "idiom": "universal",
+                "color": {
+                  "color-space": "srgb",
+                  "components": {
+                    "red": "0.478",
+                    "green": "0.239",
+                    "blue": "0.898",
+                    "alpha": "1.000"
+                  }
+                }
+              }
+            ],
+            "info": {
+              "author": "xcode",
+              "version": 1
+            }
+          }
+          EOF
+          
+          # Generate icons from brain favicon
+          if [ -f "public/favicon.png" ]; then
+            convert public/favicon.png -resize 1024x1024 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+            convert public/favicon.png -resize 512x512 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
+            convert public/favicon.png -resize 1024x1024 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
+            convert public/favicon.png -resize 1536x1536 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
+          fi
+          
+      - name: Set up code signing settings
+        script: |
+          xcode-project use-profiles
+          
+      - name: Verify CocoaPods installation
+        script: |
+          cd ios/App
+          pod --version
+          if [ -d "Pods" ]; then
+            echo "✓ Pods directory exists"
+            ls -la Pods/
+          else
+            echo "✗ Pods directory not found"
+            exit 1
+          fi
+          cd ../..
+          
+      - name: Build IPA
+        script: |
+          cd ios/App
+          
+          # Disable User Script Sandboxing for compatibility
+          xcodebuild \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
+            archive \
+            ENABLE_USER_SCRIPT_SANDBOXING=NO
+          
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/ios" \
+            -exportOptionsPlist "$HOME/export_options.plist"
+          
+          cd ../..
+          
+    artifacts:
+      - ios/*.ipa
+      - ios/*.dSYM.zip
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+      
+    publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        key_id: $APP_STORE_CONNECT_KEY_ID
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+        beta_groups:
+          - Internal Testers
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true
+
+  android-workflow:
+    name: Android Build and Deploy
+    instance_type: linux_x2
+    max_build_duration: 60
+    environment:
+      java: 17
+      node: 18
+      groups:
+        - google_play_credentials
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm ci
+          
+      - name: Build web assets
+        script: |
+          npm run build
+          
+      - name: Sync Capacitor
+        script: |
+          npx cap sync android
+          
+      - name: Set up keystore
+        script: |
+          echo $KEYSTORE | base64 --decode > $CM_BUILD_DIR/keystore.jks
+          
+      - name: Build Android App Bundle
+        script: |
+          cd android
+          ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file=$CM_BUILD_DIR/keystore.jks \
+            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+          cd ..
+          
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/*.apk
+      
+    publishing:
+      google_play:
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT
+        track: internal
+      email:
+        recipients:
+          - your-email@example.com
+        notify:
+          success: true
+          failure: true

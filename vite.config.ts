@@ -16,4 +16,34 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Mobile app optimizations
+    target: 'es2015',
+    minify: 'terser',
+    sourcemap: mode === 'development',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          ui: ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          capacitor: ['@capacitor/core', '@capacitor/app', '@capacitor/haptics']
+        }
+      }
+    },
+    assetsInlineLimit: 4096,
+    chunkSizeWarningLimit: 1000
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@capacitor/core',
+      '@capacitor/app',
+      '@capacitor/haptics',
+      '@capacitor/device',
+      '@capacitor/network',
+      '@capacitor/status-bar',
+      '@capacitor/splash-screen'
+    ]
+  }
 }));
