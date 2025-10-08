@@ -20,6 +20,10 @@ workflows:
         script: |
           npm run build
           
+      - name: Add iOS platform
+        script: |
+          npx cap add ios
+          
       - name: Sync Capacitor
         script: |
           npx cap sync ios
@@ -208,6 +212,10 @@ workflows:
       - name: Build web assets
         script: |
           npm run build
+          
+      - name: Add Android platform
+        script: |
+          npx cap add android
           
       - name: Sync Capacitor
         script: |
