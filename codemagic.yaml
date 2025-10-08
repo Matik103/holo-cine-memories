@@ -147,24 +147,41 @@ workflows:
           echo "Checking for provisioning profiles..."
           ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles found"
           
-          # Extract provisioning profile UUID
+          # Extract provisioning profile info
           PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
           if [ -f "$PROFILE_PATH" ]; then
-            PROFILE_UUID=$(grep -a -A 1 'UUID' "$PROFILE_PATH" | grep -o '[0-9a-f-]\{36\}' | head -1)
+            # Extract UUID
+            PROFILE_UUID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract UUID raw -)
             echo "Found provisioning profile UUID: $PROFILE_UUID"
+            
+            # Extract Team ID
+            TEAM_ID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract TeamIdentifier.0 raw -)
+            echo "Found Team ID: $TEAM_ID"
+            
+            # Extract Bundle ID
+            BUNDLE_ID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract Entitlements.application-identifier raw - | cut -d. -f2-)
+            echo "Found Bundle ID: $BUNDLE_ID"
+          else
+            echo "ERROR: No provisioning profile found!"
+            exit 1
           fi
           
-          # Update project to use manual signing with specific profile
+          # Update project with signing configuration
           cd ios/App
           
-          # Set CODE_SIGN_STYLE to Manual and configure provisioning profile
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
+          # Update bundle identifier
+          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $BUNDLE_ID" App/Info.plist
           
-          # Add provisioning profile specifier if UUID found
-          if [ ! -z "$PROFILE_UUID" ]; then
-            # Add PROVISIONING_PROFILE_SPECIFIER for Release configuration
-            sed -i '' "/Release.*{/,/}/ s/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Manual;\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = \"$PROFILE_UUID\";/" App.xcodeproj/project.pbxproj
-          fi
+          # Update project.pbxproj with manual signing settings
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
+          sed -i '' "s/PRODUCT_BUNDLE_IDENTIFIER = .*/PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID;/g" App.xcodeproj/project.pbxproj
+          
+          # Add signing settings to Release configuration
+          perl -i -pe "s/(Release.*\{.*CODE_SIGN_STYLE = Manual;)/\$1\n\t\t\t\tDEVELOPMENT_TEAM = $TEAM_ID;\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = $PROFILE_UUID;\n\t\t\t\tCODE_SIGN_IDENTITY = \"Apple Distribution\";/g" App.xcodeproj/project.pbxproj
+          
+          # Verify changes
+          echo "Verifying project settings..."
+          grep -A 5 "Release" App.xcodeproj/project.pbxproj | grep -E "(CODE_SIGN|DEVELOPMENT_TEAM|PROVISIONING_PROFILE)" | head -10
           
           cd ../..
           
