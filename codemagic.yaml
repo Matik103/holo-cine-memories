@@ -12,6 +12,7 @@ workflows:
         APP_VERSION: "1.0.0"
         BUNDLE_ID: "tech.procinemind"
         PROVISIONING_PROFILE: "CineMind Pro App Store distribution"
+        DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
         - app_store_credentials
       vars:
@@ -167,6 +168,12 @@ workflows:
           # Check specifically for our profile
           echo "=== Looking for CineMind Pro App Store distribution ==="
           find /Users/builder -name "*CineMind*" -type f 2>/dev/null || echo "CineMind Pro profile not found"
+          
+          # Force team ID and app-store method
+          echo "=== Forcing Team ID and App Store Method ==="
+          export DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
+          export CODE_SIGN_STYLE=Manual
+          export PROVISIONING_PROFILE_SPECIFIER="$PROVISIONING_PROFILE"
           
           echo "✓ Code signing configuration completed"
           
