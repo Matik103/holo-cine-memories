@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'tech.cinemind',
+  appId: 'tech.procinemind',
   appName: 'CineMind Pro',
   webDir: 'dist',
   server: {

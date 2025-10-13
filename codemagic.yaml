@@ -10,7 +10,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.cinemind"
+        BUNDLE_ID: "tech.procinemind"
         PROVISIONING_PROFILE: "CineMind Pro App Store distribution"
       groups:
         - app_store_credentials
@@ -194,7 +194,7 @@ workflows:
               <string>app-store</string>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>tech.cinemind</key>
+                  <key>tech.procinemind</key>
                   <string>$PROVISIONING_PROFILE</string>
               </dict>
               <key>uploadBitcode</key>
@@ -236,7 +236,7 @@ workflows:
       node: 20
       vars:
         APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.cinemind"
+        BUNDLE_ID: "tech.procinemind"
       groups:
         - google_play_credentials
     scripts:
