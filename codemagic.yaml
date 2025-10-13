@@ -93,8 +93,18 @@ workflows:
           echo "=== Code Signing Setup ==="
           
           # Let CodeMagic handle the provisioning profile automatically
-          # This is the standard approach - CodeMagic should detect and use uploaded profiles
           xcode-project use-profiles
+          
+          # Debug: List available profiles
+          echo "=== Available Provisioning Profiles ==="
+          ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles in default location"
+          
+          # Check if our specific profile is available
+          if [ -f "/Users/builder/Library/MobileDevice/Provisioning Profiles/CineMind App Distribution.mobileprovision" ]; then
+            echo "✓ Found CineMind App Distribution profile"
+          else
+            echo "⚠️ CineMind App Distribution profile not found in expected location"
+          fi
           
           echo "✓ Code signing configuration completed"
           
@@ -137,17 +147,22 @@ workflows:
             -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
             archive \
             ENABLE_USER_SCRIPT_SANDBOXING=NO \
-            DEVELOPMENT_TEAM="" \
-            CODE_SIGN_STYLE=Automatic
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="CineMind App Distribution"
           
-          # Create export options for automatic signing
+          # Create export options for app-store distribution
           cat > "$HOME/export_options.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>development</string>
+              <string>app-store</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>tech.cinemind.app</key>
+                  <string>CineMind App Distribution</string>
+              </dict>
               <key>uploadBitcode</key>
               <false/>
               <key>uploadSymbols</key>
