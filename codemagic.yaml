@@ -6,11 +6,11 @@ workflows:
     environment:
       xcode: 15.0.1
       node: 20
-        vars:
-          XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-          XCODE_SCHEME: "App"
-          APP_VERSION: "1.0.0"
-          BUNDLE_ID: "tech.cinemind"
+      vars:
+        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+        XCODE_SCHEME: "App"
+        APP_VERSION: "1.0.0"
+        BUNDLE_ID: "tech.cinemind"
       groups:
         - app_store_credentials
     scripts:
