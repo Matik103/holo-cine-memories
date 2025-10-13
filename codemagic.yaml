@@ -135,12 +135,34 @@ workflows:
           
           # Install certificate
           echo "=== Installing Certificate ==="
+          echo "Certificate length: ${#CERTIFICATE}"
+          echo "Certificate starts with: ${CERTIFICATE:0:50}..."
+          echo "Certificate password length: ${#CERTIFICATE_PASSWORD}"
+          
           echo "$CERTIFICATE" | base64 --decode > /tmp/certificate.p12
+          echo "Certificate file size: $(ls -la /tmp/certificate.p12 | awk '{print $5}') bytes"
+          
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
+          
+          echo "=== Importing Certificate ==="
           security import /tmp/certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          if [ $? -eq 0 ]; then
+            echo "✅ Certificate imported successfully"
+          else
+            echo "❌ Certificate import failed"
+            echo "This could be due to:"
+            echo "1. Wrong certificate type (need App Store Connect API key, not distribution cert)"
+            echo "2. Wrong password"
+            echo "3. Expired certificate"
+            echo "4. Invalid base64 encoding"
+          fi
+          
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+          
+          echo "=== Available Certificates ==="
+          security find-identity -v -p codesigning build.keychain
           
           # Install provisioning profile
           echo "=== Installing Provisioning Profile ==="
