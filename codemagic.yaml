@@ -131,6 +131,21 @@ workflows:
           # Use CodeMagic's automatic code signing
           xcode-project use-profiles
           
+          # Wait for profiles to be processed
+          sleep 10
+          
+          # Debug: Check what profiles are available
+          echo "=== Available Provisioning Profiles ==="
+          ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles in default location"
+          
+          # Check CodeMagic's profile directory
+          echo "=== CodeMagic Profile Directory ==="
+          find /Users/builder -name "*.mobileprovision" -o -name "*.provisionprofile" 2>/dev/null || echo "No profiles found"
+          
+          # List all profiles with details
+          echo "=== Profile Details ==="
+          find /Users/builder -name "*.mobileprovision" -exec security cms -D -i {} \; 2>/dev/null | grep -E "(Name|ApplicationIdentifier)" || echo "Could not read profile details"
+          
           echo "✓ Code signing configuration completed"
           
       - name: Verify CocoaPods installation
