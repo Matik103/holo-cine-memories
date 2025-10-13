@@ -92,18 +92,34 @@ workflows:
         script: |
           echo "=== Code Signing Setup ==="
           
-          # Let CodeMagic handle the provisioning profile automatically
+          # Force CodeMagic to download and install profiles
           xcode-project use-profiles
+          
+          # Wait a moment for profiles to be installed
+          sleep 5
           
           # Debug: List available profiles
           echo "=== Available Provisioning Profiles ==="
           ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles in default location"
+          
+          # Check CodeMagic's profile directory
+          echo "=== CodeMagic Profile Directory ==="
+          find /Users/builder -name "*.mobileprovision" -o -name "*.provisionprofile" 2>/dev/null || echo "No profiles found"
           
           # Check if our specific profile is available
           if [ -f "/Users/builder/Library/MobileDevice/Provisioning Profiles/CineMind App Distribution.mobileprovision" ]; then
             echo "✓ Found CineMind App Distribution profile"
           else
             echo "⚠️ CineMind App Distribution profile not found in expected location"
+            echo "This means CodeMagic needs to properly download/install the profile"
+            
+            # Try to find the profile in other locations
+            echo "=== Searching for CineMind profile ==="
+            find /Users/builder -name "*CineMind*" -type f 2>/dev/null || echo "No CineMind files found"
+            
+            # List all available profiles for debugging
+            echo "=== All available profiles ==="
+            find /Users/builder -name "*.mobileprovision" -exec basename {} \; 2>/dev/null || echo "No profiles found"
           fi
           
           echo "✓ Code signing configuration completed"
