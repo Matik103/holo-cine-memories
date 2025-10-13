@@ -15,9 +15,8 @@ workflows:
       groups:
         - app_store_credentials
       vars:
-        CERTIFICATE_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
-        CERTIFICATE_PASSWORD: $APP_STORE_CONNECT_PRIVATE_KEY_PASSWORD
         CERTIFICATE: $APP_STORE_CONNECT_CERTIFICATE
+        CERTIFICATE_PASSWORD: $APP_STORE_CONNECT_PRIVATE_KEY_PASSWORD
     scripts:
       - name: Check Node.js version
         script: |
