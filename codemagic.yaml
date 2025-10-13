@@ -6,13 +6,15 @@ workflows:
     environment:
       xcode: 15.0.1
       node: 20
-      vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
-        APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.cinemind.app"
-        # Ensure the provisioning profile is available
-        PROVISIONING_PROFILE: "CineMind App Distribution"
+        vars:
+          XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+          XCODE_SCHEME: "App"
+          APP_VERSION: "1.0.0"
+          BUNDLE_ID: "tech.cinemind.app"
+          # Use the specific provisioning profile from CodeMagic
+          PROVISIONING_PROFILE: "CineMind App Distribution"
+          # Enable manual signing to use the specific profile
+          CODE_SIGN_STYLE: "Manual"
       groups:
         - app_store_credentials
     scripts:
@@ -138,8 +140,8 @@ workflows:
           fi
           echo "✓ Workspace verified"
           
-          echo "=== Building with Automatic Code Signing ==="
-          # Use automatic signing - CodeMagic will handle provisioning profiles
+          echo "=== Building with Manual Code Signing ==="
+          # Use manual signing with specific provisioning profile
           xcodebuild \
             -workspace "ios/App/App.xcworkspace" \
             -scheme "App" \
@@ -147,20 +149,24 @@ workflows:
             -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
             archive \
             ENABLE_USER_SCRIPT_SANDBOXING=NO \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
             PRODUCT_BUNDLE_IDENTIFIER="tech.cinemind.app" \
-            DEVELOPMENT_TEAM="" \
-            CODE_SIGN_IDENTITY=""
+            PROVISIONING_PROFILE_SPECIFIER="$PROVISIONING_PROFILE"
           
-          # Create export options for automatic signing
-          echo "Creating export options for automatic signing"
+          # Create export options for manual signing
+          echo "Creating export options for manual signing with profile: $PROVISIONING_PROFILE"
           cat > "$HOME/export_options.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>development</string>
+              <string>app-store</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>tech.cinemind.app</key>
+                  <string>$PROVISIONING_PROFILE</string>
+              </dict>
               <key>uploadBitcode</key>
               <false/>
               <key>uploadSymbols</key>
