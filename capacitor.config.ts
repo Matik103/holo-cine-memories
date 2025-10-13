@@ -2,7 +2,7 @@ import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'tech.cinemind',
-  appName: 'CineMind',
+  appName: 'CineMind Pro',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
