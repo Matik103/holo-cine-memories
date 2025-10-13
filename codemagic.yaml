@@ -5,7 +5,7 @@ workflows:
     max_build_duration: 60
     environment:
       xcode: 15.0.1
-      node: 18
+      node: 20
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
@@ -16,6 +16,12 @@ workflows:
       groups:
         - app_store_credentials
     scripts:
+      - name: Check Node.js version
+        script: |
+          echo "Node.js version:"
+          node --version
+          echo "Required: >=20.0.0"
+          
       - name: Install dependencies
         script: |
           npm ci
@@ -242,13 +248,19 @@ workflows:
     max_build_duration: 60
     environment:
       java: 17
-      node: 18
+      node: 20
       vars:
         APP_VERSION: "1.0.0"
         BUNDLE_ID: "tech.cinemind.app"
       groups:
         - google_play_credentials
     scripts:
+      - name: Check Node.js version
+        script: |
+          echo "Node.js version:"
+          node --version
+          echo "Required: >=20.0.0"
+          
       - name: Install dependencies
         script: |
           npm ci
