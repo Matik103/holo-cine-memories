@@ -156,7 +156,8 @@ workflows:
             -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
             archive \
             ENABLE_USER_SCRIPT_SANDBOXING=NO \
-            CODE_SIGN_STYLE=Automatic
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="WJMVGC7L35"
           
           # Create export options for automatic signing
           cat > "$HOME/export_options.plist" << EOF
