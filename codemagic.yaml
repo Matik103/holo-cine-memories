@@ -124,21 +124,14 @@ workflows:
           
           echo "✓ Code signing configuration completed"
           
-      - name: Configure iOS project for automatic signing
+      - name: Set up code signing settings
         script: |
-          cd ios/App
+          echo "=== Code Signing Setup ==="
           
-          echo "=== Configuring Automatic Code Signing ==="
-          # Let CodeMagic handle all signing automatically
-          # This is the recommended approach for CodeMagic
-          xcodebuild -project App.xcodeproj \
-            -target App \
-            -configuration Release \
-            CODE_SIGN_STYLE=Automatic \
-            PRODUCT_BUNDLE_IDENTIFIER="tech.cinemind"
+          # Use CodeMagic's automatic code signing
+          xcode-project use-profiles
           
-          echo "✓ Automatic code signing configured"
-          cd ../..
+          echo "✓ Code signing configuration completed"
           
       - name: Verify CocoaPods installation
         script: |
@@ -163,22 +156,16 @@ workflows:
             -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
             archive \
             ENABLE_USER_SCRIPT_SANDBOXING=NO \
-            CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="CineMind App Distribution"
+            CODE_SIGN_STYLE=Automatic
           
-          # Create export options for app-store distribution
+          # Create export options for automatic signing
           cat > "$HOME/export_options.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>app-store</string>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>tech.cinemind</key>
-                  <string>CineMind App Distribution</string>
-              </dict>
+              <string>development</string>
               <key>uploadBitcode</key>
               <false/>
               <key>uploadSymbols</key>
