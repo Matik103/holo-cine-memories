@@ -34,6 +34,15 @@ workflows:
         script: |
           npx cap sync ios
           
+          # Ensure assets are properly copied
+          echo "=== Verifying Capacitor Sync ==="
+          if [ -d "ios/App/App/Assets.xcassets" ]; then
+            echo "✓ Assets directory exists after sync"
+            ls -la ios/App/App/Assets.xcassets/
+          else
+            echo "⚠️ Assets directory missing after sync"
+          fi
+          
       - name: Install CocoaPods dependencies
         script: |
           cd ios/App
@@ -53,95 +62,33 @@ workflows:
           
           cd ../..
           
-      - name: Fix iOS Assets
+      - name: Verify iOS Assets
         script: |
-          set -e
-          set -x
+          echo "=== Verifying iOS Assets ==="
           
-          # Install ImageMagick for icon generation
-          brew install imagemagick
-          
-          # Create asset directories
-          mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
-          mkdir -p ios/App/App/Assets.xcassets/LaunchImage.launchimage
-          mkdir -p ios/App/App/Assets.xcassets/AccentColor.colorset
-          
-          # Create AppIcon Contents.json
-          cat > ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json << 'EOF'
-          {
-            "images": [
-              {
-                "filename": "AppIcon-1024.png",
-                "idiom": "universal",
-                "platform": "ios",
-                "size": "1024x1024"
-              }
-            ],
-            "info": {
-              "author": "xcode",
-              "version": 1
-            }
-          }
-          EOF
-          
-          # Create LaunchImage Contents.json
-          cat > ios/App/App/Assets.xcassets/LaunchImage.launchimage/Contents.json << 'EOF'
-          {
-            "images": [
-              {
-                "idiom": "universal",
-                "filename": "LaunchImage.png",
-                "scale": "1x"
-              },
-              {
-                "idiom": "universal",
-                "filename": "LaunchImage@2x.png",
-                "scale": "2x"
-              },
-              {
-                "idiom": "universal",
-                "filename": "LaunchImage@3x.png",
-                "scale": "3x"
-              }
-            ],
-            "info": {
-              "author": "xcode",
-              "version": 1
-            }
-          }
-          EOF
-          
-          # Create AccentColor Contents.json
-          cat > ios/App/App/Assets.xcassets/AccentColor.colorset/Contents.json << 'EOF'
-          {
-            "colors": [
-              {
-                "idiom": "universal",
-                "color": {
-                  "color-space": "srgb",
-                  "components": {
-                    "red": "0.000",
-                    "green": "0.478",
-                    "blue": "1.000",
-                    "alpha": "1.000"
-                  }
-                }
-              }
-            ],
-            "info": {
-              "author": "xcode",
-              "version": 1
-            }
-          }
-          EOF
-          
-          # Generate icons from source if available
-          if [ -f "public/app-icon.png" ]; then
-            convert public/app-icon.png -resize 1024x1024 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
-            convert public/app-icon.png -resize 512x512 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
-            convert public/app-icon.png -resize 1024x1024 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
-            convert public/app-icon.png -resize 1536x1536 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
+          # Check if asset directories exist
+          if [ -d "ios/App/App/Assets.xcassets/AppIcon.appiconset" ]; then
+            echo "✓ AppIcon directory exists"
+            ls -la ios/App/App/Assets.xcassets/AppIcon.appiconset/
+          else
+            echo "⚠️ AppIcon directory not found"
           fi
+          
+          if [ -d "ios/App/App/Assets.xcassets/Splash.imageset" ]; then
+            echo "✓ Splash imageset exists"
+            ls -la ios/App/App/Assets.xcassets/Splash.imageset/
+          else
+            echo "⚠️ Splash imageset not found"
+          fi
+          
+          # Verify Contents.json files exist
+          if [ -f "ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json" ]; then
+            echo "✓ AppIcon Contents.json exists"
+          else
+            echo "⚠️ AppIcon Contents.json missing"
+          fi
+          
+          echo "=== iOS Assets verification completed ==="
           
       - name: Set up code signing settings
         script: |
