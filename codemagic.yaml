@@ -11,6 +11,7 @@ workflows:
         XCODE_SCHEME: "App"
         APP_VERSION: "1.0.0"
         BUNDLE_ID: "tech.cinemind"
+        PROVISIONING_PROFILE: "CineMind App Store distribution"
       groups:
         - app_store_credentials
     scripts:
@@ -128,11 +129,11 @@ workflows:
         script: |
           echo "=== Code Signing Setup ==="
           
-          # Use CodeMagic's automatic code signing
+          # Force CodeMagic to download and install profiles
           xcode-project use-profiles
           
           # Wait for profiles to be processed
-          sleep 10
+          sleep 15
           
           # Debug: Check what profiles are available
           echo "=== Available Provisioning Profiles ==="
@@ -149,6 +150,10 @@ workflows:
           # Check specifically for our profile
           echo "=== Looking for CineMind App Store distribution ==="
           find /Users/builder -name "*CineMind*" -type f 2>/dev/null || echo "CineMind profile not found"
+          
+          # Try to manually install profile if found elsewhere
+          echo "=== Attempting manual profile installation ==="
+          find /Users/builder -name "*CineMind*" -name "*.mobileprovision" -exec cp {} /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ \; 2>/dev/null || echo "No CineMind profile found to copy"
           
           echo "✓ Code signing configuration completed"
           
@@ -175,17 +180,23 @@ workflows:
             -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
             archive \
             ENABLE_USER_SCRIPT_SANDBOXING=NO \
-            CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_STYLE=Manual \
+            PROVISIONING_PROFILE_SPECIFIER="$PROVISIONING_PROFILE" \
             DEVELOPMENT_TEAM="WJMVGC7L35"
           
-          # Create export options for automatic signing
+          # Create export options for manual signing with specific profile
           cat > "$HOME/export_options.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
               <key>method</key>
-              <string>development</string>
+              <string>app-store</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>tech.cinemind</key>
+                  <string>$PROVISIONING_PROFILE</string>
+              </dict>
               <key>uploadBitcode</key>
               <false/>
               <key>uploadSymbols</key>
