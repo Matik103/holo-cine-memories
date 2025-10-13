@@ -146,6 +146,10 @@ workflows:
           echo "=== Profile Details ==="
           find /Users/builder -name "*.mobileprovision" -exec security cms -D -i {} \; 2>/dev/null | grep -E "(Name|ApplicationIdentifier)" || echo "Could not read profile details"
           
+          # Check specifically for our profile
+          echo "=== Looking for CineMind App Store distribution ==="
+          find /Users/builder -name "*CineMind*" -type f 2>/dev/null || echo "CineMind profile not found"
+          
           echo "✓ Code signing configuration completed"
           
       - name: Verify CocoaPods installation
