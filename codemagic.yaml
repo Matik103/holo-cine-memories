@@ -11,7 +11,7 @@ workflows:
         XCODE_SCHEME: "App"
         APP_VERSION: "1.0.0"
         BUNDLE_ID: "tech.cinemind"
-        PROVISIONING_PROFILE: "CineMind App Store distribution"
+        PROVISIONING_PROFILE: "CineMind v2 App Store distribution"
       groups:
         - app_store_credentials
     scripts:
