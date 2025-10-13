@@ -6,11 +6,11 @@ workflows:
     environment:
       xcode: 15.0.1
       node: 20
-      vars:
-        XCODE_WORKSPACE: "ios/App/App.xcworkspace"
-        XCODE_SCHEME: "App"
-        APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.cinemind.app"
+        vars:
+          XCODE_WORKSPACE: "ios/App/App.xcworkspace"
+          XCODE_SCHEME: "App"
+          APP_VERSION: "1.0.0"
+          BUNDLE_ID: "tech.cinemind"
       groups:
         - app_store_credentials
     scripts:
@@ -135,7 +135,7 @@ workflows:
             -target App \
             -configuration Release \
             CODE_SIGN_STYLE=Automatic \
-            PRODUCT_BUNDLE_IDENTIFIER="tech.cinemind.app"
+            PRODUCT_BUNDLE_IDENTIFIER="tech.cinemind"
           
           echo "✓ Automatic code signing configured"
           cd ../..
@@ -176,7 +176,7 @@ workflows:
               <string>app-store</string>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>tech.cinemind.app</key>
+                  <key>tech.cinemind</key>
                   <string>CineMind App Distribution</string>
               </dict>
               <key>uploadBitcode</key>
@@ -218,7 +218,7 @@ workflows:
       node: 20
       vars:
         APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.cinemind.app"
+        BUNDLE_ID: "tech.cinemind"
       groups:
         - google_play_credentials
     scripts:
