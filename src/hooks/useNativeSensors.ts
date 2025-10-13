@@ -18,7 +18,7 @@ export const useNativeSensors = () => {
     
     setState(prev => ({
       ...prev,
-      isNative: (nativeSensorService as any)['isNative'],
+      isNative: nativeSensorService['isNative'],
       deviceInfo,
       networkStatus,
       isInitialized: true

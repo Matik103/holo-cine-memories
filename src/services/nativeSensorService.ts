@@ -30,6 +30,9 @@ class NativeSensorService {
       // Request notification permissions
       await LocalNotifications.requestPermissions();
       
+      // Motion permissions are auto-granted on iOS
+      // No explicit permission needed
+      
       return { granted: true };
     } catch (error) {
       console.error('Permission request failed:', error);

@@ -1,13 +1,13 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.onEuLflXqmQa.CineMind',
+  appId: 'tech.cinemind.app',
   appName: 'CineMind',
   webDir: 'dist',
   server: {
     androidScheme: 'https',
     // Development: Enable live reload from web server
-    // url: 'https://88d4f441-d76a-4bff-92ae-6ed2a7ba0f0f.lovableproject.com?forceHideBadge=true',
+    // url: 'http://localhost:8080',
     // cleartext: true
   },
   plugins: {

@@ -1,14 +1,18 @@
 workflows:
   ios-workflow:
-    name: iOS Build and Deploy
+    name: iOS Build and Deploy v1.0.0
     instance_type: mac_mini_m1
     max_build_duration: 60
     environment:
       xcode: 15.0.1
-      node: 20
+      node: 18
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
+        APP_VERSION: "1.0.0"
+        BUNDLE_ID: "tech.cinemind.app"
+        # Ensure the provisioning profile is available
+        PROVISIONING_PROFILE: "CineMind App Distribution"
       groups:
         - app_store_credentials
     scripts:
@@ -19,10 +23,6 @@ workflows:
       - name: Build web assets
         script: |
           npm run build
-          
-      - name: Add iOS platform
-        script: |
-          npx cap add ios
           
       - name: Sync Capacitor
         script: |
@@ -51,6 +51,9 @@ workflows:
         script: |
           set -e
           set -x
+          
+          # Install ImageMagick for icon generation
+          brew install imagemagick
           
           # Create asset directories
           mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
@@ -111,9 +114,9 @@ workflows:
                 "color": {
                   "color-space": "srgb",
                   "components": {
-                    "red": "0.478",
-                    "green": "0.239",
-                    "blue": "0.898",
+                    "red": "0.000",
+                    "green": "0.478",
+                    "blue": "1.000",
                     "alpha": "1.000"
                   }
                 }
@@ -126,63 +129,38 @@ workflows:
           }
           EOF
           
-          # Generate icons using sips (native macOS tool)
+          # Generate icons from source if available
           if [ -f "public/app-icon.png" ]; then
-            sips -z 1024 1024 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
-            sips -z 512 512 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
-            sips -z 1024 1024 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
-            sips -z 1536 1536 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
+            convert public/app-icon.png -resize 1024x1024 ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+            convert public/app-icon.png -resize 512x512 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
+            convert public/app-icon.png -resize 1024x1024 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
+            convert public/app-icon.png -resize 1536x1536 ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
           fi
-          
-      - name: Clean Derived Data
-        script: |
-          rm -rf ~/Library/Developer/Xcode/DerivedData/*
-          xcodebuild clean -workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" -scheme "$XCODE_SCHEME" -configuration Release
           
       - name: Set up code signing settings
         script: |
+          echo "=== Code Signing Setup ==="
+          
+          # Let CodeMagic handle the provisioning profile automatically
+          # This is the standard approach - CodeMagic should detect and use uploaded profiles
           xcode-project use-profiles
           
-          # Verify provisioning profiles are installed
-          echo "Checking for provisioning profiles..."
-          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles found"
+          echo "✓ Code signing configuration completed"
           
-          # Extract provisioning profile info
-          PROFILE_PATH=$(ls ~/Library/MobileDevice/Provisioning\ Profiles/*.mobileprovision | head -1)
-          if [ -f "$PROFILE_PATH" ]; then
-            # Extract UUID
-            PROFILE_UUID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract UUID raw -)
-            echo "Found provisioning profile UUID: $PROFILE_UUID"
-            
-            # Extract Team ID
-            TEAM_ID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract TeamIdentifier.0 raw -)
-            echo "Found Team ID: $TEAM_ID"
-            
-            # Extract Bundle ID
-            BUNDLE_ID=$(security cms -D -i "$PROFILE_PATH" | plutil -extract Entitlements.application-identifier raw - | cut -d. -f2-)
-            echo "Found Bundle ID: $BUNDLE_ID"
-          else
-            echo "ERROR: No provisioning profile found!"
-            exit 1
-          fi
-          
-          # Update project with signing configuration
+      - name: Configure iOS project for automatic signing
+        script: |
           cd ios/App
           
-          # Update bundle identifier
-          /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier $BUNDLE_ID" App/Info.plist
+          echo "=== Configuring Automatic Code Signing ==="
+          # Let CodeMagic handle all signing automatically
+          # This is the recommended approach for CodeMagic
+          xcodebuild -project App.xcodeproj \
+            -target App \
+            -configuration Release \
+            CODE_SIGN_STYLE=Automatic \
+            PRODUCT_BUNDLE_IDENTIFIER="tech.cinemind.app"
           
-          # Update project.pbxproj with manual signing settings
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj
-          sed -i '' "s/PRODUCT_BUNDLE_IDENTIFIER = .*/PRODUCT_BUNDLE_IDENTIFIER = $BUNDLE_ID;/g" App.xcodeproj/project.pbxproj
-          
-          # Add signing settings to Release configuration
-          perl -i -pe "s/(Release.*\{.*CODE_SIGN_STYLE = Manual;)/\$1\n\t\t\t\tDEVELOPMENT_TEAM = $TEAM_ID;\n\t\t\t\tPROVISIONING_PROFILE_SPECIFIER = $PROFILE_UUID;\n\t\t\t\tCODE_SIGN_IDENTITY = \"Apple Distribution\";/g" App.xcodeproj/project.pbxproj
-          
-          # Verify changes
-          echo "Verifying project settings..."
-          grep -A 5 "Release" App.xcodeproj/project.pbxproj | grep -E "(CODE_SIGN|DEVELOPMENT_TEAM|PROVISIONING_PROFILE)" | head -10
-          
+          echo "✓ Automatic code signing configured"
           cd ../..
           
       - name: Verify CocoaPods installation
@@ -200,25 +178,57 @@ workflows:
           
       - name: Build IPA
         script: |
-          xcode-project build-ipa \
-            --workspace "$CM_BUILD_DIR/$XCODE_WORKSPACE" \
-            --scheme "$XCODE_SCHEME" \
-            --config "Release"
+          cd ios/App
+          
+          echo "=== Building with Automatic Code Signing ==="
+          # Use automatic signing - CodeMagic will handle provisioning profiles
+          xcodebuild \
+            -workspace "$XCODE_WORKSPACE" \
+            -scheme "$XCODE_SCHEME" \
+            -configuration Release \
+            -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
+            archive \
+            ENABLE_USER_SCRIPT_SANDBOXING=NO \
+            CODE_SIGN_STYLE=Automatic \
+            PRODUCT_BUNDLE_IDENTIFIER="tech.cinemind.app"
+          
+          # Create export options for automatic signing
+          echo "Creating export options for automatic signing"
+          cat > "$HOME/export_options.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>development</string>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>compileBitcode</key>
+              <false/>
+          </dict>
+          </plist>
+          EOF
+          
+          # Export the archive
+          xcodebuild \
+            -exportArchive \
+            -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/ios" \
+            -exportOptionsPlist "$HOME/export_options.plist"
+          
+          echo "✓ Archive exported successfully with automatic signing"
+          
+          cd ../..
           
     artifacts:
-      - build/ios/ipa/*.ipa
-      - /tmp/xcodebuild_logs/*.log
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - ios/*.ipa
+      - ios/*.dSYM.zip
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
       
     publishing:
-      app_store_connect:
-        api_key: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        key_id: $APP_STORE_CONNECT_KEY_ID
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
-        submit_to_testflight: true
-        beta_groups:
-          - Internal Testers
+      # Development build - no App Store Connect upload needed
       email:
         recipients:
           - your-email@example.com
@@ -227,12 +237,15 @@ workflows:
           failure: true
 
   android-workflow:
-    name: Android Build and Deploy
+    name: Android Build and Deploy v1.0.0
     instance_type: linux_x2
     max_build_duration: 60
     environment:
       java: 17
-      node: 20
+      node: 18
+      vars:
+        APP_VERSION: "1.0.0"
+        BUNDLE_ID: "tech.cinemind.app"
       groups:
         - google_play_credentials
     scripts:
@@ -243,10 +256,6 @@ workflows:
       - name: Build web assets
         script: |
           npm run build
-          
-      - name: Add Android platform
-        script: |
-          npx cap add android
           
       - name: Sync Capacitor
         script: |
