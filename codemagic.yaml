@@ -131,10 +131,8 @@ workflows:
           
       - name: Build IPA
         script: |
-          cd ios/App
-          
           echo "=== Verifying Workspace ==="
-          if [ ! -f "App.xcworkspace/contents.xcworkspacedata" ]; then
+          if [ ! -f "ios/App/App.xcworkspace/contents.xcworkspacedata" ]; then
             echo "❌ Workspace contents file missing!"
             exit 1
           fi
@@ -143,8 +141,8 @@ workflows:
           echo "=== Building with Automatic Code Signing ==="
           # Use automatic signing - CodeMagic will handle provisioning profiles
           xcodebuild \
-            -workspace "$XCODE_WORKSPACE" \
-            -scheme "$XCODE_SCHEME" \
+            -workspace "ios/App/App.xcworkspace" \
+            -scheme "App" \
             -configuration Release \
             -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
             archive \
