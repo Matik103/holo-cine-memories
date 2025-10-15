@@ -24,6 +24,8 @@ workflows:
     code_signing:
       code_signing_identity: "Apple Distribution"
       provisioning_profile: "CineMind App Store Distribution"
+      # Force automatic signing first to let CodeMagic create/repair profiles
+      automatic_code_signing: true
     scripts:
       - name: Check Node.js version
         script: |
@@ -99,15 +101,33 @@ workflows:
           
           echo "=== iOS Assets verification completed ==="
           
-      - name: Set up code signing settings
+      - name: Set up code signing settings (Xcode-style approach)
         script: |
-          echo "=== Code Signing Setup ==="
+          echo "=== Code Signing Setup (Xcode-style) ==="
           
-          # Force CodeMagic to download and install profiles
+          # Step 1: Force CodeMagic to download and install profiles automatically
+          echo "=== Step 1: Automatic Profile Management ==="
           xcode-project use-profiles
           
-          # Wait a moment for profiles to be installed
-          sleep 5
+          # Wait for profiles to be installed
+          sleep 10
+          
+          # Step 2: Toggle automatic signing (like in Xcode)
+          echo "=== Step 2: Toggle Automatic Signing ==="
+          
+          # First, try to enable automatic signing to let CodeMagic create/repair profiles
+          echo "Enabling automatic signing to refresh profiles..."
+          xcode-project use-profiles --automatic
+          
+          # Wait for automatic signing to process
+          sleep 15
+          
+          # Then switch back to manual signing
+          echo "Switching back to manual signing..."
+          xcode-project use-profiles --manual
+          
+          # Wait for manual signing to process
+          sleep 10
           
           # Debug: List available profiles
           echo "=== Available Provisioning Profiles ==="
@@ -217,6 +237,33 @@ workflows:
             exit 1
           fi
           cd ../..
+          
+      - name: Clean build (Xcode-style)
+        script: |
+          echo "=== Clean Build (Xcode-style) ==="
+          
+          # Clean the build folder (equivalent to Xcode's Product → Clean Build Folder)
+          echo "Cleaning build folder..."
+          xcodebuild clean \
+            -workspace "ios/App/App.xcworkspace" \
+            -scheme "App" \
+            -configuration Release
+          
+          # Clean derived data
+          echo "Cleaning derived data..."
+          rm -rf ~/Library/Developer/Xcode/DerivedData/*
+          
+          echo "✓ Clean build completed"
+          
+      - name: Switch to manual signing for build
+        script: |
+          echo "=== Switching to Manual Signing for Build ==="
+          
+          # Update Xcode project to use manual signing for the actual build
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
+          
+          echo "✓ Switched to manual signing for build"
           
       - name: Build IPA
         script: |
