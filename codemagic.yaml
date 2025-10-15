@@ -11,7 +11,7 @@ workflows:
         XCODE_SCHEME: "App"
         APP_VERSION: "1.0.0"
         BUNDLE_ID: "tech.erconsulting.cinemind"
-        PROVISIONING_PROFILE: "CineMind Pro App Store distribution"
+        PROVISIONING_PROFILE: "CineMind App Store Distribution"
         DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
         - app_store_credentials
@@ -112,10 +112,10 @@ workflows:
           find /Users/builder -name "*.mobileprovision" -o -name "*.provisionprofile" 2>/dev/null || echo "No profiles found"
           
           # Check if our specific profile is available
-          if [ -f "/Users/builder/Library/MobileDevice/Provisioning Profiles/CineMind App Distribution.mobileprovision" ]; then
-            echo "✓ Found CineMind App Distribution profile"
+          if [ -f "/Users/builder/Library/MobileDevice/Provisioning Profiles/CineMind App Store Distribution.mobileprovision" ]; then
+            echo "✓ Found CineMind App Store Distribution profile"
           else
-            echo "⚠️ CineMind App Distribution profile not found in expected location"
+            echo "⚠️ CineMind App Store Distribution profile not found in expected location"
             echo "This means CodeMagic needs to properly download/install the profile"
             
             # Try to find the profile in other locations
@@ -188,7 +188,7 @@ workflows:
           find /Users/builder -name "*.mobileprovision" -exec security cms -D -i {} \; 2>/dev/null | grep -E "(Name|ApplicationIdentifier)" || echo "Could not read profile details"
           
           # Check specifically for our profile
-          echo "=== Looking for CineMind Pro App Store distribution ==="
+          echo "=== Looking for CineMind App Store Distribution ==="
           find /Users/builder -name "*CineMind*" -type f 2>/dev/null || echo "CineMind Pro profile not found"
           
           # Force team ID and app-store method
