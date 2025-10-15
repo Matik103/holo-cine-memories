@@ -12,6 +12,7 @@ workflows:
         APP_VERSION: "1.0.0"
         BUNDLE_ID: "tech.erconsulting.cinemind.app"
         DEVELOPMENT_TEAM: "WJMVGC7L35"
+        APP_STORE_CONNECT_PUBLISHER_PRIVATE_KEY: $APP_STORE_CONNECT_PRIVATE_KEY
       groups:
         - app_store_credentials
       ios_signing:
