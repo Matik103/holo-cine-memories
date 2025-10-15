@@ -14,9 +14,6 @@ workflows:
         DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
         - app_store_credentials
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: tech.erconsulting.cinemind.app
     scripts:
       - name: Check Node.js version
         script: |
@@ -42,30 +39,6 @@ workflows:
           pod install --repo-update
           cd ../..
           
-      - name: Configure automatic signing
-        script: |
-          # Switch to automatic signing using more robust approach
-          cd ios/App
-          
-          # Update project.pbxproj file
-          sed -i '' 's/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Automatic;/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/ProvisioningStyle = Manual;/ProvisioningStyle = Automatic;/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/CODE_SIGN_STYLE = "Manual";/CODE_SIGN_STYLE = Automatic;/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/ProvisioningStyle = "Manual";/ProvisioningStyle = Automatic;/g' App.xcodeproj/project.pbxproj
-          
-          # Set development team
-          sed -i '' "s/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = $DEVELOPMENT_TEAM;/g" App.xcodeproj/project.pbxproj
-          sed -i '' "s/DEVELOPMENT_TEAM = \".*\"/DEVELOPMENT_TEAM = $DEVELOPMENT_TEAM;/g" App.xcodeproj/project.pbxproj
-          
-          # Verify changes
-          echo "=== Checking CODE_SIGN_STYLE ==="
-          grep -n "CODE_SIGN_STYLE" App.xcodeproj/project.pbxproj || echo "No CODE_SIGN_STYLE found"
-          
-          echo "=== Checking DEVELOPMENT_TEAM ==="
-          grep -n "DEVELOPMENT_TEAM" App.xcodeproj/project.pbxproj || echo "No DEVELOPMENT_TEAM found"
-          
-          cd ../..
-          echo "✓ Switched to automatic signing"
           
       - name: Set up provisioning profiles
         script: |
@@ -119,17 +92,16 @@ workflows:
           else
             echo "⚠️ xcode-project failed, trying xcodebuild..."
             
-            # Fallback to xcodebuild with manual signing using correct profile name
+            # Fallback to xcodebuild with automatic signing
             xcodebuild \
               -workspace "$XCODE_WORKSPACE" \
               -scheme "$XCODE_SCHEME" \
               -configuration Release \
               -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
               archive \
-              CODE_SIGN_STYLE=Manual \
+              CODE_SIGN_STYLE=Automatic \
               DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-              PROVISIONING_PROFILE_SPECIFIER="CineMind App Store distribution" \
-              CODE_SIGN_IDENTITY="Apple Distribution"
+              -allowProvisioningUpdates
             
             # Export IPA
             xcodebuild \
@@ -157,9 +129,6 @@ workflows:
       
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PUBLISHER_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_ID
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
         beta_groups:
           - testers
