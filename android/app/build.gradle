@@ -1,10 +1,10 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "tech.erconsulting.cinemind"
+    namespace "tech.erconsulting.cinemind.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "tech.erconsulting.cinemind"
+        applicationId "tech.erconsulting.cinemind.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
