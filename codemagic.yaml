@@ -17,7 +17,6 @@ workflows:
       ios_signing:
         distribution_type: app_store
         bundle_identifier: tech.erconsulting.cinemind.app
-        certificate_type: ios_distribution
     scripts:
       - name: Check Node.js version
         script: |
