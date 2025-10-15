@@ -139,6 +139,17 @@ workflows:
               -exportOptionsPlist "$HOME/export_options.plist"
           fi
           
+      - name: Debug App Store Connect credentials
+        script: |
+          echo "=== App Store Connect Credentials Debug ==="
+          echo "Key ID length: ${#APP_STORE_CONNECT_KEY_ID}"
+          echo "Issuer ID length: ${#APP_STORE_CONNECT_ISSUER_ID}"
+          echo "Private Key length: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
+          echo "Key ID starts with: ${APP_STORE_CONNECT_KEY_ID:0:10}..."
+          echo "Issuer ID starts with: ${APP_STORE_CONNECT_ISSUER_ID:0:10}..."
+          echo "Private Key starts with: ${APP_STORE_CONNECT_PRIVATE_KEY:0:50}..."
+          echo "=== Credentials Debug Complete ==="
+          
     artifacts:
       - ios/*.ipa
       - ios/*.dSYM.zip
