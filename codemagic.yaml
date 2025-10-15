@@ -14,6 +14,9 @@ workflows:
         DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
         - app_store_credentials
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: tech.erconsulting.cinemind.app
     scripts:
       - name: Check Node.js version
         script: |
