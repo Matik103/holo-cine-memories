@@ -93,33 +93,21 @@ workflows:
           
           echo "=== iOS Assets verification completed ==="
           
-      - name: Set up code signing settings (Xcode-style approach)
+      - name: Download and install provisioning profile
         script: |
-          echo "=== Code Signing Setup (Xcode-style) ==="
+          echo "=== Downloading Provisioning Profile ==="
           
-          # Step 1: Force CodeMagic to download and install profiles automatically
-          echo "=== Step 1: Automatic Profile Management ==="
+          # Create provisioning profiles directory if it doesn't exist
+          mkdir -p /Users/builder/Library/MobileDevice/Provisioning\ Profiles/
+          
+          # Download the provisioning profile using CodeMagic's API
+          echo "Downloading provisioning profile for bundle ID: tech.erconsulting.cinemind.app"
+          
+          # Use CodeMagic's built-in profile download
           xcode-project use-profiles
           
-          # Wait for profiles to be installed
-          sleep 10
-          
-          # Step 2: Toggle automatic signing (like in Xcode)
-          echo "=== Step 2: Toggle Automatic Signing ==="
-          
-          # First, try to enable automatic signing to let CodeMagic create/repair profiles
-          echo "Enabling automatic signing to refresh profiles..."
-          xcode-project use-profiles --automatic
-          
-          # Wait for automatic signing to process
-          sleep 15
-          
-          # Then switch back to manual signing
-          echo "Switching back to manual signing..."
-          xcode-project use-profiles --manual
-          
-          # Wait for manual signing to process
-          sleep 10
+          # Wait for download to complete
+          sleep 20
           
           # Debug: List available profiles
           echo "=== Available Provisioning Profiles ==="
@@ -145,13 +133,10 @@ workflows:
             find /Users/builder -name "*.mobileprovision" -exec basename {} \; 2>/dev/null || echo "No profiles found"
           fi
           
-          echo "✓ Code signing configuration completed"
+          echo "✓ Provisioning profile setup completed"
           
-      - name: Set up code signing settings
+      - name: Install certificate and setup signing
         script: |
-          echo "=== Code Signing Setup ==="
-          
-          # Install certificate
           echo "=== Installing Certificate ==="
           echo "Certificate length: ${#CERTIFICATE}"
           echo "Certificate starts with: ${CERTIFICATE:0:50}..."
@@ -182,40 +167,7 @@ workflows:
           echo "=== Available Certificates ==="
           security find-identity -v -p codesigning build.keychain
           
-          # Install provisioning profile
-          echo "=== Installing Provisioning Profile ==="
-          # Try to find and install the profile
-          find /Users/builder -name "*CineMind*" -name "*.mobileprovision" -exec cp {} /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ \; 2>/dev/null || echo "Profile not found in builder directory"
-          
-          # Force CodeMagic to download and install profiles
-          xcode-project use-profiles
-          
-          # Wait for profiles to be processed
-          sleep 15
-          
-          # Debug: Check what profiles are available
-          echo "=== Available Provisioning Profiles ==="
-          ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles in default location"
-          
-          # Check CodeMagic's profile directory
-          echo "=== CodeMagic Profile Directory ==="
-          find /Users/builder -name "*.mobileprovision" -o -name "*.provisionprofile" 2>/dev/null || echo "No profiles found"
-          
-          # List all profiles with details
-          echo "=== Profile Details ==="
-          find /Users/builder -name "*.mobileprovision" -exec security cms -D -i {} \; 2>/dev/null | grep -E "(Name|ApplicationIdentifier)" || echo "Could not read profile details"
-          
-          # Check specifically for our profile
-          echo "=== Looking for CineMind App Store Distribution ==="
-          find /Users/builder -name "*CineMind*" -type f 2>/dev/null || echo "CineMind Pro profile not found"
-          
-          # Force team ID and app-store method
-          echo "=== Forcing Team ID and App Store Method ==="
-          export DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
-          export CODE_SIGN_STYLE=Manual
-          export PROVISIONING_PROFILE_SPECIFIER="$PROVISIONING_PROFILE"
-          
-          echo "✓ Code signing configuration completed"
+          echo "✓ Certificate installation completed"
           
       - name: Verify CocoaPods installation
         script: |
