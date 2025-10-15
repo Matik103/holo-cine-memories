@@ -1,26 +1,20 @@
 workflows:
   ios-workflow:
-    name: iOS Build and Deploy v1.0.0
+    name: iOS Build and Deploy
     instance_type: mac_mini_m1
     max_build_duration: 60
     environment:
-      xcode: 15.0.1
+      xcode: latest
       node: 20
       vars:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
-        APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.erconsulting.cinemind.app"
-        DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
         - app_store_credentials
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: tech.erconsulting.cinemind.app
     scripts:
-      - name: Check Node.js version
-        script: |
-          echo "Node.js version:"
-          node --version
-          echo "Required: >=20.0.0"
-          
       - name: Install dependencies
         script: |
           npm ci
@@ -33,52 +27,286 @@ workflows:
         script: |
           npx cap sync ios
           
+      - name: Set Build Number
+        script: |
+          # Set version and build number
+          VERSION="1.0.0"
+          BUILD_NUMBER="1"
+          
+          cd ios/App
+          agvtool new-marketing-version $VERSION
+          agvtool new-version -all $BUILD_NUMBER
+          cd ../..
+          
+      - name: Add Privacy Descriptions to Info.plist
+        script: |
+          INFO_PLIST="ios/App/App/Info.plist"
+          /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'CineMind needs photo library access to let you select and upload profile photos. Your photos are stored securely and used only to personalize your profile.'" "$INFO_PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Set :NSPhotoLibraryUsageDescription 'CineMind needs photo library access to let you select and upload profile photos. Your photos are stored securely and used only to personalize your profile.'" "$INFO_PLIST"
+          /usr/libexec/PlistBuddy -c "Add :NSLocationWhenInUseUsageDescription string 'CineMind uses your location to provide context-aware insights and enrich your journal entries with location information when you choose to share it.'" "$INFO_PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Set :NSLocationWhenInUseUsageDescription 'CineMind uses your location to provide context-aware insights and enrich your journal entries with location information when you choose to share it.'" "$INFO_PLIST"
+          /usr/libexec/PlistBuddy -c "Add :NSLocationAlwaysAndWhenInUseUsageDescription string 'CineMind uses your location to provide context-aware insights and enrich your journal entries with location information, even when the app is in the background.'" "$INFO_PLIST" 2>/dev/null || /usr/libexec/PlistBuddy -c "Set :NSLocationAlwaysAndWhenInUseUsageDescription 'CineMind uses your location to provide context-aware insights and enrich your journal entries with location information, even when the app is in the background.'" "$INFO_PLIST"
+          
       - name: Install CocoaPods dependencies
         script: |
           cd ios/App
-          pod install --repo-update
+          
+          # Create empty Podfile.lock if it doesn't exist
+          if [ ! -f Podfile.lock ]; then
+            touch Podfile.lock
+          fi
+          
+          # Workaround for static frameworks
+          echo "use_frameworks! :linkage => :static" > Podfile.tmp
+          cat Podfile >> Podfile.tmp
+          mv Podfile.tmp Podfile
+          
+          # Install pods with verbose output
+          pod install --verbose --repo-update
+          
           cd ../..
           
-          
-      - name: Build iOS app
+      - name: Fix iOS Assets
         script: |
-          # Create export options plist
-          cat > "$HOME/export_options.plist" << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store</string>
-              <key>uploadBitcode</key>
-              <false/>
-              <key>uploadSymbols</key>
-              <true/>
-              <key>compileBitcode</key>
-              <false/>
-              <key>teamID</key>
-              <string>$DEVELOPMENT_TEAM</string>
-          </dict>
-          </plist>
+          set -e
+          set -x
+          
+          # Create asset directories
+          mkdir -p ios/App/App/Assets.xcassets/AppIcon.appiconset
+          mkdir -p ios/App/App/Assets.xcassets/LaunchImage.launchimage
+          mkdir -p ios/App/App/Assets.xcassets/AccentColor.colorset
+          
+          # Create AppIcon Contents.json with all required sizes
+          cat > ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json << 'EOF'
+          {
+            "images": [
+              {
+                "filename": "AppIcon-20@2x.png",
+                "idiom": "iphone",
+                "scale": "2x",
+                "size": "20x20"
+              },
+              {
+                "filename": "AppIcon-20@3x.png",
+                "idiom": "iphone",
+                "scale": "3x",
+                "size": "20x20"
+              },
+              {
+                "filename": "AppIcon-29@2x.png",
+                "idiom": "iphone",
+                "scale": "2x",
+                "size": "29x29"
+              },
+              {
+                "filename": "AppIcon-29@3x.png",
+                "idiom": "iphone",
+                "scale": "3x",
+                "size": "29x29"
+              },
+              {
+                "filename": "AppIcon-40@2x.png",
+                "idiom": "iphone",
+                "scale": "2x",
+                "size": "40x40"
+              },
+              {
+                "filename": "AppIcon-40@3x.png",
+                "idiom": "iphone",
+                "scale": "3x",
+                "size": "40x40"
+              },
+              {
+                "filename": "AppIcon-60@2x.png",
+                "idiom": "iphone",
+                "scale": "2x",
+                "size": "60x60"
+              },
+              {
+                "filename": "AppIcon-60@3x.png",
+                "idiom": "iphone",
+                "scale": "3x",
+                "size": "60x60"
+              },
+              {
+                "filename": "AppIcon-20.png",
+                "idiom": "ipad",
+                "scale": "1x",
+                "size": "20x20"
+              },
+              {
+                "filename": "AppIcon-20@2x-ipad.png",
+                "idiom": "ipad",
+                "scale": "2x",
+                "size": "20x20"
+              },
+              {
+                "filename": "AppIcon-29.png",
+                "idiom": "ipad",
+                "scale": "1x",
+                "size": "29x29"
+              },
+              {
+                "filename": "AppIcon-29@2x-ipad.png",
+                "idiom": "ipad",
+                "scale": "2x",
+                "size": "29x29"
+              },
+              {
+                "filename": "AppIcon-40.png",
+                "idiom": "ipad",
+                "scale": "1x",
+                "size": "40x40"
+              },
+              {
+                "filename": "AppIcon-40@2x-ipad.png",
+                "idiom": "ipad",
+                "scale": "2x",
+                "size": "40x40"
+              },
+              {
+                "filename": "AppIcon-76.png",
+                "idiom": "ipad",
+                "scale": "1x",
+                "size": "76x76"
+              },
+              {
+                "filename": "AppIcon-76@2x.png",
+                "idiom": "ipad",
+                "scale": "2x",
+                "size": "76x76"
+              },
+              {
+                "filename": "AppIcon-83.5@2x.png",
+                "idiom": "ipad",
+                "scale": "2x",
+                "size": "83.5x83.5"
+              },
+              {
+                "filename": "AppIcon-1024.png",
+                "idiom": "ios-marketing",
+                "scale": "1x",
+                "size": "1024x1024"
+              }
+            ],
+            "info": {
+              "author": "xcode",
+              "version": 1
+            }
+          }
           EOF
           
-          # Build with automatic signing
+          # Create LaunchImage Contents.json
+          cat > ios/App/App/Assets.xcassets/LaunchImage.launchimage/Contents.json << 'EOF'
+          {
+            "images": [
+              {
+                "idiom": "universal",
+                "filename": "LaunchImage.png",
+                "scale": "1x"
+              },
+              {
+                "idiom": "universal",
+                "filename": "LaunchImage@2x.png",
+                "scale": "2x"
+              },
+              {
+                "idiom": "universal",
+                "filename": "LaunchImage@3x.png",
+                "scale": "3x"
+              }
+            ],
+            "info": {
+              "author": "xcode",
+              "version": 1
+            }
+          }
+          EOF
+          
+          # Create AccentColor Contents.json
+          cat > ios/App/App/Assets.xcassets/AccentColor.colorset/Contents.json << 'EOF'
+          {
+            "colors": [
+              {
+                "idiom": "universal",
+                "color": {
+                  "color-space": "srgb",
+                  "components": {
+                    "red": "0.000",
+                    "green": "0.478",
+                    "blue": "1.000",
+                    "alpha": "1.000"
+                  }
+                }
+              }
+            ],
+            "info": {
+              "author": "xcode",
+              "version": 1
+            }
+          }
+          EOF
+          
+          # Generate icons from source if available
+          if [ -f "public/app-icon.png" ]; then
+            sips -z 1024 1024 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-1024.png
+            sips -z 40 40 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-20@2x.png
+            sips -z 60 60 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-20@3x.png
+            sips -z 58 58 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-29@2x.png
+            sips -z 87 87 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-29@3x.png
+            sips -z 80 80 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-40@2x.png
+            sips -z 120 120 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-40@3x.png
+            sips -z 120 120 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-60@2x.png
+            sips -z 180 180 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-60@3x.png
+            sips -z 20 20 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-20.png
+            sips -z 40 40 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-20@2x-ipad.png
+            sips -z 29 29 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-29.png
+            sips -z 58 58 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-29@2x-ipad.png
+            sips -z 40 40 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-40.png
+            sips -z 80 80 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-40@2x-ipad.png
+            sips -z 76 76 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-76.png
+            sips -z 152 152 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-76@2x.png
+            sips -z 167 167 public/app-icon.png --out ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-83.5@2x.png
+            sips -z 512 512 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage.png
+            sips -z 1024 1024 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@2x.png
+            sips -z 1536 1536 public/app-icon.png --out ios/App/App/Assets.xcassets/LaunchImage.launchimage/LaunchImage@3x.png
+          fi
+          
+      - name: Set up code signing settings
+        script: |
+          xcode-project use-profiles
+          
+      - name: Verify CocoaPods installation
+        script: |
+          cd ios/App
+          pod --version
+          if [ -d "Pods" ]; then
+            echo "✓ Pods directory exists"
+            ls -la Pods/
+          else
+            echo "✗ Pods directory not found"
+            exit 1
+          fi
+          cd ../..
+          
+      - name: Build IPA
+        script: |
+          cd ios/App
+          
+          # Disable User Script Sandboxing for compatibility
           xcodebuild \
-            -workspace "$XCODE_WORKSPACE" \
+            -workspace "App.xcworkspace" \
             -scheme "$XCODE_SCHEME" \
             -configuration Release \
             -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
             archive \
-            CODE_SIGN_STYLE=Automatic \
-            DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
-            -allowProvisioningUpdates
+            ENABLE_USER_SCRIPT_SANDBOXING=NO
           
-          # Export IPA
           xcodebuild \
             -exportArchive \
             -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
             -exportPath "$CM_BUILD_DIR/ios" \
             -exportOptionsPlist "$HOME/export_options.plist"
+          
+          cd ../..
           
     artifacts:
       - ios/*.ipa
@@ -86,6 +314,60 @@ workflows:
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
       
     publishing:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        submit_to_testflight: true
+
+  android-workflow:
+    name: Android Build and Deploy
+    instance_type: linux_x2
+    max_build_duration: 60
+    environment:
+      java: 17
+      node: 20
+      groups:
+        - google_play_credentials
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm ci
+          
+      - name: Build web assets
+        script: |
+          npm run build
+          
+      - name: Add Android platform
+        script: |
+          npx cap add android
+          
+      - name: Sync Capacitor
+        script: |
+          npx cap sync android
+          
+      - name: Set up keystore
+        script: |
+          echo $KEYSTORE | base64 --decode > $CM_BUILD_DIR/keystore.jks
+          
+      - name: Build Android App Bundle
+        script: |
+          cd android
+          ./gradlew bundleRelease \
+            -Pandroid.injected.signing.store.file=$CM_BUILD_DIR/keystore.jks \
+            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
+          cd ..
+          
+    artifacts:
+      - android/app/build/outputs/**/*.aab
+      - android/app/build/outputs/**/*.apk
+      
+    publishing:
+      google_play:
+        credentials: $GOOGLE_PLAY_SERVICE_ACCOUNT
+        track: internal
       email:
         recipients:
           - your-email@example.com
