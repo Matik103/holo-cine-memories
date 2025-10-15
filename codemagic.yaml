@@ -67,6 +67,12 @@ workflows:
           cd ../..
           echo "✓ Switched to automatic signing"
           
+      - name: Set up provisioning profiles
+        script: |
+          echo "=== Setting up provisioning profiles ==="
+          xcode-project use-profiles
+          echo "✓ Provisioning profiles setup completed"
+          
       - name: Build iOS app
         script: |
           # Create export options plist
@@ -107,7 +113,8 @@ workflows:
               -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
               archive \
               CODE_SIGN_STYLE=Automatic \
-              DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
+              DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+              -allowProvisioningUpdates
             
             # Export IPA
             xcodebuild \
