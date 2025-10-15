@@ -83,7 +83,7 @@ workflows:
           
       - name: Build iOS app
         script: |
-          # Create export options plist
+          # Create export options plist with provisioning profile
           cat > "$HOME/export_options.plist" << EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -91,6 +91,11 @@ workflows:
           <dict>
               <key>method</key>
               <string>app-store</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>$BUNDLE_ID</key>
+                  <string>CineMind App Store distribution</string>
+              </dict>
               <key>uploadBitcode</key>
               <false/>
               <key>uploadSymbols</key>
