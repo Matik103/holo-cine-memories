@@ -14,10 +14,9 @@ workflows:
         DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
         - app_store_credentials
-      vars:
-        CERTIFICATE: $APP_STORE_CONNECT_CERTIFICATE
-        CERTIFICATE_PASSWORD: $APP_STORE_CONNECT_PRIVATE_KEY_PASSWORD
-        PROVISIONING_PROFILE: $APP_STORE_CONNECT_PROVISIONING_PROFILE
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: tech.erconsulting.cinemind.app
     scripts:
       - name: Check Node.js version
         script: |
@@ -37,222 +36,17 @@ workflows:
         script: |
           npx cap sync ios
           
-          # Ensure assets are properly copied
-          echo "=== Verifying Capacitor Sync ==="
-          if [ -d "ios/App/App/Assets.xcassets" ]; then
-            echo "✓ Assets directory exists after sync"
-            ls -la ios/App/App/Assets.xcassets/
-          else
-            echo "⚠️ Assets directory missing after sync"
-          fi
-          
       - name: Install CocoaPods dependencies
         script: |
           cd ios/App
-          
-          # Create empty Podfile.lock if it doesn't exist
-          if [ ! -f Podfile.lock ]; then
-            touch Podfile.lock
-          fi
-          
-          # Workaround for static frameworks
-          echo "use_frameworks! :linkage => :static" > Podfile.tmp
-          cat Podfile >> Podfile.tmp
-          mv Podfile.tmp Podfile
-          
-          # Install pods with verbose output
-          pod install --verbose --repo-update
-          
+          pod install --repo-update
           cd ../..
           
-      - name: Verify iOS Assets
+      - name: Build iOS app
         script: |
-          echo "=== Verifying iOS Assets ==="
-          
-          # Check if asset directories exist
-          if [ -d "ios/App/App/Assets.xcassets/AppIcon.appiconset" ]; then
-            echo "✓ AppIcon directory exists"
-            ls -la ios/App/App/Assets.xcassets/AppIcon.appiconset/
-          else
-            echo "⚠️ AppIcon directory not found"
-          fi
-          
-          if [ -d "ios/App/App/Assets.xcassets/Splash.imageset" ]; then
-            echo "✓ Splash imageset exists"
-            ls -la ios/App/App/Assets.xcassets/Splash.imageset/
-          else
-            echo "⚠️ Splash imageset not found"
-          fi
-          
-          # Verify Contents.json files exist
-          if [ -f "ios/App/App/Assets.xcassets/AppIcon.appiconset/Contents.json" ]; then
-            echo "✓ AppIcon Contents.json exists"
-          else
-            echo "⚠️ AppIcon Contents.json missing"
-          fi
-          
-          echo "=== iOS Assets verification completed ==="
-          
-      - name: Download and install provisioning profile
-        script: |
-          echo "=== Downloading Provisioning Profile ==="
-          
-          # Create provisioning profiles directory if it doesn't exist
-          mkdir -p /Users/builder/Library/MobileDevice/Provisioning\ Profiles/
-          
-          # Download the provisioning profile using CodeMagic's API
-          echo "Downloading provisioning profile for bundle ID: tech.erconsulting.cinemind.app"
-          
-          # Use CodeMagic's built-in profile download
-          xcode-project use-profiles
-          
-          # Wait for download to complete
-          sleep 20
-          
-          # Debug: List available profiles
-          echo "=== Available Provisioning Profiles ==="
-          ls -la /Users/builder/Library/MobileDevice/Provisioning\ Profiles/ || echo "No profiles in default location"
-          
-          # Check CodeMagic's profile directory
-          echo "=== CodeMagic Profile Directory ==="
-          find /Users/builder -name "*.mobileprovision" -o -name "*.provisionprofile" 2>/dev/null || echo "No profiles found"
-          
-          # Check if our specific profile is available
-          if [ -f "/Users/builder/Library/MobileDevice/Provisioning Profiles/CineMind App Store Distribution.mobileprovision" ]; then
-            echo "✓ Found CineMind App Store Distribution profile"
-          else
-            echo "⚠️ CineMind App Store Distribution profile not found in expected location"
-            echo "This means CodeMagic needs to properly download/install the profile"
-            
-            # Try to find the profile in other locations
-            echo "=== Searching for CineMind profile ==="
-            find /Users/builder -name "*CineMind*" -type f 2>/dev/null || echo "No CineMind files found"
-            
-            # List all available profiles for debugging
-            echo "=== All available profiles ==="
-            find /Users/builder -name "*.mobileprovision" -exec basename {} \; 2>/dev/null || echo "No profiles found"
-          fi
-          
-          echo "✓ Provisioning profile setup completed"
-          
-      - name: Install certificate and setup signing
-        script: |
-          echo "=== Installing Certificate ==="
-          echo "Certificate length: ${#CERTIFICATE}"
-          echo "Certificate starts with: ${CERTIFICATE:0:50}..."
-          echo "Certificate password length: ${#CERTIFICATE_PASSWORD}"
-          
-          echo "$CERTIFICATE" | base64 --decode > /tmp/certificate.p12
-          echo "Certificate file size: $(ls -la /tmp/certificate.p12 | awk '{print $5}') bytes"
-          
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          
-          echo "=== Importing Certificate ==="
-          security import /tmp/certificate.p12 -k build.keychain -P "$CERTIFICATE_PASSWORD" -T /usr/bin/codesign
-          if [ $? -eq 0 ]; then
-            echo "✅ Certificate imported successfully"
-          else
-            echo "❌ Certificate import failed"
-            echo "This could be due to:"
-            echo "1. Wrong certificate type (need App Store Connect API key, not distribution cert)"
-            echo "2. Wrong password"
-            echo "3. Expired certificate"
-            echo "4. Invalid base64 encoding"
-          fi
-          
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
-          
-          echo "=== Available Certificates ==="
-          security find-identity -v -p codesigning build.keychain
-          
-          echo "✓ Certificate installation completed"
-          
-      - name: Verify CocoaPods installation
-        script: |
-          cd ios/App
-          pod --version
-          if [ -d "Pods" ]; then
-            echo "✓ Pods directory exists"
-            ls -la Pods/
-          else
-            echo "✗ Pods directory not found"
-            exit 1
-          fi
-          cd ../..
-          
-      - name: Clean build (Xcode-style)
-        script: |
-          echo "=== Clean Build (Xcode-style) ==="
-          
-          # Clean the build folder (equivalent to Xcode's Product → Clean Build Folder)
-          echo "Cleaning build folder..."
-          xcodebuild clean \
-            -workspace "ios/App/App.xcworkspace" \
-            -scheme "App" \
-            -configuration Release
-          
-          # Clean derived data
-          echo "Cleaning derived data..."
-          rm -rf ~/Library/Developer/Xcode/DerivedData/*
-          
-          echo "✓ Clean build completed"
-          
-      - name: Switch to manual signing for build
-        script: |
-          echo "=== Switching to Manual Signing for Build ==="
-          
-          # Update Xcode project to use manual signing for the actual build
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
-          sed -i '' 's/ProvisioningStyle = Automatic;/ProvisioningStyle = Manual;/g' ios/App/App.xcodeproj/project.pbxproj
-          
-          echo "✓ Switched to manual signing for build"
-          
-      - name: Build IPA
-        script: |
-          # Disable User Script Sandboxing for compatibility
-          xcodebuild \
-            -workspace "ios/App/App.xcworkspace" \
-            -scheme "App" \
-            -configuration Release \
-            -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
-            archive \
-            ENABLE_USER_SCRIPT_SANDBOXING=NO \
-            CODE_SIGN_STYLE=Manual \
-            PROVISIONING_PROFILE_SPECIFIER="$PROVISIONING_PROFILE" \
-            DEVELOPMENT_TEAM="WJMVGC7L35"
-          
-          # Create export options for manual signing with specific profile
-          cat > "$HOME/export_options.plist" << EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store</string>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>tech.erconsulting.cinemind.app</key>
-                  <string>$PROVISIONING_PROFILE</string>
-              </dict>
-              <key>uploadBitcode</key>
-              <false/>
-              <key>uploadSymbols</key>
-              <true/>
-              <key>compileBitcode</key>
-              <false/>
-              <key>teamID</key>
-              <string>WJMVGC7L35</string>
-          </dict>
-          </plist>
-          EOF
-          
-          xcodebuild \
-            -exportArchive \
-            -archivePath "$HOME/Library/Developer/Xcode/Archives/App.xcarchive" \
-            -exportPath "$CM_BUILD_DIR/ios" \
-            -exportOptionsPlist "$HOME/export_options.plist"
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME"
           
     artifacts:
       - ios/*.ipa
@@ -260,7 +54,11 @@ workflows:
       - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
       
     publishing:
-      # Development build - no App Store Connect upload needed
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - testers
       email:
         recipients:
           - your-email@example.com
