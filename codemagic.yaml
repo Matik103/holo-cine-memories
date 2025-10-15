@@ -18,6 +18,12 @@ workflows:
       vars:
         CERTIFICATE: $APP_STORE_CONNECT_CERTIFICATE
         CERTIFICATE_PASSWORD: $APP_STORE_CONNECT_PRIVATE_KEY_PASSWORD
+        PROVISIONING_PROFILE: $APP_STORE_CONNECT_PROVISIONING_PROFILE
+    xcode: 15.0.1
+    cocoapods: default
+    code_signing:
+      code_signing_identity: "Apple Distribution"
+      provisioning_profile: "CineMind App Store Distribution"
     scripts:
       - name: Check Node.js version
         script: |
@@ -245,6 +251,8 @@ workflows:
               <true/>
               <key>compileBitcode</key>
               <false/>
+              <key>teamID</key>
+              <string>WJMVGC7L35</string>
           </dict>
           </plist>
           EOF
