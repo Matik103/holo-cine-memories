@@ -203,7 +203,7 @@ export const Discover = () => {
   ];
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 relative">
+    <div className="min-h-screen p-2 sm:p-4 relative pt-safe-top">
       {/* Background Neural Network Effect */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
@@ -211,7 +211,7 @@ export const Discover = () => {
         <div className="floating-particle absolute top-20 right-20 w-2 h-2 bg-primary rounded-full opacity-30" style={{ animationDelay: '0s' }}></div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-2">
+      <div className="max-w-4xl mx-auto px-2 pt-6 sm:pt-4">
         {/* Header - Enhanced Mobile */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Button 

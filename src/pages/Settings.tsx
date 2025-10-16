@@ -40,9 +40,9 @@ export const Settings = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-4 pt-safe-top">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-6 pt-6 sm:pt-4">
         <div className="flex items-center space-x-3">
           <Button
             variant="ghost"

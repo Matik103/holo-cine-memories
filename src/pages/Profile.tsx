@@ -278,14 +278,14 @@ export const Profile = () => {
   }
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 relative">
+    <div className="min-h-screen p-2 sm:p-4 relative pt-safe-top">
       {/* Background Neural Network Effect */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
         <div className="absolute top-1/3 right-1/3 w-32 h-px bg-gradient-to-r from-transparent via-accent/20 to-transparent" />
       </div>
 
-      <div className="max-w-4xl mx-auto px-2">
+      <div className="max-w-4xl mx-auto px-2 pt-6 sm:pt-4">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-6 sm:mb-8">
           <Button 

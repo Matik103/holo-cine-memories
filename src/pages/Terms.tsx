@@ -6,8 +6,8 @@ export const Terms = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
+    <div className="min-h-screen bg-background pt-safe-top">
+      <div className="container mx-auto px-4 py-6 max-w-4xl pt-6 sm:pt-4">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <Button

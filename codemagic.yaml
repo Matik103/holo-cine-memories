@@ -30,7 +30,7 @@ workflows:
       - name: Set Build Number
         script: |
           # Set version and build number
-          VERSION="1.0.0"
+          VERSION="1.0.1"
           BUILD_NUMBER="2"
           
           cd ios/App
