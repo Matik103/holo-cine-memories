@@ -179,3 +179,4 @@ security cms -D -i ~/Library/MobileDevice/Provisioning\ Profiles/your_profile.mo
 - Use environment variables for all sensitive data
 
 This configuration should work reliably for iOS builds and TestFlight distribution! 🚀
+

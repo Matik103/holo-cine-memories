@@ -31,7 +31,7 @@ workflows:
         script: |
           # Set version and build number
           VERSION="1.0.0"
-          BUILD_NUMBER="1"
+          BUILD_NUMBER="2"
           
           cd ios/App
           agvtool new-marketing-version $VERSION

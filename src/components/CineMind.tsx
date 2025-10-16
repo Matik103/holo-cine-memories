@@ -568,7 +568,7 @@ export const CineMind = () => {
   }
 
   return (
-    <div className="min-h-screen p-2 sm:p-4 relative">
+    <div className="min-h-screen p-2 sm:p-4 relative pt-safe-top">
       {/* Background Neural Network Effect */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
@@ -578,7 +578,7 @@ export const CineMind = () => {
       </div>
 
       {/* Header */}
-      <div className="max-w-6xl mx-auto mb-4 sm:mb-8 px-2">
+      <div className="max-w-6xl mx-auto mb-4 sm:mb-8 px-2 pt-6 sm:pt-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />

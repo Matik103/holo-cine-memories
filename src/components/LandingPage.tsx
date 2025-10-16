@@ -134,7 +134,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-screen relative overflow-hidden pt-safe-top">
       {/* Cinematic Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Cinema Spotlight / Projector Glow */}
@@ -189,7 +189,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 sm:px-6 lg:px-8">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 sm:px-6 lg:px-8 pt-16 sm:pt-8">
         {/* Hero Section */}
         <div className="text-center mb-6 sm:mb-8 space-y-3 sm:space-y-4">
           <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
