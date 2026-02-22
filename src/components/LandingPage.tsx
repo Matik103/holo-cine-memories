@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -136,6 +136,15 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
   return (
     <div className="min-h-screen relative overflow-hidden pt-safe-top">
+      {/* Desktop: legal links top-right */}
+      <nav className="hidden md:block fixed top-4 right-4 z-20 text-xs text-primary/80 hover:text-primary transition-colors" aria-label="Legal">
+        <Link to="/privacy" className="hover:underline">Privacy</Link>
+        <span className="mx-2 text-primary/50">·</span>
+        <Link to="/terms" className="hover:underline">Terms</Link>
+        <span className="mx-2 text-primary/50">·</span>
+        <Link to="/advertising" className="hover:underline">Advertising</Link>
+      </nav>
+
       {/* Cinematic Background Effects */}
       <div className="fixed inset-0 pointer-events-none">
         {/* Cinema Spotlight / Projector Glow */}

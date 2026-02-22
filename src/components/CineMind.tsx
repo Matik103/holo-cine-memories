@@ -9,6 +9,7 @@ import { SimilarMovies } from "./SimilarMovies";
 import { LandingPage } from "./LandingPage";
 import { LoadingScreen } from "./LoadingScreen";
 import { identifyMovie, explainMovie, getStreamingOptions, findSimilarMovies } from "@/lib/openai";
+import { withAmazonPrime, type StreamingOption } from "@/lib/streaming";
 import { validateSearchQuery } from "@/lib/validation";
 import { useToast } from "@/hooks/use-toast";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
@@ -18,14 +19,6 @@ import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
 type ViewState = 'search' | 'movie-details' | 'explanation' | 'streaming' | 'similar-movies';
-
-interface StreamingOption {
-  platform: string;
-  type: 'free' | 'subscription' | 'rent' | 'buy';
-  price?: string;
-  url: string;
-  quality?: string;
-}
 
 export const CineMind = () => {
   const [user, setUser] = useState<any>(null);
@@ -422,43 +415,25 @@ export const CineMind = () => {
     setLoadingMessage("Searching streaming platforms...");
     
     try {
-      const options = await getStreamingOptions(currentMovie.title);
-      if (options && options.length > 0) {
-        setStreamingOptions(options);
-        setPreviousView('movie-details');
-        setCurrentView('streaming');
+      let options: StreamingOption[] = [];
+      try {
+        const data = await getStreamingOptions(currentMovie.title);
+        options = Array.isArray(data) ? data : (data?.streamingOptions ?? []);
+      } catch {
+        options = [];
+      }
+      const optionsWithAmazon = withAmazonPrime(options);
+      setStreamingOptions(optionsWithAmazon);
+      setPreviousView('movie-details');
+      setCurrentView('streaming');
+      if (optionsWithAmazon.length > 0) {
         toast({
-          title: "Streaming Options Found!",
-          description: `Found ${options.length} ways to watch ${currentMovie.title}`
-        });
-      } else {
-        toast({
-          title: "No Streaming Options",
-          description: "No streaming options found for this movie.",
-          variant: "destructive"
+          title: "Where to Watch",
+          description: options.length > 0
+            ? `Found ${optionsWithAmazon.length} ways to watch ${currentMovie.title}`
+            : "Check out Amazon Prime and more.",
         });
       }
-    } catch (error) {
-      console.error('Streaming error:', error);
-      
-      let errorMessage = "Streaming lookup is temporarily unavailable. Please try again later.";
-      if (error instanceof Error) {
-        if (error.message.includes('CORS')) {
-          errorMessage = "Service temporarily unavailable. Please try again in a moment.";
-        } else if (error.message.includes('API')) {
-          errorMessage = "AI service error. Please try again.";
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = "Network error. Please check your connection and try again.";
-        } else if (error.message.includes('non-2xx') || error.message.includes('FunctionsHttpError')) {
-          errorMessage = "Streaming service is temporarily unavailable. Please try again later.";
-        }
-      }
-      
-      toast({
-        title: "Streaming Search Failed",
-        description: errorMessage,
-        variant: "destructive"
-      });
     } finally {
       setIsLoading(false);
       setLoadingMessage("");

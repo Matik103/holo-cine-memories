@@ -6,6 +6,7 @@ import { Badge } from "./ui/badge";
 import { VideoPlayer } from "./VideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { withAmazonPrime, type StreamingOption } from "@/lib/streaming";
 import { ShareMovieMenu } from "./ShareMovieMenu";
 import { 
   ArrowLeft, 
@@ -54,13 +55,6 @@ interface Insights {
   symbolism: string;
   culturalImpact: string;
   similarMovies: string[];
-}
-
-interface StreamingOption {
-  platform: string;
-  type: string;
-  url: string;
-  price?: string;
 }
 
 export const MovieDetail = () => {
@@ -144,15 +138,17 @@ export const MovieDetail = () => {
         setTrailer(trailerResponse.value.data.trailer);
       }
 
-      // Handle streaming options - check both possible response formats
+      // Handle streaming options - always include Amazon Prime
+      let options: StreamingOption[] = [];
       if (streamingResponse.status === 'fulfilled') {
         const streamingData = streamingResponse.value.data;
         if (Array.isArray(streamingData)) {
-          setStreamingOptions(streamingData);
+          options = streamingData;
         } else if (streamingData?.streamingOptions) {
-          setStreamingOptions(streamingData.streamingOptions);
+          options = streamingData.streamingOptions;
         }
       }
+      setStreamingOptions(withAmazonPrime(options));
 
     } catch (error) {
       console.error('Error fetching movie data:', error);
