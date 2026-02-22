@@ -325,7 +325,8 @@ export const Profile = () => {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    navigate("/auth");
+    localStorage.removeItem("skipLanding");
+    navigate("/");
   };
 
   const refreshCineDNA = async () => {

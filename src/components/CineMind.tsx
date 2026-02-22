@@ -98,6 +98,10 @@ export const CineMind = () => {
         setIsGuestMode(false);
         localStorage.removeItem('guestMode');
         localStorage.removeItem('skipLanding');
+      } else {
+        // Signed out: show landing page next time user visits home
+        setShowLanding(true);
+        localStorage.removeItem('skipLanding');
       }
       
       // Finish loading when auth state is determined
@@ -437,7 +441,7 @@ export const CineMind = () => {
     } catch (error) {
       console.error('Streaming error:', error);
       
-      let errorMessage = "Failed to find streaming options. Please try again.";
+      let errorMessage = "Streaming lookup is temporarily unavailable. Please try again later.";
       if (error instanceof Error) {
         if (error.message.includes('CORS')) {
           errorMessage = "Service temporarily unavailable. Please try again in a moment.";
@@ -445,6 +449,8 @@ export const CineMind = () => {
           errorMessage = "AI service error. Please try again.";
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
           errorMessage = "Network error. Please check your connection and try again.";
+        } else if (error.message.includes('non-2xx') || error.message.includes('FunctionsHttpError')) {
+          errorMessage = "Streaming service is temporarily unavailable. Please try again later.";
         }
       }
       
