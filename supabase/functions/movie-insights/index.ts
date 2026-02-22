@@ -7,16 +7,15 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { movieTitle, movieYear, moviePlot } = await req.json();
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+    const rapidApiKey = Deno.env.get('RAPIDAPI_KEY');
 
-    if (!movieTitle || !openaiApiKey) {
+    if (!movieTitle || !rapidApiKey) {
       return new Response(
         JSON.stringify({ error: 'Missing movie title or API key' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -28,53 +27,40 @@ serve(async (req) => {
     const movieInfo = `${movieTitle}${movieYear ? ` (${movieYear})` : ''}`;
     const plotInfo = moviePlot ? `\n\nPlot: ${moviePlot}` : '';
 
-    const systemPrompt = `You are a film expert and critic who provides insightful analysis of movies. Generate comprehensive insights about the given movie in JSON format with the following structure:
-
-{
-  "summary": "A compelling 2-3 sentence summary of the movie",
-  "themes": "Deep analysis of the main themes and meanings (2-3 sentences)",
-  "symbolism": "Explanation of key symbols and hidden meanings (2-3 sentences)",
-  "culturalImpact": "Brief discussion of the movie's cultural significance (1-2 sentences)",
-  "similarMovies": ["Movie 1", "Movie 2", "Movie 3"]
-}
-
-Focus on what makes this movie special, its deeper meanings, and why it resonates with audiences. Be insightful but accessible.`;
-
-    const userPrompt = `Analyze this movie: ${movieInfo}${plotInfo}
-
-Provide insights about its themes, symbolism, cultural impact, and suggest 3 similar movies.`;
-
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await fetch('https://open-ai21.p.rapidapi.com/conversationllama', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
         'Content-Type': 'application/json',
+        'x-rapidapi-host': 'open-ai21.p.rapidapi.com',
+        'x-rapidapi-key': rapidApiKey,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          {
+            role: 'system',
+            content: `You are a film expert. Generate insights in JSON format:
+{
+  "summary": "2-3 sentence summary",
+  "themes": "Main themes analysis",
+  "symbolism": "Key symbols and meanings",
+  "culturalImpact": "Cultural significance",
+  "similarMovies": ["Movie 1", "Movie 2", "Movie 3"]
+}`
+          },
+          { role: 'user', content: `Analyze: ${movieInfo}${plotInfo}` }
         ],
-        max_tokens: 800,
+        web_access: false,
       }),
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('OpenAI API Error:', errorData);
-      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
+    const data = await aiResponse.json();
+    const responseContent = data.result || data.message || data;
+    console.log('AI insights response received');
     let insights;
-
     try {
-      const content = data.choices[0].message.content;
-      console.log('Raw OpenAI response:', content);
+      console.log('Raw AI response:', responseContent);
       
-      // Clean the content by removing markdown and extra formatting
-      let cleanContent = content;
+      let cleanContent = responseContent;
       
       // Remove markdown code blocks if present
       if (content.includes('```json')) {
@@ -96,8 +82,8 @@ Provide insights about its themes, symbolism, cultural impact, and suggest 3 sim
       
       console.log('Successfully parsed insights:', insights);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', parseError);
-      console.error('Content that failed to parse:', data.choices[0].message.content);
+      console.error('Failed to parse AI response:', parseError);
+      console.error('Content that failed to parse:', responseContent);
       
       // Fallback insights
       insights = {

@@ -2,7 +2,6 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const omdbApiKey = Deno.env.get('OMDB_API_KEY');
 const youtubeApiKey = Deno.env.get('YOUTUBE_API_KEY');
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -174,10 +173,6 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
-    }
-
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
     }
 
     const aiResponse = await fetch('https://open-ai21.p.rapidapi.com/conversationllama', {

@@ -97,6 +97,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         src={imageError ? '/placeholder.svg' : movie.poster}
         alt={`${movie.title} (${movie.year}) poster`}
         className={className}
+        loading="lazy"
+        decoding="async"
         onError={() => {
           console.warn(`Failed to load poster for ${movie.title}: ${movie.poster}`);
           setImageError(true);
@@ -104,7 +106,6 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         onLoad={() => {
           console.log(`✓ Poster loaded for ${movie.title}`);
         }}
-        loading="eager"
       />
     );
   };

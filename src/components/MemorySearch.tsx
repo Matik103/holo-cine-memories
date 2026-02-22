@@ -57,15 +57,22 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
               placeholder="That movie where a god loses his eyes and a slave helps him fight..."
               className="memory-input min-h-24 text-lg resize-none rounded-xl"
               disabled={isLoading}
+              aria-label="Describe the movie you're looking for"
+              aria-describedby="search-hint"
             />
+            <p id="search-hint" className="sr-only">
+              Enter any details you remember about the movie - scenes, quotes, actors, or plot points
+            </p>
             
             <div className="flex gap-3">
               <Button
                 type="submit"
                 disabled={!query.trim() || isLoading}
                 className="neural-button flex-1 h-12 rounded-xl text-sm sm:text-base"
+                aria-label="Search for movie"
+                aria-busy={isLoading}
               >
-                <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />
                 <span className="hidden sm:inline">{isLoading ? "Searching Memory..." : "Recall Movie"}</span>
                 <span className="sm:hidden">{isLoading ? "Searching..." : "Search"}</span>
               </Button>

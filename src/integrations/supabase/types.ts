@@ -23,6 +23,8 @@ export type Database = {
           movie_title: string
           movie_year: number | null
           rating: number | null
+          review: string | null
+          review_updated_at: string | null
           user_id: string
         }
         Insert: {
@@ -33,6 +35,8 @@ export type Database = {
           movie_title: string
           movie_year?: number | null
           rating?: number | null
+          review?: string | null
+          review_updated_at?: string | null
           user_id: string
         }
         Update: {
@@ -43,6 +47,8 @@ export type Database = {
           movie_title?: string
           movie_year?: number | null
           rating?: number | null
+          review?: string | null
+          review_updated_at?: string | null
           user_id?: string
         }
         Relationships: []

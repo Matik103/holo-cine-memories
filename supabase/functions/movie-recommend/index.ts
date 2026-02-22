@@ -19,8 +19,8 @@ serve(async (req) => {
   }
 
   try {
-    const { mood, timePreference, userId } = await req.json();
-    console.log('Generating recommendations for user:', userId);
+    const { mood, timePreference, genre, decade, userId } = await req.json();
+    console.log('Generating recommendations for user:', userId, 'genre:', genre, 'decade:', decade);
 
     // Get user's movie history and preferences
     let userContext = '';
@@ -59,6 +59,9 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
+    const genreConstraint = genre ? `STRICT: Only recommend movies in the ${genre} genre.` : '';
+    const decadeConstraint = decade ? `STRICT: Only recommend movies from the ${decade}.` : '';
+
     console.log('Generating recommendations for mood:', mood, 'time:', timePreference);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -89,6 +92,8 @@ serve(async (req) => {
             Guidelines:
             - Consider the user's mood: ${mood}
             - Time preference: ${timePreference}
+            ${genreConstraint}
+            ${decadeConstraint}
             - User context: ${userContext}
             - Reason should be 2-3 sentences explaining the perfect match
             - Mood_match should explain how it fits their current mood
@@ -101,7 +106,7 @@ serve(async (req) => {
           },
           { 
             role: 'user', 
-            content: `Recommend 3 movies for someone feeling ${mood} with ${timePreference} time available. ${userContext ? 'User context: ' + userContext : ''}` 
+            content: `Recommend 3 movies for someone feeling ${mood} with ${timePreference} time available.${genre && genre !== 'any' ? ` Genre must be: ${genre}.` : ''}${decade && decade !== 'any' ? ` Decade must be: ${decade}.` : ''} ${userContext ? 'User context: ' + userContext : ''}` 
           }
         ],
         max_tokens: 800,

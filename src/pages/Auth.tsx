@@ -48,7 +48,6 @@ export const Auth = () => {
         description: "Check your email for password reset instructions.",
       });
     } catch (error: any) {
-      console.error("Password reset error:", error);
       toast({
         title: "Reset Failed",
         description: error.message || "Failed to send reset email.",
@@ -110,7 +109,6 @@ export const Auth = () => {
       navigate("/");
       
     } catch (error: any) {
-      console.error("Password update error:", error);
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update password. Please request a new reset link.",
@@ -129,7 +127,6 @@ export const Auth = () => {
       const type = hashParams.get('type');
       
       if (type === 'recovery') {
-        console.log('Password recovery detected from URL - showing reset form');
         setShowPasswordReset(true);
         return true;
       }
@@ -141,11 +138,8 @@ export const Auth = () => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state change:', event, session?.user?.email);
       
-      // Handle password recovery event from Supabase
       if (event === 'PASSWORD_RECOVERY') {
-        console.log('PASSWORD_RECOVERY event detected - showing reset form');
         setShowPasswordReset(true);
         return;
       }
@@ -157,16 +151,11 @@ export const Auth = () => {
         const isRecovery = currentHashParams.get('type') === 'recovery' || showPasswordReset;
         
         if (!isRecovery) {
-          console.log('Normal sign in, redirecting to app');
           navigate("/");
-        } else {
-          console.log('Sign in during password recovery - staying on reset form');
         }
       }
       
-      // Handle sign-out
       if (event === 'SIGNED_OUT') {
-        console.log('User signed out');
         setShowPasswordReset(false);
       }
     });
@@ -179,17 +168,12 @@ export const Auth = () => {
     setLoading(true);
 
     try {
-      console.log("Attempting to sign in user:", { email });
-      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      console.log("Sign in response:", { data, error });
-
       if (error) {
-        console.error("Sign in error details:", error);
         throw error;
       }
 
@@ -213,9 +197,6 @@ export const Auth = () => {
         });
       }
     } catch (error: any) {
-      console.error("Sign in error:", error);
-      
-      // Handle specific error cases
       if (error.message.includes("Invalid login credentials")) {
         toast({
           title: "Invalid Credentials",
@@ -279,9 +260,6 @@ export const Auth = () => {
     }
 
     try {
-      console.log("Attempting to sign up user:", { email, fullName });
-      
-      // Send confirmation email using Supabase's system
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -293,10 +271,7 @@ export const Auth = () => {
         },
       });
 
-      console.log("Sign up response:", { data, error });
-
       if (error) {
-        console.error("Sign up error details:", error);
         
         // Handle specific error cases
         if (error.message.includes("already registered") || 
@@ -340,7 +315,6 @@ export const Auth = () => {
         });
       }
     } catch (error: any) {
-      console.error("Sign up error:", error);
       toast({
         title: "Sign Up Failed",
         description: error.message || "Failed to create account. Please check your email and password.",

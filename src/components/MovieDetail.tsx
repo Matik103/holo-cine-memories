@@ -264,6 +264,8 @@ export const MovieDetail = () => {
                   <img
                     src={movieDetails.poster || '/placeholder.svg'}
                     alt={movieDetails.title}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.currentTarget.src = '/placeholder.svg';

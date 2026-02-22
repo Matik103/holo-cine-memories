@@ -17,10 +17,24 @@
     <meta name="twitter:title" content="CineMind - AI Movie Memory Companion" />
     <meta name="twitter:description" content="Remember any movie with AI. Get names, meanings, and where to watch - your personal cinematic memory cloud." />
     <meta name="twitter:image" content="/og-image.png" />
+
+    <!-- Google AdSense verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8581598902448403" crossorigin="anonymous"></script>
   </head>
 
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Suppress dev console messages
+      if (typeof console !== 'undefined') {
+        const originalLog = console.log;
+        console.log = function(...args) {
+          const msg = args[0]?.toString() || '';
+          if (msg.includes('[vite]') || msg.includes('React DevTools')) return;
+          originalLog.apply(console, args);
+        };
+      }
+    </script>
   </body>
 </html>

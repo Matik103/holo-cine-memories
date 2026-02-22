@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 export const Privacy = () => {
   const navigate = useNavigate();
@@ -97,7 +97,16 @@ export const Privacy = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">5. Your Rights & Account Management</h2>
+            <h2 className="text-xl font-semibold mb-4">6. Advertising</h2>
+            <p className="text-muted-foreground mb-4">
+              We may show third-party advertisements on CineMind (e.g. via Google AdSense). These partners may use cookies and similar technologies to deliver and measure ads. We do not sell your personal information to advertisers. For more detail on how we use advertising and how you can control ad preferences, see our{" "}
+              <Link to="/advertising" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Advertising</Link> page. Google’s use of data is also described in the{" "}
+              <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Google Advertising policy</a>.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">7. Your Rights & Account Management</h2>
             <p className="text-muted-foreground mb-4">
               You have the right to control your personal information:
             </p>
@@ -113,7 +122,7 @@ export const Privacy = () => {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">6. Contact Us</h2>
+            <h2 className="text-xl font-semibold mb-4">8. Contact Us</h2>
             <p className="text-muted-foreground">
               If you have any questions about this Privacy Policy, please contact us at:
             </p>

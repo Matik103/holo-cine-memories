@@ -2,13 +2,16 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { MemorySearch } from "./MemorySearch";
 import { MovieCard, Movie } from "./MovieCard";
+import { MovieCardSkeleton } from "./MovieCardSkeleton";
 import { MovieExplanation } from "./MovieExplanation";
 import { StreamingAvailability } from "./StreamingAvailability";
 import { SimilarMovies } from "./SimilarMovies";
 import { LandingPage } from "./LandingPage";
 import { LoadingScreen } from "./LoadingScreen";
-import { initializeOpenAI, identifyMovie, explainMovie, getStreamingOptions, findSimilarMovies } from "@/lib/openai";
+import { identifyMovie, explainMovie, getStreamingOptions, findSimilarMovies } from "@/lib/openai";
+import { validateSearchQuery } from "@/lib/validation";
 import { useToast } from "@/hooks/use-toast";
+import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { Brain, User, Compass, Menu, Settings } from "lucide-react";
 import { Button } from "./ui/button";
@@ -45,6 +48,7 @@ export const CineMind = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const isOnline = useNetworkStatus();
 
   useEffect(() => {
     // Check for guest mode
@@ -90,12 +94,10 @@ export const CineMind = () => {
           return;
         }
         
-        setShowLanding(false); // Skip landing page if user is authenticated
-        setIsGuestMode(false); // Clear guest mode when user signs in
-        localStorage.removeItem('guestMode'); // Clear guest mode flag
-        localStorage.removeItem('skipLanding'); // Clear skip landing flag
-        // Initialize OpenAI with the main API key from Supabase
-        initializeOpenAIFromSupabase();
+        setShowLanding(false);
+        setIsGuestMode(false);
+        localStorage.removeItem('guestMode');
+        localStorage.removeItem('skipLanding');
       }
       
       // Finish loading when auth state is determined
@@ -121,10 +123,9 @@ export const CineMind = () => {
         }
         
         setShowLanding(false);
-        setIsGuestMode(false); // Clear guest mode when user signs in
-        localStorage.removeItem('guestMode'); // Clear guest mode flag
-        localStorage.removeItem('skipLanding'); // Clear skip landing flag
-        initializeOpenAIFromSupabase();
+        setIsGuestMode(false);
+        localStorage.removeItem('guestMode');
+        localStorage.removeItem('skipLanding');
       }
       
       // Finish loading when initial session is checked
@@ -144,32 +145,6 @@ export const CineMind = () => {
     }
   }, [location.state?.searchQuery]);
 
-  const initializeOpenAIFromSupabase = async () => {
-    try {
-      const { data: { secrets } } = await supabase.functions.invoke('get-secrets');
-      const openaiApiKey = secrets?.OPENAI_API_KEY;
-      
-      if (openaiApiKey) {
-        initializeOpenAI(openaiApiKey);
-        console.log('OpenAI API key loaded successfully');
-      } else {
-        console.warn('No OpenAI API key found in secrets');
-        toast({
-          title: "API Configuration Issue",
-          description: "Unable to load AI services. Please try refreshing the page.",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching OpenAI API key:', error);
-      toast({
-        title: "Connection Error",
-        description: "Unable to connect to AI services. Please check your internet connection and try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
   const handleStartJourney = () => {
     // Redirect to authentication page
     navigate("/auth");
@@ -177,6 +152,16 @@ export const CineMind = () => {
 
 
   const handleSearch = async (query: string) => {
+    const validation = validateSearchQuery(query);
+    if (!validation.valid) {
+      toast({
+        title: "Invalid Input",
+        description: validation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const searchStartTime = Date.now();
     setIsLoading(true);
     setLoadingMessage("Analyzing your description...");
@@ -569,6 +554,13 @@ export const CineMind = () => {
 
   return (
     <div className="min-h-screen p-2 sm:p-4 relative pt-safe-top">
+      {/* Offline Banner */}
+      {!isOnline && (
+        <div className="fixed top-0 left-0 right-0 bg-destructive text-destructive-foreground p-2 text-center z-50 text-sm">
+          You're offline. Some features may not work.
+        </div>
+      )}
+      
       {/* Background Neural Network Effect */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-px h-32 bg-gradient-to-b from-transparent via-primary/20 to-transparent" />
@@ -651,22 +643,28 @@ export const CineMind = () => {
           </div>
         )}
 
-        {currentView === 'movie-details' && currentMovie && (
+        {currentView === 'movie-details' && (
           <div className="space-y-6">
-            <MovieCard
-              movie={currentMovie}
-              onExplainMeaning={handleExplainMeaning}
-              onFindWhereToWatch={handleFindWhereToWatch}
-              onFindSimilarMovies={handleFindSimilarMovies}
-            />
-            <div className="flex justify-center">
-              <button
-                onClick={handleBackToSearch}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                ← Back to Search
-              </button>
-            </div>
+            {isLoading ? (
+              <MovieCardSkeleton />
+            ) : currentMovie ? (
+              <>
+                <MovieCard
+                  movie={currentMovie}
+                  onExplainMeaning={handleExplainMeaning}
+                  onFindWhereToWatch={handleFindWhereToWatch}
+                  onFindSimilarMovies={handleFindSimilarMovies}
+                />
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleBackToSearch}
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    ← Back to Search
+                  </button>
+                </div>
+              </>
+            ) : null}
           </div>
         )}
 

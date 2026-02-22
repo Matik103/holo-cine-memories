@@ -7,7 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Sparkles, Clock, Heart, Play, ExternalLink } from "lucide-react";
+import { useShareMovie } from "@/hooks/useShareMovie";
+import { ArrowLeft, Sparkles, Clock, Heart, Play, ExternalLink, Share2 } from "lucide-react";
 
 interface Recommendation {
   title: string;
@@ -18,16 +19,48 @@ interface Recommendation {
   runtime: string;
 }
 
+const INITIAL_RECS_VISIBLE = 6;
+const SHOW_MORE_STEP = 6;
+
+const GENRE_OPTIONS = [
+  { value: "any", label: "Any genre" },
+  { value: "Comedy", label: "Comedy" },
+  { value: "Drama", label: "Drama" },
+  { value: "Sci-Fi", label: "Sci-Fi" },
+  { value: "Action", label: "Action" },
+  { value: "Horror", label: "Horror" },
+  { value: "Romance", label: "Romance" },
+  { value: "Thriller", label: "Thriller" },
+  { value: "Documentary", label: "Documentary" },
+  { value: "Animation", label: "Animation" },
+  { value: "Fantasy", label: "Fantasy" },
+  { value: "Mystery", label: "Mystery" },
+];
+
+const DECADE_OPTIONS = [
+  { value: "any", label: "Any decade" },
+  { value: "1970s", label: "1970s" },
+  { value: "1980s", label: "1980s" },
+  { value: "1990s", label: "1990s" },
+  { value: "2000s", label: "2000s" },
+  { value: "2010s", label: "2010s" },
+  { value: "2020s", label: "2020s" },
+];
+
 export const Discover = () => {
   const [user, setUser] = useState<any>(null);
   const [mood, setMood] = useState("curious");
   const [timePreference, setTimePreference] = useState("90-120 minutes");
+  const [genreFilter, setGenreFilter] = useState("any");
+  const [decadeFilter, setDecadeFilter] = useState("any");
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [visibleCount, setVisibleCount] = useState(INITIAL_RECS_VISIBLE);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { shareMovie } = useShareMovie();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -159,6 +192,8 @@ export const Discover = () => {
         body: { 
           mood, 
           timePreference,
+          genre: genreFilter !== "any" ? genreFilter : undefined,
+          decade: decadeFilter !== "any" ? decadeFilter : undefined,
           userId: user?.id 
         },
       });
@@ -167,6 +202,7 @@ export const Discover = () => {
 
       if (data.recommendations) {
         setRecommendations(data.recommendations);
+        setVisibleCount(INITIAL_RECS_VISIBLE);
         toast({
           title: "Recommendations Ready!",
           description: `Found ${data.recommendations.length} perfect movies for your mood.`
@@ -278,6 +314,39 @@ export const Discover = () => {
             </Select>
           </div>
 
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm sm:text-base">Genre (optional)</h3>
+              <Select value={genreFilter} onValueChange={setGenreFilter}>
+                <SelectTrigger className="w-full h-10 sm:h-12 touch-manipulation" aria-label="Filter by genre">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {GENRE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="text-sm">
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm sm:text-base">Decade (optional)</h3>
+              <Select value={decadeFilter} onValueChange={setDecadeFilter}>
+                <SelectTrigger className="w-full h-10 sm:h-12 touch-manipulation" aria-label="Filter by decade">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {DECADE_OPTIONS.map((option) => (
+                    <SelectItem key={option.value} value={option.value} className="text-sm">
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <Button
             onClick={handleGetRecommendations}
             disabled={loading}
@@ -296,7 +365,7 @@ export const Discover = () => {
               Perfect Movies for Your Mood
             </h2>
 
-            {recommendations.map((rec, index) => {
+            {recommendations.slice(0, visibleCount).map((rec, index) => {
               const movieKey = `${rec.title}-${rec.year}`;
               const isFavorite = favoriteIds.has(movieKey);
               
@@ -308,6 +377,8 @@ export const Discover = () => {
                         <img
                           src={rec.poster_url}
                           alt={rec.title}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-48 sm:h-36 md:h-48 object-cover rounded-lg mx-auto sm:mx-0"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
@@ -369,12 +440,34 @@ export const Discover = () => {
                           <span className="hidden sm:inline">Find Where to Watch</span>
                           <span className="sm:hidden">Watch</span>
                         </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => shareMovie(rec.title, rec.year, { onCopied: () => toast({ title: "Link copied!", description: "Share link copied to clipboard." }) })}
+                          className="text-xs sm:text-sm touch-manipulation"
+                          aria-label="Share movie"
+                        >
+                          <Share2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <span className="hidden sm:inline">Share</span>
+                          <span className="sm:hidden">Share</span>
+                        </Button>
                       </div>
                     </div>
                   </div>
                 </Card>
               );
             })}
+            {recommendations.length > visibleCount && (
+              <div className="flex justify-center pt-4">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setVisibleCount((c) => Math.min(c + SHOW_MORE_STEP, recommendations.length))}
+                  aria-label="Show more recommendations"
+                >
+                  Show more ({recommendations.length - visibleCount} more)
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

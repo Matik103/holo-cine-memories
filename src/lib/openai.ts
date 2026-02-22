@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchWithRetry } from "./retry";
 
 export interface Movie {
   title: string;
@@ -21,24 +22,24 @@ export const initializeOpenAI = (apiKey: string) => {
 };
 
 export const identifyMovie = async (query: string): Promise<Movie | null> => {
-  try {
-    console.log('Calling movie-identify function with query:', query);
-    
-    const { data, error } = await supabase.functions.invoke('movie-identify', {
-      body: { query }
-    });
+  return fetchWithRetry(
+    async () => {
+      console.log('Calling movie-identify function with query:', query);
+      
+      const { data, error } = await supabase.functions.invoke('movie-identify', {
+        body: { query }
+      });
 
-    if (error) {
-      console.error('Supabase function error:', error);
-      throw error;
-    }
-    
-    console.log('Movie-identify response:', data);
-    return data;
-  } catch (error) {
-    console.error('Error identifying movie:', error);
-    throw error;
-  }
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+      
+      console.log('Movie-identify response:', data);
+      return data;
+    },
+    { retries: 3, delay: 1000 }
+  );
 };
 
 export const explainMovie = async (movieTitle: string) => {

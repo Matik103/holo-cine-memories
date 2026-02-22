@@ -3,9 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings } from "lucide-react";
+import { useShareMovie } from "@/hooks/useShareMovie";
+import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings, Check, List, MessageSquare, Pencil, Share2 } from "lucide-react";
 
 interface MovieSearch {
   id: string;
@@ -22,10 +24,14 @@ interface FavoriteMovie {
   movie_title: string;
   movie_year: number;
   movie_poster_url: string;
-  rating: number;
+  rating: number | null;
   is_watched: boolean;
+  review: string | null;
+  review_updated_at: string | null;
   created_at: string;
 }
+
+type WatchlistFilter = "all" | "want-to-watch" | "watched";
 
 interface UserProfile {
   display_name: string;
@@ -38,15 +44,35 @@ interface UserPreferences {
   cinedna_score: any;
 }
 
+const PAGE_SIZE = 10;
+
 export const Profile = () => {
   const [user, setUser] = useState<any>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [movieSearches, setMovieSearches] = useState<MovieSearch[]>([]);
   const [favorites, setFavorites] = useState<FavoriteMovie[]>([]);
+  const [hasMoreSearches, setHasMoreSearches] = useState(true);
+  const [hasMoreFavorites, setHasMoreFavorites] = useState(true);
+  const [loadingMoreSearches, setLoadingMoreSearches] = useState(false);
+  const [loadingMoreFavorites, setLoadingMoreFavorites] = useState(false);
+  const [watchlistFilter, setWatchlistFilter] = useState<WatchlistFilter>("all");
+  const [updatingFavoriteId, setUpdatingFavoriteId] = useState<string | null>(null);
+  const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+  const [reviewDraft, setReviewDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { shareMovie } = useShareMovie();
+
+  const filteredFavorites =
+    watchlistFilter === "all"
+      ? favorites
+      : watchlistFilter === "watched"
+        ? favorites.filter((f) => f.is_watched)
+        : favorites.filter((f) => !f.is_watched);
+  const wantCount = favorites.filter((f) => !f.is_watched).length;
+  const watchedCount = favorites.filter((f) => f.is_watched).length;
 
   // Add a refresh function that can be called from outside
   const refreshProfile = async () => {
@@ -61,18 +87,24 @@ export const Profile = () => {
 
       setUser(user);
 
-      // Fetch all data in parallel
+      // Fetch all data in parallel (first page of lists)
       const [profileRes, preferencesRes, searchesRes, favoritesRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('user_id', user.id).single(),
         supabase.from('user_preferences').select('*').eq('user_id', user.id).single(),
-        supabase.from('movie_searches').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).limit(10),
-        supabase.from('favorites').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+        supabase.from('movie_searches').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).range(0, PAGE_SIZE - 1),
+        supabase.from('favorites').select('*').eq('user_id', user.id).order('created_at', { ascending: false }).range(0, PAGE_SIZE - 1)
       ]);
 
       if (profileRes.data) setProfile(profileRes.data);
       if (preferencesRes.data) setPreferences(preferencesRes.data);
-      if (searchesRes.data) setMovieSearches(searchesRes.data);
-      if (favoritesRes.data) setFavorites(favoritesRes.data);
+      if (searchesRes.data) {
+        setMovieSearches(searchesRes.data);
+        setHasMoreSearches(searchesRes.data.length === PAGE_SIZE);
+      }
+      if (favoritesRes.data) {
+        setFavorites(favoritesRes.data);
+        setHasMoreFavorites(favoritesRes.data.length === PAGE_SIZE);
+      }
 
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -120,27 +152,30 @@ export const Profile = () => {
           setPreferences(preferencesData);
         }
 
-        // Fetch movie searches
+        // Fetch movie searches (first page)
         const { data: searchesData } = await supabase
           .from('movie_searches')
           .select('*')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
-          .limit(10);
+          .range(0, PAGE_SIZE - 1);
 
         if (searchesData) {
           setMovieSearches(searchesData);
+          setHasMoreSearches(searchesData.length === PAGE_SIZE);
         }
 
-        // Fetch favorites
+        // Fetch favorites (first page)
         const { data: favoritesData } = await supabase
           .from('favorites')
           .select('*')
           .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .range(0, PAGE_SIZE - 1);
 
         if (favoritesData) {
           setFavorites(favoritesData);
+          setHasMoreFavorites(favoritesData.length === PAGE_SIZE);
         }
 
       } catch (error) {
@@ -181,6 +216,112 @@ export const Profile = () => {
       refreshProfile();
     }
   }, []);
+
+  const loadMoreSearches = async () => {
+    if (!user || loadingMoreSearches || !hasMoreSearches) return;
+    setLoadingMoreSearches(true);
+    try {
+      const { data } = await supabase
+        .from('movie_searches')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(movieSearches.length, movieSearches.length + PAGE_SIZE - 1);
+      if (data?.length) {
+        setMovieSearches((prev) => [...prev, ...data]);
+        setHasMoreSearches(data.length === PAGE_SIZE);
+      } else {
+        setHasMoreSearches(false);
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to load more", variant: "destructive" });
+    } finally {
+      setLoadingMoreSearches(false);
+    }
+  };
+
+  const loadMoreFavorites = async () => {
+    if (!user || loadingMoreFavorites || !hasMoreFavorites) return;
+    setLoadingMoreFavorites(true);
+    try {
+      const { data } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(favorites.length, favorites.length + PAGE_SIZE - 1);
+      if (data?.length) {
+        setFavorites((prev) => [...prev, ...data]);
+        setHasMoreFavorites(data.length === PAGE_SIZE);
+      } else {
+        setHasMoreFavorites(false);
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to load more", variant: "destructive" });
+    } finally {
+      setLoadingMoreFavorites(false);
+    }
+  };
+
+  const updateFavoriteWatched = async (id: string, isWatched: boolean) => {
+    if (!user) return;
+    setUpdatingFavoriteId(id);
+    try {
+      const { error } = await supabase.from("favorites").update({ is_watched: isWatched }).eq("id", id).eq("user_id", user.id);
+      if (error) throw error;
+      setFavorites((prev) => prev.map((f) => (f.id === id ? { ...f, is_watched: isWatched } : f)));
+      toast({ title: isWatched ? "Marked as watched" : "Marked as want to watch" });
+    } catch (e) {
+      toast({ title: "Error", description: "Could not update", variant: "destructive" });
+    } finally {
+      setUpdatingFavoriteId(null);
+    }
+  };
+
+  const updateFavoriteRating = async (id: string, rating: number) => {
+    if (!user) return;
+    setUpdatingFavoriteId(id);
+    try {
+      const { error } = await supabase.from("favorites").update({ rating }).eq("id", id).eq("user_id", user.id);
+      if (error) throw error;
+      setFavorites((prev) => prev.map((f) => (f.id === id ? { ...f, rating } : f)));
+      toast({ title: "Rating saved" });
+    } catch (e) {
+      toast({ title: "Error", description: "Could not save rating", variant: "destructive" });
+    } finally {
+      setUpdatingFavoriteId(null);
+    }
+  };
+
+  const updateFavoriteReview = async (id: string, review: string) => {
+    if (!user) return;
+    setUpdatingFavoriteId(id);
+    try {
+      const { error } = await supabase
+        .from("favorites")
+        .update({ review: review.trim() || null, review_updated_at: new Date().toISOString() })
+        .eq("id", id)
+        .eq("user_id", user.id);
+      if (error) throw error;
+      setFavorites((prev) =>
+        prev.map((f) =>
+          f.id === id ? { ...f, review: review.trim() || null, review_updated_at: new Date().toISOString() } : f
+        )
+      );
+      setEditingReviewId(null);
+      setReviewDraft("");
+      toast({ title: "Review saved" });
+    } catch (e) {
+      toast({ title: "Error", description: "Could not save review", variant: "destructive" });
+    } finally {
+      setUpdatingFavoriteId(null);
+    }
+  };
+
+  const startEditingReview = (favorite: FavoriteMovie) => {
+    setEditingReviewId(favorite.id);
+    setReviewDraft(favorite.review ?? "");
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -531,30 +672,51 @@ export const Profile = () => {
           </div>
         </Card>
 
-        {/* My Favorite Movies */}
+        {/* Watchlist / My Favorite Movies */}
         {favorites.length > 0 && (
           <Card className="neural-card p-4 sm:p-8 mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
                 <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">My Favorite Movies</h2>
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Watchlist</h2>
+                <Badge variant="secondary" className="bg-primary/10 text-primary">
+                  {favorites.length}
+                </Badge>
               </div>
-              <Badge variant="secondary" className="bg-primary/10 text-primary self-start sm:self-auto">
-                {favorites.length}
-              </Badge>
+              <div className="flex rounded-lg bg-secondary/50 p-1 gap-0.5" role="tablist" aria-label="Filter watchlist">
+                {([
+                  { value: "all" as const, label: "All", count: favorites.length },
+                  { value: "want-to-watch" as const, label: "Want to watch", count: wantCount },
+                  { value: "watched" as const, label: "Watched", count: watchedCount },
+                ]).map(({ value, label, count }) => (
+                  <button
+                    key={value}
+                    role="tab"
+                    aria-selected={watchlistFilter === value ? "true" : "false"}
+                    onClick={() => setWatchlistFilter(value)}
+                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors touch-manipulation ${
+                      watchlistFilter === value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {label} ({count})
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="grid gap-3 sm:gap-4">
-              {favorites.map((favorite) => (
+              {filteredFavorites.map((favorite) => (
                 <div 
                   key={favorite.id}
                   className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-lg bg-secondary/30 hover:bg-secondary/50 transition-colors"
                 >
-                  <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+                  <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto flex-1 min-w-0">
                     {favorite.movie_poster_url && (
-                      <img 
-                        src={favorite.movie_poster_url} 
+                      <img
+                        src={favorite.movie_poster_url}
                         alt={favorite.movie_title}
+                        loading="lazy"
+                        decoding="async"
                         className="w-16 h-20 sm:w-12 sm:h-16 object-cover rounded flex-shrink-0"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -569,36 +731,140 @@ export const Profile = () => {
                           <span className="text-muted-foreground ml-1 sm:ml-2 text-xs sm:text-sm">({favorite.movie_year})</span>
                         )}
                       </h4>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mt-2">
-                        {favorite.rating && (
-                          <div className="flex items-center gap-1">
-                            <span className="text-xs sm:text-sm text-muted-foreground">Rating:</span>
-                            <div className="flex">
-                              {[...Array(5)].map((_, i) => (
-                                <Heart 
-                                  key={i} 
-                                  className={`w-3 h-3 sm:w-3 sm:h-3 ${i < favorite.rating ? 'fill-primary text-primary' : 'text-muted-foreground'}`} 
-                                />
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        <div className="flex items-center gap-2">
-                          {favorite.is_watched && (
-                            <Badge variant="outline" className="text-xs">
-                              Watched
-                            </Badge>
-                          )}
-                          <p className="text-xs text-muted-foreground">
-                            Added {new Date(favorite.created_at).toLocaleDateString()}
-                          </p>
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
+                        <div className="flex items-center gap-1" title="Your rating">
+                          <span className="text-xs text-muted-foreground sr-only sm:not-sr-only">Rate:</span>
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              type="button"
+                              onClick={() => updateFavoriteRating(favorite.id, star)}
+                              disabled={updatingFavoriteId === favorite.id}
+                              className="p-0.5 rounded touch-manipulation disabled:opacity-50"
+                              aria-label={`Rate ${star} out of 5`}
+                            >
+                              <Heart
+                                className={`w-3 h-3 sm:w-3 sm:h-3 ${
+                                  (favorite.rating ?? 0) >= star ? "fill-primary text-primary" : "text-muted-foreground"
+                                }`}
+                              />
+                            </button>
+                          ))}
                         </div>
+                        {favorite.is_watched && (
+                          <Badge variant="outline" className="text-xs">
+                            Watched
+                          </Badge>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Added {new Date(favorite.created_at).toLocaleDateString()}
+                        </p>
                       </div>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => updateFavoriteWatched(favorite.id, !favorite.is_watched)}
+                          disabled={updatingFavoriteId === favorite.id}
+                          className="text-xs h-8"
+                          aria-label={favorite.is_watched ? "Mark as want to watch" : "Mark as watched"}
+                        >
+                          {favorite.is_watched ? (
+                            <>
+                              <List className="w-3 h-3 mr-1" />
+                              Want to watch
+                            </>
+                          ) : (
+                            <>
+                              <Check className="w-3 h-3 mr-1" />
+                              Mark watched
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => startEditingReview(favorite)}
+                          className="text-xs h-8"
+                          aria-label={favorite.review ? "Edit review" : "Write review"}
+                        >
+                          {favorite.review ? <Pencil className="w-3 h-3 mr-1" /> : <MessageSquare className="w-3 h-3 mr-1" />}
+                          {favorite.review ? "Edit review" : "Write review"}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => shareMovie(favorite.movie_title, favorite.movie_year, { onCopied: () => toast({ title: "Link copied!", description: "Share link copied to clipboard." }) })}
+                          className="text-xs h-8"
+                          aria-label="Share movie"
+                        >
+                          <Share2 className="w-3 h-3 mr-1" />
+                          Share
+                        </Button>
+                      </div>
+                      {editingReviewId === favorite.id ? (
+                        <div className="mt-3 space-y-2">
+                          <Textarea
+                            value={reviewDraft}
+                            onChange={(e) => setReviewDraft(e.target.value)}
+                            placeholder="What did you think? (optional)"
+                            className="min-h-[80px] text-sm resize-y"
+                            maxLength={2000}
+                            aria-label="Your review"
+                          />
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => updateFavoriteReview(favorite.id, reviewDraft)}
+                              disabled={updatingFavoriteId === favorite.id}
+                            >
+                              Save review
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingReviewId(null);
+                                setReviewDraft("");
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (favorite.review ?? "").trim() ? (
+                        <div className="mt-3 p-3 rounded-lg bg-secondary/40 border border-secondary/60">
+                          <p className="text-sm text-muted-foreground italic">&ldquo;{(favorite.review ?? "").trim()}&rdquo;</p>
+                          {favorite.review_updated_at && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Updated {new Date(favorite.review_updated_at).toLocaleDateString()}
+                            </p>
+                          )}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
+            {filteredFavorites.length === 0 && (
+              <p className="text-center text-muted-foreground text-sm py-4">
+                {watchlistFilter === "watched" ? "No watched movies yet. Mark some as watched above." : "No want-to-watch items. Add movies from Discover or search."}
+              </p>
+            )}
+            {hasMoreFavorites && (
+              <div className="mt-4 flex justify-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadMoreFavorites}
+                  disabled={loadingMoreFavorites}
+                  aria-label="Load more favorites"
+                >
+                  {loadingMoreFavorites ? "Loading..." : "Load more"}
+                </Button>
+              </div>
+            )}
           </Card>
         )}
 
@@ -627,6 +893,7 @@ export const Profile = () => {
           </div>
 
           {movieSearches.length > 0 ? (
+            <>
             <div className="space-y-4 sm:space-y-6">
               {/* Group by time periods */}
               {(() => {
@@ -667,9 +934,11 @@ export const Profile = () => {
                           <div className="flex items-start gap-3 w-full sm:w-auto">
                             <div className="relative flex-shrink-0">
                               {search.movie_poster_url ? (
-                                <img 
-                                  src={search.movie_poster_url} 
+                                <img
+                                  src={search.movie_poster_url}
                                   alt={search.movie_title}
+                                  loading="lazy"
+                                  decoding="async"
                                   className="w-16 h-20 sm:w-12 sm:h-16 object-cover rounded shadow-sm"
                                   onError={(e) => {
                                     const target = e.target as HTMLImageElement;
@@ -714,6 +983,20 @@ export const Profile = () => {
                 ));
               })()}
             </div>
+            {hasMoreSearches && (
+              <div className="mt-6 flex justify-center">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={loadMoreSearches}
+                  disabled={loadingMoreSearches}
+                  aria-label="Load more movie memories"
+                >
+                  {loadingMoreSearches ? "Loading..." : "Load more"}
+                </Button>
+              </div>
+            )}
+            </>
           ) : (
             <div className="text-center py-8 sm:py-12 px-4">
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
