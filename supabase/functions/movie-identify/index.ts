@@ -180,28 +180,18 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const aiResponse = await fetch('https://open-ai21.p.rapidapi.com/conversationllama', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
+        'x-rapidapi-host': 'open-ai21.p.rapidapi.com',
+        'x-rapidapi-key': Deno.env.get('RAPIDAPI_KEY')!,
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
-            content: `You are an expert movie identification AI that can interpret ANY format of movie descriptions. You're incredibly versatile and can understand:
-
-            - Single words or phrases: "Inception", "Spinning dreams", "Time travel"
-            - Partial descriptions: "Movie with dreams", "Robot love story", "Space adventure"
-            - Vague references: "That one with the spinning", "The dream movie", "The robot one"
-            - Plot elements: "Dreams within dreams", "Spinning top", "Reality vs dreams"
-            - Character descriptions: "Guy who enters dreams", "Robot falls in love"
-            - Genre hints: "Sci-fi dreams", "Romantic robot", "Time loop movie"
-            - Any creative wording or format the user provides
-
-            Return ONLY a JSON object with this exact format:
+            content: `You are an expert movie identification AI. Return ONLY a JSON object with this exact format:
             {
               "title": "Movie Title",
               "year": 2023,
@@ -212,45 +202,20 @@ serve(async (req) => {
               "runtime": 120,
               "cast": ["Actor 1", "Actor 2", "Actor 3"]
             }
-            
-            IMPORTANT: Be VERY flexible with confidence scoring. Even if the description is vague, if you can reasonably identify a movie, give it a confidence of 0.6 or higher. Only return null if you truly cannot identify ANY movie from the description.
-            
-            If you absolutely cannot identify any movie, return:
-            {
-              "title": null,
-              "confidence": 0.0,
-              "error": "Could not identify movie from description"
-            }
-            
-            Rules:
-            - Only return valid JSON
-            - DO NOT include poster_url in the response (it will be fetched separately)
-            - Confidence should be 0.0-1.0 (be generous with 0.6+ for reasonable matches)
-            - Include genre as an array of strings
-            - Include runtime in minutes as integer
-            - Include main cast members (3-5 actors)
-            - If multiple movies match, pick the most famous/likely one
-            - Be creative and flexible in your interpretations
-            - Consider partial matches and similar themes`
+            If you cannot identify the movie, return: {"title": null, "confidence": 0.0}`
           },
           { role: 'user', content: query }
         ],
-        max_tokens: 400,
-        temperature: 0.5,
+        web_access: false,
       }),
     });
 
-    const data = await response.json();
-    console.log('OpenAI response received, status:', response.status);
-    
-    if (!response.ok) {
-      console.error('OpenAI API error:', data);
-      throw new Error(`OpenAI API error: ${data.error?.message || 'Unknown error'}`);
-    }
+    const data = await aiResponse.json();
+    const responseContent = data.result || data.message || data;
+    console.log('AI response received');
 
     let movieData;
     try {
-      const responseContent = data.choices[0].message.content;
       console.log('Raw AI response:', responseContent);
       
       // Try to extract JSON from the response if it's wrapped in markdown
@@ -270,7 +235,7 @@ serve(async (req) => {
       movieData = JSON.parse(jsonContent);
       console.log('Parsed movie data:', movieData);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', data.choices[0].message.content);
+      console.error('Failed to parse AI response:', responseContent);
       console.error('Parse error:', parseError);
       
       // Return a proper error response instead of throwing
