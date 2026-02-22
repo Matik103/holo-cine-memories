@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { VoiceRecorder } from "./VoiceRecorder";
 import { Search, Sparkles } from "lucide-react";
 
 interface MemorySearchProps {
@@ -18,12 +16,6 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
     if (query.trim()) {
       onSearch(query.trim());
     }
-  };
-
-  const handleVoiceTranscription = (text: string) => {
-    setQuery(text);
-    // Auto-search when voice input is received
-    onSearch(text);
   };
 
   return (
@@ -64,24 +56,17 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
               Enter any details you remember about the movie - scenes, quotes, actors, or plot points
             </p>
             
-            <div className="flex gap-3">
-              <Button
-                type="submit"
-                disabled={!query.trim() || isLoading}
-                className="neural-button flex-1 h-12 rounded-xl text-sm sm:text-base"
-                aria-label="Search for movie"
-                aria-busy={isLoading}
-              >
-                <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />
-                <span className="hidden sm:inline">{isLoading ? "Searching Memory..." : "Recall Movie"}</span>
-                <span className="sm:hidden">{isLoading ? "Searching..." : "Search"}</span>
-              </Button>
-              
-              <VoiceRecorder
-                onTranscription={handleVoiceTranscription}
-                disabled={isLoading}
-              />
-            </div>
+            <Button
+              type="submit"
+              disabled={!query.trim() || isLoading}
+              className="neural-button w-full h-12 rounded-xl text-sm sm:text-base"
+              aria-label="Search for movie"
+              aria-busy={isLoading}
+            >
+              <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />
+              <span className="hidden sm:inline">{isLoading ? "Searching Memory..." : "Recall Movie"}</span>
+              <span className="sm:hidden">{isLoading ? "Searching..." : "Search"}</span>
+            </Button>
           </div>
         </form>
 

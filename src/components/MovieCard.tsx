@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VideoPlayer } from "@/components/VideoPlayer";
-import { useShareMovie } from "@/hooks/useShareMovie";
-import { Calendar, Clock, Star, Play, BookOpen, Lightbulb, Share2 } from "lucide-react";
+import { ShareMovieMenu } from "@/components/ShareMovieMenu";
+import { Calendar, Clock, Star, Play, BookOpen, Lightbulb } from "lucide-react";
 
 export interface Movie {
   title: string;
@@ -29,7 +29,6 @@ interface MovieCardProps {
 export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindSimilarMovies }: MovieCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
-  const { shareMovie } = useShareMovie();
 
   return (
     <div className="neural-card rounded-2xl overflow-hidden">
@@ -222,16 +221,13 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
                 <BookOpen className="w-4 h-4 mr-2" />
                 Similar Movies
               </Button>
-              <Button 
-                onClick={() => shareMovie(movie.title, movie.year)}
+              <ShareMovieMenu
+                title={movie.title}
+                year={movie.year}
                 variant="ghost"
-                className="w-full rounded-xl hover:bg-secondary/30 h-12 touch-manipulation"
                 size="lg"
-                aria-label="Share movie"
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
+                triggerClassName="w-full rounded-xl hover:bg-secondary/30 h-12 touch-manipulation justify-start"
+              />
             </div>
           </div>
         </div>

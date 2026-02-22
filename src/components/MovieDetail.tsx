@@ -6,6 +6,7 @@ import { Badge } from "./ui/badge";
 import { VideoPlayer } from "./VideoPlayer";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ShareMovieMenu } from "./ShareMovieMenu";
 import { 
   ArrowLeft, 
   Play, 
@@ -165,43 +166,6 @@ export const MovieDetail = () => {
     }
   };
 
-  const handleShare = async () => {
-    const shareData = {
-      title: `${movieDetails?.title} (${movieDetails?.year}) - CineMind`,
-      text: `Check out ${movieDetails?.title} on CineMind - Your AI movie memory companion!`,
-      url: window.location.href
-    };
-
-    try {
-      // Try native sharing first (mobile devices)
-      if (navigator.share && /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-        await navigator.share(shareData);
-      } else {
-        // Fallback: Copy to clipboard
-        await navigator.clipboard.writeText(`${shareData.title}\n${shareData.text}\n${shareData.url}`);
-        toast({
-          title: "Link copied!",
-          description: "Movie link has been copied to your clipboard.",
-        });
-      }
-    } catch (error) {
-      // Final fallback: Copy just the URL
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        toast({
-          title: "Link copied!",
-          description: "Movie link has been copied to your clipboard.",
-        });
-      } catch (clipboardError) {
-        toast({
-          title: "Share failed",
-          description: "Unable to share or copy link. Please copy the URL manually.",
-          variant: "destructive",
-        });
-      }
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5">
@@ -354,14 +318,13 @@ export const MovieDetail = () => {
                   <span className="hidden sm:inline">Add to Favorites</span>
                   <span className="sm:hidden">Favorite</span>
                 </Button>
-                <Button 
-                  variant="outline" 
+                <ShareMovieMenu
+                  title={movieDetails.title}
+                  year={movieDetails.year ? parseInt(movieDetails.year, 10) : undefined}
+                  variant="outline"
                   size="icon"
-                  onClick={handleShare}
-                  className="flex-shrink-0"
-                >
-                  <Share className="w-4 h-4" />
-                </Button>
+                  trigger={<Button variant="outline" size="icon" className="flex-shrink-0" aria-label="Share movie"><Share className="w-4 h-4" /></Button>}
+                />
               </div>
             </div>
 

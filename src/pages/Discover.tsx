@@ -7,8 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useShareMovie } from "@/hooks/useShareMovie";
-import { ArrowLeft, Sparkles, Clock, Heart, Play, ExternalLink, Share2 } from "lucide-react";
+import { ShareMovieMenu } from "@/components/ShareMovieMenu";
+import { ArrowLeft, Sparkles, Clock, Heart, Play, ExternalLink } from "lucide-react";
 
 interface Recommendation {
   title: string;
@@ -60,7 +60,6 @@ export const Discover = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { shareMovie } = useShareMovie();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -440,16 +439,13 @@ export const Discover = () => {
                           <span className="hidden sm:inline">Find Where to Watch</span>
                           <span className="sm:hidden">Watch</span>
                         </Button>
-                        <Button
+                        <ShareMovieMenu
+                          title={rec.title}
+                          year={rec.year}
                           variant="outline"
-                          onClick={() => shareMovie(rec.title, rec.year, { onCopied: () => toast({ title: "Link copied!", description: "Share link copied to clipboard." }) })}
-                          className="text-xs sm:text-sm touch-manipulation"
-                          aria-label="Share movie"
-                        >
-                          <Share2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                          <span className="hidden sm:inline">Share</span>
-                          <span className="sm:hidden">Share</span>
-                        </Button>
+                          size="sm"
+                          triggerClassName="text-xs sm:text-sm touch-manipulation"
+                        />
                       </div>
                     </div>
                   </div>

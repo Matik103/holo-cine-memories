@@ -6,8 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useShareMovie } from "@/hooks/useShareMovie";
-import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings, Check, List, MessageSquare, Pencil, Share2 } from "lucide-react";
+import { ShareMovieMenu } from "@/components/ShareMovieMenu";
+import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings, Check, List, MessageSquare, Pencil } from "lucide-react";
 
 interface MovieSearch {
   id: string;
@@ -63,7 +63,6 @@ export const Profile = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { shareMovie } = useShareMovie();
 
   const filteredFavorites =
     watchlistFilter === "all"
@@ -792,16 +791,13 @@ export const Profile = () => {
                           {favorite.review ? <Pencil className="w-3 h-3 mr-1" /> : <MessageSquare className="w-3 h-3 mr-1" />}
                           {favorite.review ? "Edit review" : "Write review"}
                         </Button>
-                        <Button
+                        <ShareMovieMenu
+                          title={favorite.movie_title}
+                          year={favorite.movie_year}
                           variant="ghost"
                           size="sm"
-                          onClick={() => shareMovie(favorite.movie_title, favorite.movie_year, { onCopied: () => toast({ title: "Link copied!", description: "Share link copied to clipboard." }) })}
-                          className="text-xs h-8"
-                          aria-label="Share movie"
-                        >
-                          <Share2 className="w-3 h-3 mr-1" />
-                          Share
-                        </Button>
+                          triggerClassName="text-xs h-8"
+                        />
                       </div>
                       {editingReviewId === favorite.id ? (
                         <div className="mt-3 space-y-2">

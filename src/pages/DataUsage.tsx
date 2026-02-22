@@ -37,7 +37,6 @@ export const DataUsage = () => {
               <li>Movie search queries and interaction history</li>
               <li>Device and browser information</li>
               <li>Usage patterns and analytics data</li>
-              <li>Voice recordings for voice search features</li>
             </ul>
           </section>
 

@@ -25,7 +25,7 @@ export const About = () => {
     {
       icon: Target,
       title: "Precision Matching",
-      description: "Find exactly what you're looking for with our intelligent search and voice recognition."
+      description: "Find exactly what you're looking for with our intelligent search."
     }
   ];
 

@@ -1,42 +1,119 @@
 import { useCallback } from "react";
+import { Capacitor } from "@capacitor/core";
+import {
+  getMovieShareUrl,
+  getMovieShareText,
+  getMovieShareTitle,
+} from "@/lib/share";
 
-function getMovieUrl(title: string, year?: number | null): string {
-  const base = typeof window !== "undefined" ? window.location.origin : "";
-  const slug = encodeURIComponent(year ? `${title} ${year}` : title);
-  return `${base}/movie/${slug}`;
-}
+export type ShareResult = "native" | "copy" | "open" | "aborted";
 
 export function useShareMovie() {
   const shareMovie = useCallback(
-    async (title: string, year?: number | null, options?: { onCopied?: () => void }) => {
-      const url = getMovieUrl(title, year);
-      const text = year ? `Check out ${title} (${year}) on CineMind!` : `Check out ${title} on CineMind!`;
+    async (
+      title: string,
+      year?: number | null,
+      options?: {
+        onSuccess?: (result: ShareResult) => void;
+        onError?: () => void;
+      }
+    ): Promise<ShareResult> => {
+      const url = getMovieShareUrl(title, year);
+      const text = getMovieShareText(title, year);
+      const shareTitle = getMovieShareTitle(title, year);
 
-      if (typeof navigator !== "undefined" && navigator.share) {
+      // Capacitor native share (iOS / Android) – native share sheet
+      if (Capacitor.isNativePlatform()) {
         try {
-          await navigator.share({
-            title: `${title}${year ? ` (${year})` : ""}`,
-            text,
-            url,
-          });
-          options?.onCopied?.();
-          return;
+          const { Share } = await import("@capacitor/share");
+          const canShare = await Share.canShare();
+          if (canShare?.value) {
+            await Share.share({
+              title: shareTitle,
+              text,
+              url,
+              dialogTitle: "Share movie",
+            });
+            options?.onSuccess?.("native");
+            return "native";
+          }
         } catch (err) {
-          if ((err as Error).name === "AbortError") return;
+          if ((err as Error).name === "AbortError" || (err as Error).message?.includes("cancel")) {
+            options?.onSuccess?.("aborted");
+            return "aborted";
+          }
+          // Fall through to clipboard
         }
       }
 
+      // Web: Web Share API when available
+      if (typeof navigator !== "undefined" && navigator.share) {
+        try {
+          await navigator.share({
+            title: shareTitle,
+            text,
+            url,
+          });
+          options?.onSuccess?.("native");
+          return "native";
+        } catch (err) {
+          if ((err as Error).name === "AbortError") {
+            options?.onSuccess?.("aborted");
+            return "aborted";
+          }
+        }
+      }
+
+      // Fallback: copy to clipboard
       try {
         await navigator.clipboard.writeText(`${text}\n${url}`);
-        options?.onCopied?.();
+        options?.onSuccess?.("copy");
+        return "copy";
       } catch {
-        // fallback: open in new window or leave as is
-        window.open(url, "_blank");
-        options?.onCopied?.();
+        try {
+          window.open(url, "_blank", "noopener,noreferrer");
+          options?.onSuccess?.("open");
+          return "open";
+        } catch {
+          options?.onError?.();
+          return "copy";
+        }
       }
     },
     []
   );
 
-  return { shareMovie };
+  const copyLink = useCallback(
+    async (
+      title: string,
+      year?: number | null,
+      options?: { onSuccess?: () => void; onError?: () => void }
+    ): Promise<boolean> => {
+      const url = getMovieShareUrl(title, year);
+      const text = getMovieShareText(title, year);
+      try {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
+        options?.onSuccess?.();
+        return true;
+      } catch {
+        try {
+          await navigator.clipboard.writeText(url);
+          options?.onSuccess?.();
+          return true;
+        } catch {
+          options?.onError?.();
+          return false;
+        }
+      }
+    },
+    []
+  );
+
+  return {
+    shareMovie,
+    copyLink,
+    getMovieShareUrl,
+    getMovieShareText,
+    getMovieShareTitle,
+  };
 }

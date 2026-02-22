@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, MessageCircle, Search, Heart, Mic } from "lucide-react";
+import { ArrowLeft, MessageCircle, Search, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export const Help = () => {
@@ -14,10 +14,6 @@ export const Help = () => {
     {
       question: "What is CineDNA?",
       answer: "CineDNA is your personalized movie profile that learns from your searches and preferences. The more you use CineMind, the better it becomes at understanding your unique taste in movies."
-    },
-    {
-      question: "How do I use voice search?",
-      answer: "Click the microphone icon and speak your movie request. You can describe plot details, actors, or just say what mood you're in for a movie."
     },
     {
       question: "Can I save favorite movies?",
@@ -51,18 +47,12 @@ export const Help = () => {
             <CardHeader>
               <CardTitle className="text-lg">Quick Actions</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="text-center">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
                   <Search className="h-6 w-6 text-primary" />
                 </div>
                 <p className="text-sm font-medium">Search Movies</p>
-              </div>
-              <div className="text-center">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Mic className="h-6 w-6 text-primary" />
-                </div>
-                <p className="text-sm font-medium">Voice Search</p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-2">
