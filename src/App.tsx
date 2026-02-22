@@ -19,6 +19,7 @@ import { DataUsage } from "./pages/DataUsage";
 import { Help } from "./pages/Help";
 import { About } from "./pages/About";
 import { Advertising } from "./pages/Advertising";
+import { AdSenseReview } from "./pages/AdSenseReview";
 import NotFound from "./pages/NotFound";
 import { MovieDetail } from "./components/MovieDetail";
 
@@ -63,6 +64,7 @@ const App = () => (
           <Route path="/help" element={<Help />} />
           <Route path="/about" element={<About />} />
           <Route path="/advertising" element={<Advertising />} />
+          <Route path="/review" element={<AdSenseReview />} />
           <Route path="/movie/:movieTitle" element={<MovieDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Shield, FileText, Scale, Cookie, Database, HelpCircle, Info, Trash2, User, Megaphone } from "lucide-react";
+import { ArrowLeft, Shield, FileText, Scale, Cookie, Database, HelpCircle, Info, Trash2, User, Megaphone, ClipboardList } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { DeleteAccountModal } from "@/components/DeleteAccountModal";
@@ -32,6 +32,7 @@ export const Settings = () => {
     { icon: Shield, label: "Privacy Policy", path: "/privacy" },
     { icon: FileText, label: "Terms of Service", path: "/terms" },
     { icon: Megaphone, label: "Advertising", path: "/advertising" },
+    { icon: ClipboardList, label: "AdSense review pages", path: "/review" },
     { icon: Scale, label: "Legal", path: "/legal" },
   ];
 

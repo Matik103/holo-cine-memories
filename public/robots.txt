@@ -12,3 +12,6 @@ Allow: /
 
 User-agent: *
 Allow: /
+
+# Sitemap for crawlers (update domain if your site uses a different URL)
+Sitemap: https://cinemind.tech/sitemap.xml

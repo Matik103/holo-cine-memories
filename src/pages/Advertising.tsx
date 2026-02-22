@@ -90,7 +90,10 @@ export const Advertising = () => {
               Our use of your personal data, including in relation to advertising partners, is also described in our{" "}
               <Link to="/privacy" className="text-primary hover:underline">
                 Privacy Policy
-              </Link>.
+              </Link>. Publishers and reviewers can use our{" "}
+              <Link to="/review" className="text-primary hover:underline">
+                AdSense review pages
+              </Link> for all required URLs.
             </p>
           </CardContent>
         </Card>
