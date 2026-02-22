@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Shield, FileText, Scale, Cookie, Database, HelpCircle, Info, Trash2, User, Megaphone, ClipboardList } from "lucide-react";
+import { ArrowLeft, Shield, FileText, Scale, Cookie, Database, HelpCircle, Info, Trash2, User, Megaphone } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { DeleteAccountModal } from "@/components/DeleteAccountModal";
@@ -32,7 +32,6 @@ export const Settings = () => {
     { icon: Shield, label: "Privacy Policy", path: "/privacy" },
     { icon: FileText, label: "Terms of Service", path: "/terms" },
     { icon: Megaphone, label: "Advertising", path: "/advertising" },
-    { icon: ClipboardList, label: "AdSense review pages", path: "/review" },
     { icon: Scale, label: "Legal", path: "/legal" },
   ];
 
@@ -138,6 +137,24 @@ export const Settings = () => {
                 </Link>
               ))}
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Data Sources – OMDb attribution (visible to app reviewers) */}
+        <Card className="neural-card">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Info className="w-5 h-5" />
+              <span>Data Sources</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Movie data provided by the <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">OMDb API</a> (https://www.omdbapi.com).
+            </p>
+            <p className="text-xs text-muted-foreground italic">
+              This product uses the OMDb API but is not endorsed or certified by OMDb. Movie posters and metadata are used in accordance with OMDb API terms of use.
+            </p>
           </CardContent>
         </Card>
 

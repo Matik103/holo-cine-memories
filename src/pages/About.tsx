@@ -102,6 +102,24 @@ export const About = () => {
             </CardContent>
           </Card>
 
+          {/* Data Sources – OMDb attribution (required for app store) */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">About This App / Data Sources</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Data provided by the <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">OMDb API</a> (https://www.omdbapi.com).
+              </p>
+              <p className="text-sm text-muted-foreground italic">
+                This product uses the OMDb API but is not endorsed or certified by OMDb.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Movie posters and metadata are provided in accordance with OMDb API terms of use.
+              </p>
+            </CardContent>
+          </Card>
+
           {/* Version & Contact */}
           <Card>
             <CardHeader>
