@@ -3,6 +3,7 @@ import { App } from '@capacitor/app';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { Capacitor } from '@capacitor/core';
+import { adMobService } from '@/services/adMobService';
 
 const MobileAppInit = () => {
   useEffect(() => {
@@ -16,6 +17,12 @@ const MobileAppInit = () => {
 
         // Hide splash screen after initialization
         await SplashScreen.hide();
+
+        // AdMob: initialize and request consent (ATT is requested in native AppDelegate)
+        if (Capacitor.getPlatform() === 'ios') {
+          await adMobService.initialize();
+          await adMobService.requestConsentInfo();
+        }
 
         // Handle app state changes
         App.addListener('appStateChange', ({ isActive }) => {

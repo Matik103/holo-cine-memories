@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import MobileAppInit from "@/components/MobileAppInit";
+import { AdMobBanner } from "@/components/AdMobBanner";
 import Index from "./pages/Index";
 import { Auth } from "./pages/Auth";
 import { Profile } from "./pages/Profile";
@@ -70,6 +71,7 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
+        <AdMobBanner position="bottom" autoShow={true} />
         </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

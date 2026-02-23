@@ -57,5 +57,18 @@
 	<string>Microphone access for voice search and audio features.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Location access to find nearby theaters and movie showtimes.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>This app uses tracking to show you personalized ads and improve your experience.</string>
+	<key>GADIsAdManagerApp</key>
+	<true/>
+	<key>GADApplicationIdentifier</key>
+	<string>ca-app-pub-8581598902448403~3787278014</string>
+	<key>SKAdNetworkItems</key>
+	<array>
+		<dict>
+			<key>SKAdNetworkIdentifier</key>
+			<string>cstr6suwn9.skadnetwork</string>
+		</dict>
+	</array>
 </dict>
 </plist>
