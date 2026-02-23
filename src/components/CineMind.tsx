@@ -233,52 +233,36 @@ export const CineMind = () => {
         
         setCurrentMovie(movie);
         setCurrentView('movie-details');
-        
-        // Save the search to the database
-        if (user) {
-          try {
-            const { error: searchError } = await supabase
-              .from('movie_searches')
-              .insert({
-                user_id: user.id,
-                search_query: query,
-                movie_title: movie.title,
-                movie_year: movie.year,
-                movie_poster_url: movie.poster,
-                movie_plot: movie.plot
-              });
-            
-            if (searchError) {
-              console.error('Error saving search:', searchError);
-            } else {
-              console.log('Search saved successfully to database');
-              // Set flag to refresh profile page when user visits it next
-              localStorage.setItem('refreshProfile', 'true');
-              
-              // Also trigger CineDNA update immediately
-              try {
-                const { error: cineDNAError } = await supabase.functions.invoke('update-cinedna', {
-                  body: { userId: user.id }
-                });
-                
-                if (cineDNAError) {
-                  console.error('Error updating CineDNA:', cineDNAError);
-                } else {
-                  console.log('CineDNA updated successfully after search');
-                }
-              } catch (error) {
-                console.error('Failed to update CineDNA:', error);
-              }
-            }
-          } catch (error) {
-            console.error('Failed to save search to database:', error);
-          }
-        }
-        
         toast({
           title: "Movie Found!",
           description: `Identified: ${movie.title} (${movie.year})`
         });
+
+        // Save search and CineDNA in background so UX feels faster
+        if (user) {
+          (async () => {
+            try {
+              const { error: searchError } = await supabase
+                .from('movie_searches')
+                .insert({
+                  user_id: user.id,
+                  search_query: query,
+                  movie_title: movie.title,
+                  movie_year: movie.year,
+                  movie_poster_url: movie.poster,
+                  movie_plot: movie.plot
+                });
+              if (searchError) console.error('Error saving search:', searchError);
+              else {
+                localStorage.setItem('refreshProfile', 'true');
+                const { error: cineDNAError } = await supabase.functions.invoke('update-cinedna', { body: { userId: user.id } });
+                if (cineDNAError) console.error('Error updating CineDNA:', cineDNAError);
+              }
+            } catch (e) {
+              console.error('Failed to save search/CineDNA:', e);
+            }
+          })();
+        }
       } else {
         console.log('No movie found or low confidence:', rawMovie);
         
@@ -557,8 +541,8 @@ export const CineMind = () => {
         <div className="floating-particle absolute bottom-32 left-32 w-1 h-1 bg-accent rounded-full opacity-50 animation-delay-3s"></div>
       </div>
 
-      {/* Header */}
-      <div className="max-w-6xl mx-auto mb-4 sm:mb-8 px-2 pt-6 sm:pt-4">
+      {/* Header - safe area so title is not overlapped by notch on mobile */}
+      <div className="max-w-6xl mx-auto mb-4 sm:mb-8 px-2 pt-safe-top pt-6 sm:pt-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 sm:gap-3">
             <Brain className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />

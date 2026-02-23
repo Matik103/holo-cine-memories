@@ -1,14 +1,24 @@
-/** Canonical share URL for a movie. */
-export function getMovieShareUrl(title: string, year?: number | null): string {
-  const base = typeof window !== "undefined" ? window.location.origin : "";
-  const slug = encodeURIComponent(year != null ? `${title} ${year}` : title);
-  return `${base}/movie/${slug}`;
+/** Share domain only — no localhost, no capacitor, clean URLs. */
+const SHARE_DOMAIN = "https://www.cinemind.tech";
+
+/** Clean slug: "Ted 2012" → "Ted-2012", no %20 or special chars. */
+function movieSlug(title: string, year?: number | null): string {
+  const clean = title
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-zA-Z0-9-]/g, "");
+  return year != null ? `${clean}-${year}` : clean;
 }
 
+/** Share URL: only cinemind.tech, clear path e.g. /movie/Ted-2012 */
+export function getMovieShareUrl(title: string, year?: number | null): string {
+  return `${SHARE_DOMAIN}/movie/${movieSlug(title, year)}`;
+}
+
+/** Share text: clear and neat, no localhost/capacitor, domain only. */
 export function getMovieShareText(title: string, year?: number | null): string {
-  return year != null
-    ? `Check out ${title} (${year}) on CineMind!`
-    : `Check out ${title} on CineMind!`;
+  const film = year != null ? `${title} (${year})` : title;
+  return `Check out ${film} on CineMind — App Store or cinemind.tech`;
 }
 
 export function getMovieShareTitle(title: string, year?: number | null): string {

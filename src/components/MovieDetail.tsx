@@ -191,9 +191,9 @@ export const MovieDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
-      {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5 pt-safe-top">
+      {/* Header - safe area so notch doesn't overlap */}
+      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b pt-safe-top">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button

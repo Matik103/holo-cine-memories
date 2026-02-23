@@ -4,6 +4,8 @@ import { Dialog, DialogPortal, DialogOverlay, DialogTitle } from "@/components/u
 import { X } from "lucide-react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { cn } from "@/lib/utils";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 
 interface VideoPlayerProps {
   isOpen: boolean;
@@ -250,7 +252,19 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
                   {videoUrl && (
                     <div className="mt-4">
                       <Button
-                        onClick={() => window.open(videoUrl.replace('embed/', 'watch?v='), '_blank')}
+                        onClick={async () => {
+                          const watchUrl = videoUrl.includes('embed/')
+                            ? videoUrl.replace('embed/', 'watch?v=')
+                            : videoUrl.includes('youtu.be/')
+                              ? `https://www.youtube.com/watch?v=${videoUrl.split('youtu.be/')[1]?.split('?')[0] || ''}`
+                              : videoUrl;
+                          if (Capacitor.isNativePlatform()) {
+                            await Browser.open({ url: watchUrl });
+                            onClose();
+                          } else {
+                            window.open(watchUrl, '_blank');
+                          }
+                        }}
                         variant="outline"
                         size="sm"
                         className="text-white border-white/20 hover:bg-white/10"
@@ -300,15 +314,18 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
               </div>
             )}
             
-            {/* YouTube Embed - Full height of remaining space */}
+            {/* YouTube Embed: on native iOS use proxy (fixes Error 153); on web use direct embed */}
             <iframe
-              src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}`}
+              src={
+                Capacitor.isNativePlatform()
+                  ? `https://www.cinemind.tech/youtube.html?v=${videoId}&autoplay=1&mute=0&controls=1&playsinline=1`
+                  : `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&controls=1&modestbranding=1&rel=0&showinfo=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}`
+              }
               title={`${title} Trailer`}
               className="w-full h-full bg-black"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
               onLoad={() => {
-                console.log('YouTube iframe loaded successfully');
                 setIsLoading(false);
               }}
               onError={(e) => {

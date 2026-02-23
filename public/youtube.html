@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>YouTube Video</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+    #player { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+  </style>
+</head>
+<body>
+  <iframe
+    id="player"
+    allowfullscreen
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin"
+  ></iframe>
+  <script>
+    (function() {
+      var params = new URLSearchParams(window.location.search);
+      var videoId = params.get('v');
+      if (!videoId) {
+        document.body.innerHTML = '<div style="color:white;padding:20px;text-align:center;">Missing video ID (?v=VIDEO_ID)</div>';
+        return;
+      }
+      var autoplay = params.get('autoplay') || '1';
+      var mute = params.get('mute') || '0';
+      var controls = params.get('controls') || '1';
+      var rel = params.get('rel') || '0';
+      var modestbranding = params.get('modestbranding') || '1';
+      var playsinline = params.get('playsinline') || '1';
+      var embedParams = new URLSearchParams({
+        autoplay: autoplay,
+        controls: controls,
+        rel: rel,
+        modestbranding: modestbranding,
+        playsinline: playsinline,
+        enablejsapi: '1',
+        origin: window.location.origin
+      });
+      if (mute === '1') embedParams.append('mute', '1');
+      var embedUrl = 'https://www.youtube.com/embed/' + encodeURIComponent(videoId) + '?' + embedParams.toString();
+      document.getElementById('player').src = embedUrl;
+    })();
+  </script>
+</body>
+</html>

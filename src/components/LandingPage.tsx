@@ -198,39 +198,39 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         <div className="absolute bottom-1/3 left-1/2 w-px h-12 sm:h-20 md:h-24 bg-gradient-to-b from-transparent via-primary/15 to-transparent" />
       </div>
 
-      {/* Main Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 sm:px-6 lg:px-8 pt-16 sm:pt-8">
-        {/* Hero Section */}
-        <div className="text-center mb-6 sm:mb-8 space-y-3 sm:space-y-4">
-          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+      {/* Main Content - mobile: content from top + bottom padding so CTA visible */}
+      <div className="relative z-10 flex flex-col items-center justify-start sm:justify-center min-h-screen px-4 pt-6 pb-24 sm:pt-8 sm:pb-8 sm:py-8 sm:px-6 lg:px-8">
+        {/* Hero Section - tighter on mobile */}
+        <div className="text-center mb-4 sm:mb-8 space-y-2 sm:space-y-4">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2 sm:mb-4">
             <div className="relative">
-              <Brain className="w-8 h-8 sm:w-12 sm:h-12 text-primary" />
+              <Brain className="w-7 h-7 sm:w-12 sm:h-12 text-primary" />
               <div className="absolute inset-0 bg-primary/20 rounded-full blur-lg animate-pulse" />
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               CineMind
             </h1>
           </div>
           
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3">
+          <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-3">
             Remember Any Movie.<br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Anywhere. Anytime.
             </span>
           </h2>
           
-          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto px-4 opacity-0 animate-fade-in-up animation-delay-500">
+          <p className="text-xs sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto px-2 sm:px-4 opacity-0 animate-fade-in-up animation-delay-500">
             Your AI-powered movie memory companion that never forgets a single detail, 
             meaning, or where to watch your favorite films.
           </p>
         </div>
 
-        {/* Movie Cards Carousel */}
-        <div className="w-full max-w-5xl mb-8 sm:mb-12">
+        {/* Movie Cards Carousel - shorter on mobile so CTA fits */}
+        <div className="w-full max-w-5xl mb-4 sm:mb-12">
           <div className="relative">
             {/* Card Container */}
             <div className="flex justify-center">
-              <div className="relative w-80 h-96 sm:w-96 sm:h-[28rem] md:w-[28rem] md:h-[32rem] perspective-1000">
+              <div className="relative w-72 h-72 sm:w-96 sm:h-[28rem] md:w-[28rem] md:h-[32rem] perspective-1000">
                 {movieData.map((movie, index) => {
                   const isActive = index === currentCard;
                   
@@ -304,7 +304,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           </div>
 
           {/* Card Indicators */}
-          <div className="flex justify-center gap-1 sm:gap-2 mt-4 sm:mt-6">
+          <div className="flex justify-center gap-1 sm:gap-2 mt-2 sm:mt-6">
             {movieData.map((_, index) => (
               <button
                 key={index}
@@ -318,13 +318,13 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           </div>
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center space-y-4 sm:space-y-6 px-4">
+        {/* CTA Section - space at bottom on mobile so button is visible */}
+        <div className="text-center space-y-3 sm:space-y-6 px-4 pb-safe-bottom">
           <div className="space-y-1 sm:space-y-2">
-            <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+            <h3 className="text-base sm:text-xl md:text-2xl font-bold text-white">
               Your CineMind remembers for you.
             </h3>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <p className="text-xs sm:text-base text-muted-foreground">
               <span className="sm:hidden">Tap any card to explore full details</span>
               <span className="hidden sm:inline">Click any card above to explore full movie details with AI insights</span>
             </p>
