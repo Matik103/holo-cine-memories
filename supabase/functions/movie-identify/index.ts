@@ -175,8 +175,11 @@ serve(async (req) => {
       });
     }
 
+    const aiController = new AbortController();
+    const aiTimeout = setTimeout(() => aiController.abort(), 18000);
     const aiResponse = await fetch('https://open-ai21.p.rapidapi.com/conversationllama', {
       method: 'POST',
+      signal: aiController.signal,
       headers: {
         'Content-Type': 'application/json',
         'x-rapidapi-host': 'open-ai21.p.rapidapi.com',
@@ -186,26 +189,29 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are an expert movie identification AI. Return ONLY a JSON object with this exact format:
-            {
-              "title": "Movie Title",
-              "year": 2023,
-              "director": "Director Name",
-              "plot": "Brief plot summary",
-              "confidence": 0.95,
-              "genre": ["Drama", "Thriller"],
-              "runtime": 120,
-              "cast": ["Actor 1", "Actor 2", "Actor 3"]
-            }
-            If you cannot identify the movie, return: {"title": null, "confidence": 0.0}`
+            content: 'From the user\'s input (few words, quote, scene, or feeling), identify the movie. Reply with ONLY valid JSON, nothing else. Format: {"title":"Movie Title","year":2020,"confidence":0.9,"plot":"brief plot","director":"Name","genre":["Drama"]}. If unknown: {"title":null,"confidence":0}. Keep response minimal.'
           },
-          { role: 'user', content: query }
+          { role: 'user', content: String(query).trim() }
         ],
         web_access: false,
       }),
     });
+    clearTimeout(aiTimeout);
 
-    const rawBody = await aiResponse.text();
+    let rawBody: string;
+    try {
+      rawBody = await aiResponse.text();
+    } catch (err) {
+      if ((err as Error).name === 'AbortError') {
+        console.error('AI request timed out');
+        return new Response(JSON.stringify({
+          error: 'AI request timed out',
+          title: null,
+          confidence: 0
+        }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+      }
+      throw err;
+    }
     if (!aiResponse.ok) {
       console.error('AI API error:', aiResponse.status, rawBody.slice(0, 500));
       return new Response(JSON.stringify({
@@ -303,34 +309,16 @@ serve(async (req) => {
       });
     }
 
-    // Fetch poster and trailer if movie was identified (accept moderate confidence for short clues)
+    // Fetch poster and trailer with short timeout so we return the movie quickly
     if (movieData.title && (movieData.confidence ?? 0) >= 0.45) {
-      console.log('Fetching media for:', movieData.title, movieData.year);
-      
-      // Fetch poster and trailer in parallel with timeout
-      const [posterUrl, trailerUrl] = await Promise.allSettled([
-        fetchMoviePoster(movieData.title, movieData.year),
-        fetchMovieTrailer(movieData.title, movieData.year)
-      ]).then(results => [
-        results[0].status === 'fulfilled' ? results[0].value : null,
-        results[1].status === 'fulfilled' ? results[1].value : null
+      const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T | null> =>
+        Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), ms))]);
+      const [posterUrl, trailerUrl] = await Promise.all([
+        withTimeout(fetchMoviePoster(movieData.title!, movieData.year as number | undefined), 3200),
+        withTimeout(fetchMovieTrailer(movieData.title!, movieData.year as number | undefined), 3200)
       ]);
-      
-      if (posterUrl) {
-        movieData.poster_url = posterUrl;
-        console.log('Added poster URL:', posterUrl);
-      } else {
-        console.log('No poster found, will use fallback');
-        movieData.poster_url = null;
-      }
-      
-      if (trailerUrl) {
-        movieData.trailer_url = trailerUrl;
-        console.log('Added trailer URL:', trailerUrl);
-      } else {
-        console.log('No trailer found, will use fallback');
-        movieData.trailer_url = null;
-      }
+      movieData.poster_url = posterUrl ?? null;
+      movieData.trailer_url = trailerUrl ?? null;
     }
 
     // If movie identified, save search to database

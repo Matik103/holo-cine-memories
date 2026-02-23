@@ -11,9 +11,9 @@ const config: CapacitorConfig = {
     // cleartext: true
   },
   plugins: {
-    // iOS: resize body when keyboard opens so the view shifts up and the user sees what they type (Waze-style)
+    // Waze-style: resize view when keyboard opens so it doesn't overlap inputs (sign in/up and all forms)
     Keyboard: {
-      resize: 'body',
+      resize: 'native', // WebView resizes so content scrolls up; works with Android adjustResize
       resizeOnFullScreen: true
     },
     SplashScreen: {
