@@ -86,6 +86,9 @@ verify_jwt = false
 [functions.movie-insights]
 verify_jwt = false
 
+[functions.movie-similar]
+verify_jwt = false
+
 [functions.send-auth-emails]
 verify_jwt = false
 
