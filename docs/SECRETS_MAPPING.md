@@ -17,17 +17,21 @@ Your Supabase (or host) secrets use these names. Map them as follows.
 
 ## Frontend (Vite / www.cinemind.tech)
 
-The app reads **only** from `import.meta.env`. Set these in your **host** (Vercel, Netlify, etc.) or in local `.env`:
+**Production:** Credentials come from **Supabase** at runtime. The app calls the **public-config** Edge Function, which returns `supabaseUrl` and `supabaseAnonKey` from Supabase-injected env. So the host only needs:
 
-| Host / .env variable | Set to |
-|----------------------|--------|
-| `VITE_SUPABASE_URL` | Same value as `SUPABASE_URL` (e.g. `https://vkeurtippyytdhyknqpx.supabase.co`) |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | Same value as `SUPABASE_ANON_KEY` |
+| Host / .env variable | Required in production | Set to |
+|----------------------|------------------------|--------|
+| `VITE_SUPABASE_URL` | Yes (so the app knows where to fetch config) | Same as `SUPABASE_URL` (e.g. `https://xxx.supabase.co`) |
+| `VITE_SUPABASE_PUBLISHABLE_KEY` | No (fetched from Supabase at runtime) | — |
+
+Add **SUPABASE_ANON_KEY** to the **public-config** Edge Function secrets in Supabase Dashboard so the function can return the anon key. See **docs/PRODUCTION_CREDENTIALS.md**.
+
+**Local / fallback:** If both `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` are set (e.g. in `.env`), the app uses them and does not call public-config.
 
 Optional for scripts / deploy:
 
-- `VITE_SUPABASE_PROJECT_ID` or `SUPABASE_PROJECT_REF` = project ref (e.g. `vkeurtippyytdhyknqpx`).
-- `SUPABASE_SERVICE_ROLE_KEY` = same as the secret (for local scripts only; production functions get it from Supabase).
+- `VITE_SUPABASE_PROJECT_ID` or `SUPABASE_PROJECT_REF` = project ref.
+- `SUPABASE_SERVICE_ROLE_KEY` = for local scripts only; production functions get it from Supabase.
 
 ## Edge Functions
 

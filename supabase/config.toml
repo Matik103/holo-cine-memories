@@ -95,5 +95,8 @@ verify_jwt = false
 [functions.ai-text-generate]
 verify_jwt = false
 
+[functions.public-config]
+verify_jwt = false
+
 [analytics]
 enabled = true

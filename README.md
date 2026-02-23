@@ -64,6 +64,8 @@ This project is built with:
 
 Simply open [Lovable](https://lovable.dev/projects/88d4f441-d76a-4bff-92ae-6ed2a7ba0f0f) and click on Share -> Publish.
 
+**Production credentials:** `.env` stays local. Production gets credentials from **Supabase** at runtime (public-config Edge Function). Set only `VITE_SUPABASE_URL` in your host; add `SUPABASE_ANON_KEY` to Edge Function secrets in Supabase. See **[docs/PRODUCTION_CREDENTIALS.md](docs/PRODUCTION_CREDENTIALS.md)**.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
