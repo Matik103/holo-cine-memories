@@ -86,7 +86,7 @@ In the **same** project, **Authentication** → **URL Configuration**:
 
 ## Troubleshooting: 410 / CORS / “not calling the functions”
 
-If production shows **410** or **CORS** and the request URL is **`https://otaqvhoopxyinfzphzxh.supabase.co`**:
+If production shows **410** or **CORS** on Supabase requests (including **movie-identify** and other Edge Functions):
 
-- **Cause:** An old build or override is still using the wrong project. The app is configured to use **`vkeurtlppyytdhyknqpx`** when no env is set (hardcoded config URL).
-- **Fix:** Redeploy the frontend **without** setting any `VITE_SUPABASE_*` on the host so the app uses the built-in config URL. If you do set env, use `VITE_SUPABASE_URL=https://vkeurtlppyytdhyknqpx.supabase.co`.
+- **Cause:** Auth and all Edge Functions use the **same** Supabase client; its URL is set only in `initSupabase()`. If the live site still hits a different project, it is serving an **old build** (built before the “correct project only” logic).
+- **Fix:** Rebuild and redeploy the frontend from the **latest** code so production serves the new JS. Then the app will fetch config from public-config (or use env only when it points at `vkeurtlppyytdhyknqpx`) and all function calls will use the correct project. If the host builds on push, trigger a new deploy from `main`. If you deploy a local build, run `npm run build` after pulling latest and deploy the new `dist/`. Clear CDN or browser cache if needed.

@@ -14,38 +14,33 @@ const authOptions = {
 /** Config endpoint when no env vars are set: app fetches URL + anon key from Supabase (no host env needed). */
 const FALLBACK_CONFIG_URL = "https://vkeurtlppyytdhyknqpx.supabase.co/functions/v1/public-config";
 
-/** Old project (410/CORS); never use — always fetch from correct project instead. */
-const OLD_PROJECT_REF = "otaqvhoopxyinfzphzxh";
+/** Only use env URL if it points at this project (where functions and auth live). */
+const CORRECT_PROJECT_REF = "vkeurtlppyytdhyknqpx";
 
 let _client: SupabaseClient<Database> | null = null;
 
 /**
  * Initialize Supabase client. Call once before rendering the app.
- * - If VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set (e.g. .env) and URL is not the old project, uses them.
- * - If env points to the old project (otaqvhoopxyinfzphzxh), we ignore env and fetch from the correct project so production works.
+ * - If VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set and URL is the correct project, uses them.
  * - Else fetches URL + anon key from public-config (no host env needed).
  */
 export async function initSupabase(): Promise<SupabaseClient<Database>> {
   if (_client) return _client;
 
-  let url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
 
-  // Production may have wrong project in env; never use old project — always fetch from correct one.
-  if (url && url.includes(OLD_PROJECT_REF)) {
-    url = undefined;
-  }
-
-  if (url && key) {
+  const useEnv = url && key && url.includes(CORRECT_PROJECT_REF);
+  if (useEnv) {
     _client = createClient<Database>(url, key, authOptions);
     return _client;
   }
 
-  const configUrl = url ? `${url.replace(/\/$/, "")}/functions/v1/public-config` : FALLBACK_CONFIG_URL;
-  const res = await fetch(configUrl);
+  const res = await fetch(FALLBACK_CONFIG_URL);
   if (!res.ok) throw new Error(`Failed to load config from Supabase (${res.status}). Check that public-config is deployed and SUPABASE_URL/SUPABASE_ANON_KEY are set in Edge Function secrets.`);
   const { supabaseUrl, supabaseAnonKey } = await res.json();
   if (!supabaseUrl || !supabaseAnonKey) throw new Error("Invalid config from Supabase");
+  if (!supabaseUrl.includes(CORRECT_PROJECT_REF)) throw new Error(`Config returned wrong project. Expected ${CORRECT_PROJECT_REF}.`);
   _client = createClient<Database>(supabaseUrl, supabaseAnonKey, authOptions);
   return _client;
 }
@@ -58,7 +53,7 @@ function getSupabase(): SupabaseClient<Database> {
   return _client;
 }
 
-// Single export used by the rest of the app; must be used after initSupabase().
+// Same client is used for auth and Edge Functions (movie-identify, etc.); URL is set only in initSupabase.
 export const supabase = new Proxy({} as SupabaseClient<Database>, {
   get(_, prop) {
     return (getSupabase() as any)[prop];
