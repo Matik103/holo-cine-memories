@@ -10,7 +10,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
       groups:
-        - app_store_credentials
+        - cinemind
       ios_signing:
         distribution_type: app_store
         bundle_identifier: tech.erconsulting.cinemind.app
