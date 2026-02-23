@@ -92,8 +92,10 @@ export const CineMind = () => {
         localStorage.removeItem('guestMode');
         localStorage.removeItem('skipLanding');
       } else {
-        // Signed out: show landing page next time user visits home
-        setShowLanding(true);
+        // No session: show landing only if not in guest mode (guest chose "Continue as Guest")
+        if (localStorage.getItem('guestMode') !== 'true') {
+          setShowLanding(true);
+        }
         localStorage.removeItem('skipLanding');
       }
       
@@ -123,6 +125,11 @@ export const CineMind = () => {
         setIsGuestMode(false);
         localStorage.removeItem('guestMode');
         localStorage.removeItem('skipLanding');
+      } else {
+        // No session: keep guest in app, show landing for others
+        if (localStorage.getItem('guestMode') !== 'true') {
+          setShowLanding(true);
+        }
       }
       
       // Finish loading when initial session is checked

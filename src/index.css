@@ -118,6 +118,10 @@ All colors MUST be HSL for neural network-inspired design.
 }
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: auto;
+  }
+
   * {
     @apply border-border;
   }
@@ -410,8 +414,8 @@ All colors MUST be HSL for neural network-inspired design.
       from 0deg at 50% 50%,
       transparent 0deg,
       rgba(255, 255, 255, 0.05) 30deg,
-      rgba(200, 100% 60%, 0.1) 60deg,
-      rgba(300, 100% 65%, 0.08) 90deg,
+      hsl(200 100% 60% / 0.1) 60deg,
+      hsl(300 100% 65% / 0.08) 90deg,
       transparent 120deg,
       transparent 240deg,
       rgba(255, 255, 255, 0.03) 270deg,
@@ -553,8 +557,8 @@ All colors MUST be HSL for neural network-inspired design.
     border-radius: 50%;
     background: radial-gradient(circle, 
       rgba(255, 255, 255, 0.6) 0%, 
-      rgba(200, 100% 60%, 0.3) 30%, 
-      rgba(300, 100% 65%, 0.2) 60%, 
+      hsl(200 100% 60% / 0.3) 30%, 
+      hsl(300 100% 65% / 0.2) 60%, 
       transparent 100%
     );
     filter: blur(1px);
@@ -664,8 +668,8 @@ All colors MUST be HSL for neural network-inspired design.
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(ellipse at top left, rgba(200, 100% 60%, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at bottom right, rgba(300, 100% 65%, 0.05) 0%, transparent 50%);
+    radial-gradient(ellipse at top left, hsl(200 100% 60% / 0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at bottom right, hsl(300 100% 65% / 0.05) 0%, transparent 50%);
   pointer-events: none;
 }
 
@@ -737,4 +741,9 @@ All colors MUST be HSL for neural network-inspired design.
 
 *:focus:not(:focus-visible) {
   outline: none;
+}
+
+/* Override Tailwind preflight to avoid parser warning (100% invalid in some browsers) */
+html {
+  -webkit-text-size-adjust: auto !important;
 }

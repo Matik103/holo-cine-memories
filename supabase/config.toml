@@ -1,4 +1,4 @@
-project_id = "vkeurtlppyytdhyknqpx"
+project_id = "vkeurtippyytdhyknqpx"
 
 [api]
 port = 54321
@@ -62,7 +62,7 @@ enable_confirmations = false
 # Enable webhook to handle all auth emails through our custom function
 [auth.hook.send_email]
 enabled = true
-uri = "https://vkeurtlppyytdhyknqpx.supabase.co/functions/v1/send-auth-emails"
+uri = "https://vkeurtippyytdhyknqpx.supabase.co/functions/v1/send-auth-emails"
 secrets = "v1,whsec_MWExYmFiOTI4NTBlMGQ0MmFlYTQ5NWU5MzNmMDRmYWUwYWQ2NjMyM2EyYWZhYjUwNGQ5ODM4NjE4M2VmNWM2Nwo="
 
 [functions.movie-identify]

@@ -2,7 +2,7 @@
 
 Backup file: `db_cluster-25-10-2025@07-02-38.backup` (full PostgreSQL cluster dump from Supabase).
 
-## Restore to Supabase Cloud (project otaqvhoopxyinfzphzxh)
+## Restore to Supabase Cloud
 
 1. **Get your database password**  
    Supabase Dashboard → **Project Settings** → **Database** → **Database password** (or reset it if you don’t have it).
@@ -24,7 +24,7 @@ Backup file: `db_cluster-25-10-2025@07-02-38.backup` (full PostgreSQL cluster du
    # Create a copy without \restrict (optional; script does this)
    grep -v '^\\restrict ' /Users/ematik/Desktop/db_cluster-25-10-2025@07-02-38.backup > /tmp/restore.sql
 
-   psql "postgresql://postgres:YOUR_PASSWORD@db.otaqvhoopxyinfzphzxh.supabase.co:5432/postgres" \
+   psql "postgresql://postgres:YOUR_PASSWORD@db.YOUR_PROJECT_REF.supabase.co:5432/postgres" \
      -v ON_ERROR_STOP=0 \
      -f /tmp/restore.sql
    ```

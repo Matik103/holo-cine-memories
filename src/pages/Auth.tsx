@@ -514,10 +514,10 @@ export const Auth = () => {
                   
                   <div className="mt-6">
                     <Button
+                      type="button"
                       onClick={() => {
-                        // Set guest mode flag and navigate to main app
+                        // Set guest mode flag and navigate to main app (no form submit)
                         localStorage.setItem('guestMode', 'true');
-                        // Clear the landing page flag to show main app
                         localStorage.setItem('skipLanding', 'true');
                         navigate("/");
                       }}

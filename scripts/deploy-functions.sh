@@ -10,7 +10,7 @@ if [[ -f .env ]]; then
   source .env 2>/dev/null || true
   set +a
 fi
-PROJECT_REF="${SUPABASE_PROJECT_REF:-${VITE_SUPABASE_PROJECT_ID:-vkeurtlppyytdhyknqpx}}"
+PROJECT_REF="${SUPABASE_PROJECT_REF:-${VITE_SUPABASE_PROJECT_ID}}"
 
 echo "Deploying Edge Functions to project: $PROJECT_REF (no link/password)"
 supabase functions deploy --project-ref "$PROJECT_REF"

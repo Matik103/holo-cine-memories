@@ -41,7 +41,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
           <div className="space-y-3">
             <Textarea
               value={query}

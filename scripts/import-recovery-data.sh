@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Import recovery data into the Supabase DB (new or existing with schema applied).
-# Requires: DB_URL set, OR SUPABASE_DB_PASSWORD + SUPABASE_PROJECT_REF (default: otaqvhoopxyinfzphzxh)
+# Requires: DB_URL set, OR SUPABASE_DB_PASSWORD + SUPABASE_PROJECT_REF (from .env)
 #
 # Usage:
 #   DB_URL='postgresql://postgres:PASS@db.REF.supabase.co:5432/postgres' ./scripts/import-recovery-data.sh
-#   SUPABASE_DB_PASSWORD='PASS' SUPABASE_PROJECT_REF='your-ref' ./scripts/import-recovery-data.sh
+#   SUPABASE_DB_PASSWORD='PASS' ./scripts/import-recovery-data.sh  (uses SUPABASE_PROJECT_REF from .env)
 
 set -e
+[ -f "$(dirname "$0")/../.env" ] && source "$(dirname "$0")/../.env"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 RECOVERY_DIR="$ROOT_DIR/data/recovery"
@@ -20,7 +21,7 @@ if [[ -n "$DB_URL" ]]; then
   CONNECTION_STRING="$DB_URL"
 else
   PASS="${SUPABASE_DB_PASSWORD:?Set SUPABASE_DB_PASSWORD or DB_URL}"
-  REF="${SUPABASE_PROJECT_REF:-otaqvhoopxyinfzphzxh}"
+  REF="${SUPABASE_PROJECT_REF:?Set SUPABASE_PROJECT_REF in .env}"
   CONNECTION_STRING="postgresql://postgres:${PASS}@db.${REF}.supabase.co:5432/postgres"
 fi
 

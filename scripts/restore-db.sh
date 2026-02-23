@@ -7,8 +7,9 @@
 #     RESTORE_TARGET=local ./scripts/restore-db.sh
 
 set -e
+[ -f "$(dirname "$0")/../.env" ] && source "$(dirname "$0")/../.env"
 BACKUP_FILE="${BACKUP_FILE:-/Users/ematik/Desktop/db_cluster-25-10-2025@07-02-38.backup}"
-PROJECT_REF="${PROJECT_REF:-otaqvhoopxyinfzphzxh}"
+PROJECT_REF="${PROJECT_REF:-${SUPABASE_PROJECT_REF:?Set SUPABASE_PROJECT_REF in .env}}"
 
 if [[ ! -f "$BACKUP_FILE" ]]; then
   echo "Error: Backup file not found: $BACKUP_FILE"
