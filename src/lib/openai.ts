@@ -1,6 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fetchWithRetry } from "./retry";
 
+const FAST_TIMEOUT_MS = 14000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error("timeout")), ms))
+  ]);
+}
+
 export interface Movie {
   title: string;
   year: number;
@@ -39,64 +48,54 @@ export const identifyMovie = async (query: string): Promise<Movie | null> => {
   );
 };
 
+const fallbackExplanation = {
+  simple: "This movie explores complex themes and storytelling that make it engaging.",
+  detailed: "The film presents a multi-layered narrative examining human nature and relationships.",
+  symbolism: "The movie uses symbolic elements and metaphors to convey deeper meanings."
+};
+
 export const explainMovie = async (movieTitle: string) => {
   try {
-    const { data, error } = await supabase.functions.invoke('movie-explain', {
-      body: { movieTitle }
+    const p = supabase.functions.invoke('movie-explain', { body: { movieTitle } }).then(({ data, error }) => {
+      if (error) throw error;
+      return data;
     });
-
-    if (error) throw error;
-    return data;
+    return await withTimeout(p, FAST_TIMEOUT_MS);
   } catch (error) {
     console.error('Error explaining movie:', error);
-    throw error;
+    return fallbackExplanation;
   }
 };
 
+const fallbackStreamingOptions = (movieTitle: string) => [
+  { platform: "Search manually", type: "search", price: "Various", url: "https://www.google.com/search?q=" + encodeURIComponent(movieTitle + " streaming"), quality: "Various" }
+];
+
 export const getStreamingOptions = async (movieTitle: string) => {
   try {
-    const { data, error } = await supabase.functions.invoke('movie-streaming', {
-      body: { movieTitle }
+    const p = supabase.functions.invoke('movie-streaming', { body: { movieTitle } }).then(({ data, error }) => {
+      if (error) throw error;
+      return Array.isArray(data) ? data : (data?.fallback ?? fallbackStreamingOptions(movieTitle));
     });
-
-    if (error) throw error;
-    return data;
+    return await withTimeout(p, FAST_TIMEOUT_MS);
   } catch (error) {
     console.error('Error getting streaming options:', error);
-    throw error;
+    return fallbackStreamingOptions(movieTitle);
   }
 };
 
 export const findSimilarMovies = async (movie: Movie): Promise<Movie[]> => {
   try {
-    console.log('Finding similar movies for:', movie.title, 'genres:', movie.genre);
-    
-    const { data, error } = await supabase.functions.invoke('movie-similar', {
-      body: { 
-        title: movie.title,
-        year: movie.year,
-        genre: movie.genre,
-        director: movie.director
-      }
+    const p = supabase.functions.invoke('movie-similar', {
+      body: { title: movie.title, year: movie.year, genre: movie.genre, director: movie.director }
+    }).then(({ data, error }) => {
+      if (error) throw error;
+      return data?.similarMovies && data.similarMovies.length > 0 ? data.similarMovies : null;
     });
-
-    if (error) {
-      console.error('Supabase function error:', error);
-      throw error;
-    }
-    
-    console.log('Similar movies response:', data);
-    
-    if (data && data.similarMovies && data.similarMovies.length > 0) {
-      console.log(`Found ${data.similarMovies.length} similar movies from API`);
-      return data.similarMovies;
-    } else {
-      console.log('No similar movies found from API, using fallback');
-      return getFallbackSimilarMovies(movie);
-    }
+    const result = await withTimeout(p, FAST_TIMEOUT_MS);
+    return result ?? getFallbackSimilarMovies(movie);
   } catch (error) {
     console.error('Error finding similar movies:', error);
-    // Return fallback similar movies based on genre
     return getFallbackSimilarMovies(movie);
   }
 };

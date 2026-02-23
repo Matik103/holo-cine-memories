@@ -31,52 +31,37 @@ serve(async (req) => {
       throw new Error('OpenAI API key not configured');
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a streaming service expert. Provide realistic streaming options for movies. Return ONLY a JSON array with this exact format:
-            [
-              {
-                "platform": "Netflix",
-                "type": "subscription",
-                "price": "Monthly subscription",
-                "url": "https://netflix.com",
-                "quality": "4K"
-              },
-              {
-                "platform": "Amazon Prime Video",
-                "type": "rent",
-                "price": "$3.99",
-                "url": "https://primevideo.com",
-                "quality": "HD"
-              }
-            ]
-            
-            Guidelines:
-            - Include 3-5 realistic streaming options
-            - Types: "subscription", "rent", "buy", "free"
-            - Use real platform names: Netflix, Hulu, Disney+, Amazon Prime, Apple TV, Vudu, Tubi, Crackle, etc.
-            - Price examples: "Monthly subscription", "$3.99", "$12.99", "Free with ads"
-            - Quality: "4K", "HD", "SD"
-            - Always include at least one free option if realistic
-            - Use real platform URLs
-            
-            Only return valid JSON array.`
-          },
-          { role: 'user', content: `Find streaming options for the movie "${movieTitle}".` }
-        ],
-        max_tokens: 400,
-        temperature: 0.5,
-      }),
-    });
+    const fallbackStreaming = [
+      { platform: "Search manually", type: "search", price: "Various", url: "https://www.google.com/search?q=" + encodeURIComponent(movieTitle + " streaming"), quality: "Various" }
+    ];
+
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 12000);
+    let response: Response;
+    try {
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            { role: 'system', content: 'Reply with ONLY a JSON array of 3-5 streaming options. Each: {"platform":"Name","type":"subscription|rent|buy|free","price":"...","url":"https://...","quality":"4K|HD|SD"}. Real platforms only. No other text.' },
+            { role: 'user', content: `Streaming options for "${movieTitle}".` }
+          ],
+          max_tokens: 350,
+          temperature: 0.3,
+        }),
+      });
+      clearTimeout(t);
+    } catch (err) {
+      clearTimeout(t);
+      if ((err as Error).name === 'AbortError') console.error('Streaming request timed out');
+      return new Response(JSON.stringify(fallbackStreaming), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
 
     const data = await response.json();
     console.log('OpenAI streaming response received');
@@ -117,16 +102,7 @@ serve(async (req) => {
       console.error('Failed to parse streaming response:', data.choices[0].message.content);
       console.error('Parse error:', parseError);
       
-      // Return fallback options instead of empty array
-      streamingOptions = [
-        {
-          platform: "Search manually",
-          type: "search",
-          price: "Various",
-          url: "https://www.google.com/search?q=" + encodeURIComponent(movieTitle + " streaming"),
-          quality: "Various"
-        }
-      ];
+      streamingOptions = fallbackStreaming;
     }
 
     return new Response(JSON.stringify(streamingOptions), {
@@ -134,18 +110,10 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in movie-streaming function:', error);
-    return new Response(JSON.stringify({ 
-      error: (error as Error).message,
-      fallback: [
-        {
-          platform: "Search manually",
-          type: "search",
-          price: "Various",
-          url: "https://www.google.com/search?q=" + encodeURIComponent(movieTitle + " streaming"),
-          quality: "Various"
-        }
-      ]
-    }), {
+    const fallback = [
+      { platform: "Search manually", type: "search", price: "Various", url: "https://www.google.com/search?q=" + encodeURIComponent(movieTitle + " streaming"), quality: "Various" }
+    ];
+    return new Response(JSON.stringify({ error: (error as Error).message, fallback }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

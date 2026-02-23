@@ -43,6 +43,7 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
                   alt={movie.title}
                   loading="lazy"
                   decoding="async"
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={() => setImageError(true)}
                 />

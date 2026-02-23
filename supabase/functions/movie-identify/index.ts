@@ -309,13 +309,14 @@ serve(async (req) => {
       });
     }
 
-    // Fetch poster and trailer with short timeout so we return the movie quickly
+    // Fetch poster and trailer with short timeout; never throw so we don't return 500
     if (movieData.title && (movieData.confidence ?? 0) >= 0.45) {
       const withTimeout = <T>(p: Promise<T>, ms: number): Promise<T | null> =>
         Promise.race([p, new Promise<null>((r) => setTimeout(() => r(null), ms))]);
+      const safe = <T>(p: Promise<T>): Promise<T | null> => p.catch(() => null);
       const [posterUrl, trailerUrl] = await Promise.all([
-        withTimeout(fetchMoviePoster(movieData.title!, movieData.year as number | undefined), 3200),
-        withTimeout(fetchMovieTrailer(movieData.title!, movieData.year as number | undefined), 3200)
+        withTimeout(safe(fetchMoviePoster(movieData.title!, movieData.year as number | undefined)), 3200),
+        withTimeout(safe(fetchMovieTrailer(movieData.title!, movieData.year as number | undefined)), 3200)
       ]);
       movieData.poster_url = posterUrl ?? null;
       movieData.trailer_url = trailerUrl ?? null;
@@ -374,7 +375,7 @@ serve(async (req) => {
       title: null,
       confidence: 0.0 
     }), {
-      status: 500,
+      status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

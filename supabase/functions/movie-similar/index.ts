@@ -27,9 +27,8 @@ async function searchMoviesByGenre(genre: string, year?: number): Promise<any[]>
     
     console.log('Searching movies by genre:', searchQuery);
     
-    // Add timeout to prevent hanging
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 4500);
     
     const response = await fetch(omdbUrl, { 
       signal: controller.signal,
@@ -76,9 +75,8 @@ async function getMovieDetails(imdbId: string): Promise<any | null> {
     
     console.log('Getting movie details for IMDB ID:', imdbId);
     
-    // Add timeout to prevent hanging
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
     
     const response = await fetch(omdbUrl, { 
       signal: controller.signal,
@@ -148,58 +146,41 @@ serve(async (req) => {
       });
     }
 
+    const seen = new Set<string>();
+    const addIfNew = (m: any) => {
+      const key = m.title.toLowerCase();
+      if (key === title.toLowerCase() || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    };
     const similarMovies: any[] = [];
-    
-    // Search for movies in each genre
-    for (const genreItem of genre.slice(0, 3)) { // Limit to first 3 genres
-      console.log(`Searching for movies in genre: ${genreItem}`);
-      
+
+    for (const genreItem of genre.slice(0, 3)) {
       const genreMovies = await searchMoviesByGenre(genreItem, year);
-      
-      for (const movie of genreMovies) {
-        if (movie.imdbID) {
-          console.log(`Getting details for: ${movie.Title} (${movie.Year})`);
-          const details = await getMovieDetails(movie.imdbID);
-          
-          if (details) {
-            const transformedMovie = transformOMDbMovie(details);
-            // Avoid duplicates and the original movie
-            if (transformedMovie.title.toLowerCase() !== title.toLowerCase() && 
-                !similarMovies.some(m => m.title.toLowerCase() === transformedMovie.title.toLowerCase())) {
-              similarMovies.push(transformedMovie);
-            }
-          }
+      const ids = genreMovies.filter((m: any) => m.imdbID).slice(0, 6).map((m: any) => m.imdbID);
+      const detailsList = await Promise.all(ids.map((id: string) => getMovieDetails(id)));
+      for (const details of detailsList) {
+        if (details) {
+          const transformed = transformOMDbMovie(details);
+          if (addIfNew(transformed)) similarMovies.push(transformed);
         }
+        if (similarMovies.length >= 6) break;
       }
-      
-      // If we have enough movies, break
-      if (similarMovies.length >= 6) {
-        break;
-      }
+      if (similarMovies.length >= 6) break;
     }
-    
-    console.log(`Found ${similarMovies.length} similar movies`);
-    
-    // If we don't have enough movies, try searching without year constraint
+
     if (similarMovies.length < 3) {
-      console.log('Not enough movies found, trying without year constraint');
-      
       for (const genreItem of genre.slice(0, 2)) {
         const genreMovies = await searchMoviesByGenre(genreItem);
-        
-        for (const movie of genreMovies) {
-          if (movie.imdbID && similarMovies.length < 6) {
-            const details = await getMovieDetails(movie.imdbID);
-            
-            if (details) {
-              const transformedMovie = transformOMDbMovie(details);
-              if (transformedMovie.title.toLowerCase() !== title.toLowerCase() && 
-                  !similarMovies.some(m => m.title.toLowerCase() === transformedMovie.title.toLowerCase())) {
-                similarMovies.push(transformedMovie);
-              }
-            }
+        const ids = genreMovies.filter((m: any) => m.imdbID).slice(0, 4).map((m: any) => m.imdbID);
+        const detailsList = await Promise.all(ids.map((id: string) => getMovieDetails(id)));
+        for (const details of detailsList) {
+          if (details && similarMovies.length < 6) {
+            const transformed = transformOMDbMovie(details);
+            if (addIfNew(transformed)) similarMovies.push(transformed);
           }
         }
+        if (similarMovies.length >= 6) break;
       }
     }
     

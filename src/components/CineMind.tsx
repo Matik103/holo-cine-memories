@@ -337,7 +337,7 @@ export const CineMind = () => {
     if (!currentMovie) return;
     
     setIsLoading(true);
-    setLoadingMessage("Analyzing movie themes and symbolism...");
+    setLoadingMessage("Explain meaning...");
     
     try {
       const explanation = await explainMovie(currentMovie.title);
@@ -398,7 +398,7 @@ export const CineMind = () => {
     if (!currentMovie) return;
     
     setIsLoading(true);
-    setLoadingMessage("Searching streaming platforms...");
+    setLoadingMessage("Where to watch...");
     
     try {
       let options: StreamingOption[] = [];
@@ -449,7 +449,7 @@ export const CineMind = () => {
     if (!currentMovie) return;
     
     setIsLoading(true);
-    setLoadingMessage("Finding similar movies...");
+    setLoadingMessage("Similar movies...");
     
     try {
       // For now, we'll create a simple similar movies list based on genre and year

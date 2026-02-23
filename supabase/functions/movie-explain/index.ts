@@ -22,64 +22,77 @@ serve(async (req) => {
       });
     }
 
-    const aiResponse = await fetch('https://open-ai21.p.rapidapi.com/conversationllama', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-rapidapi-host': 'open-ai21.p.rapidapi.com',
-        'x-rapidapi-key': Deno.env.get('RAPIDAPI_KEY')!,
-      },
-      body: JSON.stringify({
-        messages: [
-          {
-            role: 'system',
-            content: `You are a film analysis expert. Explain movies in three different ways. Return ONLY a JSON object:
-            {
-              "simple": "Simple explanation for a general audience",
-              "detailed": "Detailed analysis of themes and plot",
-              "symbolism": "Deep dive into symbolism and hidden meanings"
-            }`
-          },
-          { role: 'user', content: `Explain the movie "${movieTitle}" in three different ways.` }
-        ],
-        web_access: false,
-      }),
-    });
+    const fallbackExplanation = {
+      simple: "This movie explores complex themes and storytelling techniques that make it engaging for audiences.",
+      detailed: "The film presents a multi-layered narrative that examines human nature, relationships, and the human condition through its characters and plot development.",
+      symbolism: "The movie uses various symbolic elements and metaphors to convey deeper meanings about life, society, and the human experience."
+    };
 
-    const data = await aiResponse.json();
-    const responseContent = data.result || data.message || data;
-    console.log('AI explanation response received');
-
-    let explanation;
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), 14000);
+    let rawBody: string;
     try {
-      console.log('Raw explanation response:', responseContent);
-      
-      // Try to extract JSON from the response if it's wrapped in markdown
-      let jsonContent = responseContent;
-      if (responseContent.includes('```json')) {
-        const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/);
-        if (jsonMatch) {
-          jsonContent = jsonMatch[1];
-        }
-      } else if (responseContent.includes('```')) {
-        const jsonMatch = responseContent.match(/```\n([\s\S]*?)\n```/);
-        if (jsonMatch) {
-          jsonContent = jsonMatch[1];
-        }
+      const aiResponse = await fetch('https://open-ai21.p.rapidapi.com/conversationllama', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-rapidapi-host': 'open-ai21.p.rapidapi.com',
+          'x-rapidapi-key': Deno.env.get('RAPIDAPI_KEY')!,
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: 'Explain the film in 3 short ways. Reply ONLY with valid JSON: {"simple":"1-2 sentences","detailed":"themes and plot in 2-3 sentences","symbolism":"symbolism in 1-2 sentences"}. No other text.' },
+            { role: 'user', content: `Explain "${movieTitle}" briefly.` }
+          ],
+          web_access: false,
+        }),
+      });
+      clearTimeout(t);
+      rawBody = await aiResponse.text();
+      if (!aiResponse.ok) {
+        console.error('AI API error:', aiResponse.status);
+        return new Response(JSON.stringify(fallbackExplanation), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
       }
-      
-      explanation = JSON.parse(jsonContent);
-      console.log('Parsed explanation:', explanation);
-    } catch (parseError) {
-      console.error('Failed to parse explanation response:', responseContent);
-      console.error('Parse error:', parseError);
-      
-      // Return fallback explanation instead of throwing error
+    } catch (err) {
+      clearTimeout(t);
+      if ((err as Error).name === 'AbortError') console.error('Explain request timed out');
+      return new Response(JSON.stringify(fallbackExplanation), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    let data: Record<string, unknown>;
+    try {
+      data = JSON.parse(rawBody) as Record<string, unknown>;
+    } catch {
+      return new Response(JSON.stringify(fallbackExplanation), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    const responseContent = data.result ?? data.message ?? data.output ?? data.response ?? data;
+    const responseStr = typeof responseContent === 'string' ? responseContent : JSON.stringify(responseContent ?? '');
+    let explanation: typeof fallbackExplanation;
+    try {
+      let jsonStr = responseStr.trim();
+      if (responseStr.includes('```json')) {
+        const m = responseStr.match(/```json\s*([\s\S]*?)```/);
+        if (m) jsonStr = m[1].trim();
+      } else if (responseStr.includes('{')) {
+        const start = responseStr.indexOf('{');
+        let depth = 0, end = start;
+        for (let i = start; i < responseStr.length; i++) {
+          if (responseStr[i] === '{') depth++;
+          else if (responseStr[i] === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
+        }
+        if (depth === 0) jsonStr = responseStr.slice(start, end);
+      }
+      const parsed = JSON.parse(jsonStr) as Record<string, string>;
       explanation = {
-        simple: "This movie explores complex themes and storytelling techniques that make it engaging for audiences.",
-        detailed: "The film presents a multi-layered narrative that examines human nature, relationships, and the human condition through its characters and plot development.",
-        symbolism: "The movie uses various symbolic elements and metaphors to convey deeper meanings about life, society, and the human experience."
+        simple: parsed.simple ?? fallbackExplanation.simple,
+        detailed: parsed.detailed ?? fallbackExplanation.detailed,
+        symbolism: parsed.symbolism ?? fallbackExplanation.symbolism
       };
+    } catch (parseError) {
+      console.error('Parse explanation failed:', parseError);
+      explanation = fallbackExplanation;
     }
 
     return new Response(JSON.stringify(explanation), {
