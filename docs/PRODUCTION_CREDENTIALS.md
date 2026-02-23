@@ -1,15 +1,14 @@
 # Production credentials from Supabase secrets
 
-Credentials are **not** stored in the host. The frontend gets them from **Supabase** at runtime via a public Edge Function that reads Supabase-injected env (industry approach: single source of truth).
+Credentials are **not** stored in the host. The frontend gets **everything** from **Supabase** at runtime via a public Edge Function (single source of truth). **No host environment variables are required.**
 
 ---
 
 ## How it works
 
-1. **Build time:** Production needs only **one** variable (or none if you hardcode the project URL):
-   - `VITE_SUPABASE_URL` = your project URL (e.g. `https://vkeurtlppyytdhyknqpx.supabase.co`).
-2. **Runtime:** On first load, the app calls `GET ${VITE_SUPABASE_URL}/functions/v1/public-config`. That Edge Function returns `{ supabaseUrl, supabaseAnonKey }` from **Supabase secrets** (Supabase injects `SUPABASE_URL`; you add `SUPABASE_ANON_KEY` to the function’s secrets).
-3. The app creates the Supabase client with that config. No anon key in the build or in the host’s env.
+1. **Build time:** No Supabase env vars are required on the host. The app has a single hardcoded config URL: the **public-config** Edge Function of the active project (`vkeurtlppyytdhyknqpx`).
+2. **Runtime:** On first load, the app calls `GET https://vkeurtlppyytdhyknqpx.supabase.co/functions/v1/public-config`. That Edge Function returns `{ supabaseUrl, supabaseAnonKey }` from **Supabase secrets** (Supabase injects `SUPABASE_URL`; you add `SUPABASE_ANON_KEY` to the function’s secrets).
+3. The app creates the Supabase client with that config. No URL or anon key in the build or in the host.
 
 ---
 
@@ -47,20 +46,14 @@ supabase functions deploy public-config --project-ref YOUR_PROJECT_REF
 
 ## 3. Production build / host
 
-**Option A – One env var (recommended)**  
-Set in your host (any provider) only:
+**No host env required (default).**  
+Deploy the frontend as-is. The app fetches Supabase URL and anon key from the **public-config** Edge Function at runtime. No `VITE_SUPABASE_*` variables need to be set on the host.
 
-- `VITE_SUPABASE_URL` = `https://YOUR_PROJECT_REF.supabase.co`
+**Optional – override with env (e.g. local/dev)**  
+If you set in `.env` or host:
 
-The anon key is **not** set in the host; the app fetches it from Supabase at runtime.
-
-**Option B – Both in env (fallback)**  
-If you prefer to keep using host env (e.g. for local or legacy):
-
-- `VITE_SUPABASE_URL` = project URL  
-- `VITE_SUPABASE_PUBLISHABLE_KEY` = anon key  
-
-Then the app uses these and does **not** call public-config.
+- `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` → app uses them and does not call public-config.
+- Only `VITE_SUPABASE_URL` → app still calls public-config at that URL to get the anon key.
 
 ---
 
@@ -77,18 +70,23 @@ In the **same** project, **Authentication** → **URL Configuration**:
 
 - [ ] `SUPABASE_ANON_KEY` added to Edge Function secrets (for **public-config**).
 - [ ] **public-config** deployed (`supabase functions deploy public-config`).
-- [ ] Production has at least `VITE_SUPABASE_URL` set (or both URL + key if using Option B).
 - [ ] Supabase **Authentication** → **URL Configuration** includes your production URL.
-- [ ] Redeploy the frontend after changing env so the new build runs.
+- [ ] Deploy the frontend; no host env vars needed.
 
 ---
 
 ## Summary
 
-| Source        | What production needs                         |
-|---------------|------------------------------------------------|
-| Supabase      | `SUPABASE_ANON_KEY` in Edge Function secrets  |
-| Host / build  | Only `VITE_SUPABASE_URL` (or URL + key)       |
-| Runtime       | App fetches anon key from public-config      |
+| Source   | What production needs                                |
+|----------|------------------------------------------------------|
+| Supabase | `SUPABASE_ANON_KEY` in Edge Function secrets; public-config deployed |
+| Host     | **Nothing** – app fetches URL + anon key from public-config at runtime |
 
-No anon key in the host; credentials come from Supabase secrets at runtime.
+---
+
+## Troubleshooting: 410 / CORS / “not calling the functions”
+
+If production shows **410** or **CORS** and the request URL is **`https://otaqvhoopxyinfzphzxh.supabase.co`**:
+
+- **Cause:** An old build or override is still using the wrong project. The app is configured to use **`vkeurtlppyytdhyknqpx`** when no env is set (hardcoded config URL).
+- **Fix:** Redeploy the frontend **without** setting any `VITE_SUPABASE_*` on the host so the app uses the built-in config URL. If you do set env, use `VITE_SUPABASE_URL=https://vkeurtlppyytdhyknqpx.supabase.co`.

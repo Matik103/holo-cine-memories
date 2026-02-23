@@ -11,13 +11,16 @@ const authOptions = {
   },
 };
 
+/** Config endpoint when no env vars are set: app fetches URL + anon key from Supabase (no host env needed). */
+const FALLBACK_CONFIG_URL = "https://vkeurtlppyytdhyknqpx.supabase.co/functions/v1/public-config";
+
 let _client: SupabaseClient<Database> | null = null;
 
 /**
  * Initialize Supabase client. Call once before rendering the app.
- * - If VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set (e.g. .env or host), uses them.
- * - Else if only VITE_SUPABASE_URL is set, fetches anon key from Supabase Edge Function (public-config),
- *   so production can get credentials from Supabase secrets at runtime.
+ * - If VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set (e.g. .env), uses them.
+ * - Else fetches URL + anon key from Supabase Edge Function (public-config). With no host env
+ *   vars, we use the hardcoded config endpoint so production gets everything from Supabase.
  */
 export async function initSupabase(): Promise<SupabaseClient<Database>> {
   if (_client) return _client;
@@ -30,16 +33,13 @@ export async function initSupabase(): Promise<SupabaseClient<Database>> {
     return _client;
   }
 
-  if (url) {
-    const res = await fetch(`${url.replace(/\/$/, "")}/functions/v1/public-config`);
-    if (!res.ok) throw new Error(`Failed to load config: ${res.status}`);
-    const { supabaseUrl, supabaseAnonKey } = await res.json();
-    if (!supabaseUrl || !supabaseAnonKey) throw new Error("Invalid config from Supabase");
-    _client = createClient<Database>(supabaseUrl, supabaseAnonKey, authOptions);
-    return _client;
-  }
-
-  throw new Error("Missing VITE_SUPABASE_URL. Set it in .env or host env, or use Supabase public-config.");
+  const configUrl = url ? `${url.replace(/\/$/, "")}/functions/v1/public-config` : FALLBACK_CONFIG_URL;
+  const res = await fetch(configUrl);
+  if (!res.ok) throw new Error(`Failed to load config from Supabase (${res.status}). Check that public-config is deployed and SUPABASE_URL/SUPABASE_ANON_KEY are set in Edge Function secrets.`);
+  const { supabaseUrl, supabaseAnonKey } = await res.json();
+  if (!supabaseUrl || !supabaseAnonKey) throw new Error("Invalid config from Supabase");
+  _client = createClient<Database>(supabaseUrl, supabaseAnonKey, authOptions);
+  return _client;
 }
 
 /**
