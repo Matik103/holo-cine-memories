@@ -1,7 +1,7 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'tech.erconsulting.cinemind.app',
+  appId: 'tech.erconsulting.cinem',
   appName: 'CineMind Pro',
   webDir: 'dist',
   server: {
@@ -11,6 +11,11 @@ const config: CapacitorConfig = {
     // cleartext: true
   },
   plugins: {
+    // iOS: resize body when keyboard opens so the view shifts up and the user sees what they type (Waze-style)
+    Keyboard: {
+      resize: 'body',
+      resizeOnFullScreen: true
+    },
     SplashScreen: {
       launchShowDuration: 2000,
       backgroundColor: "#000000",

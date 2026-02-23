@@ -13,7 +13,7 @@ workflows:
         - cinemind
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: tech.erconsulting.cinemind.app
+        bundle_identifier: tech.erconsulting.cinem
     integrations:
       app_store_connect: cinemind
     scripts:

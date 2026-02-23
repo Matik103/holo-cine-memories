@@ -10,7 +10,7 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.erconsulting.cinemind.app"
+        BUNDLE_ID: "tech.erconsulting.cinem"
         DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
         - app_store_credentials
@@ -130,7 +130,7 @@ workflows:
       node: 20
       vars:
         APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.erconsulting.cinemind.app"
+        BUNDLE_ID: "tech.erconsulting.cinem"
       groups:
         - google_play_credentials
     scripts:

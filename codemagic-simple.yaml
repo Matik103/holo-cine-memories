@@ -10,13 +10,13 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
         APP_VERSION: "1.0.0"
-        BUNDLE_ID: "tech.erconsulting.cinemind.app"
+        BUNDLE_ID: "tech.erconsulting.cinem"
         DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
         - cinemind
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: tech.erconsulting.cinemind.app
+        bundle_identifier: tech.erconsulting.cinem
     scripts:
       - name: Check Node.js version
         script: |
