@@ -119,7 +119,7 @@ All colors MUST be HSL for neural network-inspired design.
 
 @layer base {
   html {
-    -webkit-text-size-adjust: auto;
+    -webkit-text-size-adjust: none; /* 'auto' can trigger parser warning in some builds; 'none' is universally accepted */
   }
 
   * {
@@ -743,7 +743,7 @@ All colors MUST be HSL for neural network-inspired design.
   outline: none;
 }
 
-/* Override Tailwind preflight to avoid parser warning (100% invalid in some browsers) */
+/* Override Tailwind preflight: use 'none' to avoid CSS parser "Declaration dropped" in built output */
 html {
-  -webkit-text-size-adjust: auto !important;
+  -webkit-text-size-adjust: none !important;
 }
