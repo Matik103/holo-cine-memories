@@ -13,12 +13,12 @@ workflows:
         BUNDLE_ID: "tech.erconsulting.cinemind.app"
         DEVELOPMENT_TEAM: "WJMVGC7L35"
       groups:
-        - app_store_credentials
+        - cinemind
       ios_signing:
         distribution_type: app_store
         bundle_identifier: tech.erconsulting.cinemind.app
     integrations:
-      app_store_connect: codemagic
+      app_store_connect: cinemind
     scripts:
       - name: Check Node.js version
         script: |

@@ -10,10 +10,12 @@ workflows:
         XCODE_WORKSPACE: "ios/App/App.xcworkspace"
         XCODE_SCHEME: "App"
       groups:
-        - app_store_credentials
+        - cinemind
       ios_signing:
         distribution_type: app_store
         bundle_identifier: tech.erconsulting.cinemind.app
+    integrations:
+      app_store_connect: cinemind
     scripts:
       - name: Install dependencies
         script: |
@@ -315,9 +317,7 @@ workflows:
       
     publishing:
       app_store_connect:
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        auth: integration
         submit_to_testflight: true
 
   android-workflow:
@@ -328,7 +328,7 @@ workflows:
       java: 17
       node: 20
       groups:
-        - google_play_credentials
+        - cinemind
     scripts:
       - name: Install dependencies
         script: |
