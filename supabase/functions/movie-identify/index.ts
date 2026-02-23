@@ -205,35 +205,94 @@ serve(async (req) => {
       }),
     });
 
-    const data = await aiResponse.json();
-    const responseContent = data.result || data.message || data;
-    console.log('AI response received');
+    const rawBody = await aiResponse.text();
+    if (!aiResponse.ok) {
+      console.error('AI API error:', aiResponse.status, rawBody.slice(0, 500));
+      return new Response(JSON.stringify({
+        error: 'AI service unavailable',
+        title: null,
+        confidence: 0
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
 
-    let movieData;
+    let data: Record<string, unknown>;
     try {
-      console.log('Raw AI response:', responseContent);
+      data = JSON.parse(rawBody) as Record<string, unknown>;
+    } catch {
+      console.error('AI API returned non-JSON:', rawBody.slice(0, 500));
+      return new Response(JSON.stringify({
+        error: 'Invalid response format from AI',
+        title: null,
+        confidence: 0
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
+    }
+
+    // Log raw shape for debugging (Supabase function logs)
+    console.log('AI response keys:', Object.keys(data).join(', '));
+
+    // Support multiple response shapes from RapidAPI / AI providers
+    let responseContent: unknown = data.result ?? data.message ?? data.output ?? data.response ?? data.text ?? data.body ?? data.data ?? data.content ?? data.reply ?? data.answer;
+    if (responseContent == null && Array.isArray(data.choices)?.[0]) {
+      const first = data.choices[0] as Record<string, unknown>;
+      const msg = first?.message as Record<string, unknown> | undefined;
+      responseContent = msg?.content ?? msg?.text;
+    }
+    if (responseContent == null && Array.isArray(data.messages)) {
+      const last = data.messages[data.messages.length - 1] as Record<string, unknown> | undefined;
+      responseContent = last?.content ?? last?.text ?? last?.message;
+    }
+    if (typeof responseContent === 'object' && responseContent != null && responseContent !== null) {
+      const obj = responseContent as Record<string, unknown>;
+      if (typeof obj.content === 'string') responseContent = obj.content;
+      else if (typeof obj.text === 'string') responseContent = obj.text;
+      else if (typeof obj.message === 'string') responseContent = obj.message;
+    }
+    const responseStr = typeof responseContent === 'string' ? responseContent : JSON.stringify(responseContent ?? '');
+    console.log('AI response received, length:', responseStr.length);
+
+    let movieData: { title?: string | null; confidence?: number; year?: number; [k: string]: unknown };
+    try {
+      console.log('Raw AI response:', responseStr.slice(0, 500));
       
-      // Try to extract JSON from the response if it's wrapped in markdown
-      let jsonContent = responseContent;
-      if (responseContent.includes('```json')) {
-        const jsonMatch = responseContent.match(/```json\n([\s\S]*?)\n```/);
-        if (jsonMatch) {
-          jsonContent = jsonMatch[1];
-        }
-      } else if (responseContent.includes('```')) {
-        const jsonMatch = responseContent.match(/```\n([\s\S]*?)\n```/);
-        if (jsonMatch) {
-          jsonContent = jsonMatch[1];
+      // Try to extract JSON: markdown code block, then raw {...}, then parse whole string
+      let jsonContent = responseStr.trim();
+      if (responseStr.includes('```json')) {
+        const jsonMatch = responseStr.match(/```json\s*([\s\S]*?)```/);
+        if (jsonMatch) jsonContent = jsonMatch[1].trim();
+      } else if (responseStr.includes('```')) {
+        const jsonMatch = responseStr.match(/```\s*([\s\S]*?)```/);
+        if (jsonMatch) jsonContent = jsonMatch[1].trim();
+      }
+      if (!jsonContent.startsWith('{')) {
+        const start = responseStr.indexOf('{');
+        if (start >= 0) {
+          let depth = 0;
+          let end = start;
+          for (let i = start; i < responseStr.length; i++) {
+            if (responseStr[i] === '{') depth++;
+            else if (responseStr[i] === '}') { depth--; if (depth === 0) { end = i + 1; break; } }
+          }
+          if (depth === 0) jsonContent = responseStr.slice(start, end);
         }
       }
       
-      movieData = JSON.parse(jsonContent);
+      // Strip BOM and any leading/trailing whitespace
+      jsonContent = jsonContent.replace(/^\uFEFF/, '').trim();
+      movieData = JSON.parse(jsonContent) as typeof movieData;
+      if (movieData && typeof movieData !== 'object') {
+        throw new Error('Parsed value is not an object');
+      }
+      movieData = movieData ?? {};
+      if (movieData.title === undefined) movieData.title = null;
+      if (movieData.confidence === undefined) movieData.confidence = 0;
+      // Coerce confidence if API returned string
+      if (typeof movieData.confidence === 'string') {
+        movieData.confidence = parseFloat(movieData.confidence) || 0;
+      }
       console.log('Parsed movie data:', movieData);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', responseContent);
+      console.error('Failed to parse AI response:', responseStr.slice(0, 500));
       console.error('Parse error:', parseError);
-      
-      // Return a proper error response instead of throwing
       return new Response(JSON.stringify({ 
         error: 'Invalid response format from AI',
         title: null,
@@ -244,8 +303,8 @@ serve(async (req) => {
       });
     }
 
-    // Fetch poster and trailer if movie was identified
-    if (movieData.title && movieData.confidence > 0.5) {
+    // Fetch poster and trailer if movie was identified (accept moderate confidence for short clues)
+    if (movieData.title && (movieData.confidence ?? 0) >= 0.45) {
       console.log('Fetching media for:', movieData.title, movieData.year);
       
       // Fetch poster and trailer in parallel with timeout
@@ -275,7 +334,7 @@ serve(async (req) => {
     }
 
     // If movie identified, save search to database
-    if (movieData.title && movieData.confidence > 0.5) {
+    if (movieData.title && (movieData.confidence ?? 0) >= 0.45) {
       const authHeader = req.headers.get('Authorization');
       if (authHeader) {
         const token = authHeader.replace('Bearer ', '');

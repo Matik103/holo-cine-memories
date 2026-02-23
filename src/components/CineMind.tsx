@@ -203,7 +203,7 @@ export const CineMind = () => {
         analyticsData.search_result = rawMovie;
       }
       
-      if (rawMovie && rawMovie.title && rawMovie.confidence > 0.5) {
+      if (rawMovie && rawMovie.title && (rawMovie.confidence ?? 0) >= 0.45) {
         // Transform the data to match MovieCard interface
         const movie: Movie = {
           title: rawMovie.title,
@@ -273,19 +273,14 @@ export const CineMind = () => {
         }
         
         // Handle case where API returns null title or low confidence
-        if (rawMovie && rawMovie.title === null) {
-          toast({
-            title: "No Match Found",
-            description: "Couldn't identify a movie from your description. Try being more specific or describing key scenes, actors, or plot points.",
-            variant: "destructive"
-          });
-        } else {
-          toast({
-            title: "No Match Found",
-            description: "Try describing the movie differently or with more details.",
-            variant: "destructive"
-          });
-        }
+        const hint = rawMovie?.title === null
+          ? "We couldn't match that to a movie. Try another phrase, quote, or detail."
+          : "Try a different phrase or another detail from the movie.";
+        toast({
+          title: "No Match Found",
+          description: hint,
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error('Search error:', error);
