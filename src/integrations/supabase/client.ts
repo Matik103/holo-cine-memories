@@ -14,19 +14,27 @@ const authOptions = {
 /** Config endpoint when no env vars are set: app fetches URL + anon key from Supabase (no host env needed). */
 const FALLBACK_CONFIG_URL = "https://vkeurtlppyytdhyknqpx.supabase.co/functions/v1/public-config";
 
+/** Old project (410/CORS); never use — always fetch from correct project instead. */
+const OLD_PROJECT_REF = "otaqvhoopxyinfzphzxh";
+
 let _client: SupabaseClient<Database> | null = null;
 
 /**
  * Initialize Supabase client. Call once before rendering the app.
- * - If VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set (e.g. .env), uses them.
- * - Else fetches URL + anon key from Supabase Edge Function (public-config). With no host env
- *   vars, we use the hardcoded config endpoint so production gets everything from Supabase.
+ * - If VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY are set (e.g. .env) and URL is not the old project, uses them.
+ * - If env points to the old project (otaqvhoopxyinfzphzxh), we ignore env and fetch from the correct project so production works.
+ * - Else fetches URL + anon key from public-config (no host env needed).
  */
 export async function initSupabase(): Promise<SupabaseClient<Database>> {
   if (_client) return _client;
 
-  const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  let url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+
+  // Production may have wrong project in env; never use old project — always fetch from correct one.
+  if (url && url.includes(OLD_PROJECT_REF)) {
+    url = undefined;
+  }
 
   if (url && key) {
     _client = createClient<Database>(url, key, authOptions);
