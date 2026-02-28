@@ -230,7 +230,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           <div className="relative">
             {/* Card Container */}
             <div className="flex justify-center">
-              <div className="relative w-72 h-80 sm:w-96 sm:h-[28rem] md:w-[28rem] md:h-[32rem] perspective-1000">
+              <div className="relative w-72 h-80 sm:w-96 sm:h-[24rem] md:w-[26rem] md:h-[28rem] perspective-1000">
                 {movieData.map((movie, index) => {
                   const isActive = index === currentCard;
                   
