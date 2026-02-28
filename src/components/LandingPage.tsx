@@ -18,14 +18,6 @@ interface MovieData {
 
 const movies: MovieData[] = [
   {
-    title: "Avengers: Endgame",
-    year: "2019",
-    description: "I am inevitable.",
-    painPoint: "Lost in the MCU timeline?",
-    solution: "Track complex franchises and understand every connection.",
-    poster: "https://m.media-amazon.com/images/M/MV5BMTc5MDE2ODcwNV5BMl5BanBnXkFtZTgwMzI2NzQ2NzM@._V1_SX300.jpg"
-  },
-  {
     title: "Inception",
     year: "2010",
     description: "A dream within a dream within a dream...",
@@ -34,20 +26,20 @@ const movies: MovieData[] = [
     poster: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg"
   },
   {
-    title: "Blade Runner 2049",
-    year: "2017",
-    description: "More human than human is our motto.",
-    painPoint: "Lost in philosophical sci-fi?",
-    solution: "Get instant explanations of deep themes and symbolism.",
-    poster: "https://m.media-amazon.com/images/M/MV5BNzA1Njg4NzYxOV5BMl5BanBnXkFtZTgwODk5NjU3MzI@._V1_SX300.jpg"
-  },
-  {
     title: "The Dark Knight",
     year: "2008",
     description: "Why so serious?",
     painPoint: "Want to rewatch this instantly?",
     solution: "Find where to watch any movie, anywhere, anytime.",
     poster: "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SX300.jpg"
+  },
+  {
+    title: "Interstellar",
+    year: "2014",
+    description: "Love is the one thing that transcends time and space.",
+    painPoint: "Mind-bending sci-fi you can't forget?",
+    solution: "CineMind helps you recall and understand every detail.",
+    poster: "https://m.media-amazon.com/images/M/MV5BYzdjMDAxZGItMjI2My00ODA1LTlkNzItOWFjMDU5ZDJlYWY3XkEyXkFqcGc@._V1_SX300.jpg"
   },
   {
     title: "The Matrix",
@@ -72,6 +64,14 @@ const movies: MovieData[] = [
     painPoint: "Childhood memories fading?",
     solution: "Preserve and rediscover your favorite childhood films.",
     poster: "https://m.media-amazon.com/images/M/MV5BYTYxNGMyZTYtMjE3MS00MzNjLWFjNmYtMDk3N2FmM2JiM2M1XkEyXkFqcGdeQXVyNjY5NDU4NzI@._V1_SX300.jpg"
+  },
+  {
+    title: "Blade Runner 2049",
+    year: "2017",
+    description: "More human than human is our motto.",
+    painPoint: "Lost in philosophical sci-fi?",
+    solution: "Get instant explanations of deep themes and symbolism.",
+    poster: "https://m.media-amazon.com/images/M/MV5BNzA1Njg4NzYxOV5BMl5BanBnXkFtZTgwODk5NjU3MzI@._V1_SX300.jpg"
   }
 ];
 
@@ -230,7 +230,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           <div className="relative">
             {/* Card Container */}
             <div className="flex justify-center">
-              <div className="relative w-72 h-72 sm:w-96 sm:h-[28rem] md:w-[28rem] md:h-[32rem] perspective-1000">
+              <div className="relative w-72 h-80 sm:w-96 sm:h-[28rem] md:w-[28rem] md:h-[32rem] perspective-1000">
                 {movieData.map((movie, index) => {
                   const isActive = index === currentCard;
                   
