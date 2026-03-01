@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
@@ -86,16 +86,33 @@ export const MovieDetail = () => {
     }
   }, [movieTitle]);
 
-  // Re-fetch trailer when language changes
+  // Track initial language to avoid duplicate fetch on mount
+  const initialLanguageRef = useRef(currentLanguage);
+  const hasLoadedTrailerRef = useRef(false);
+
+  // Re-fetch trailer ONLY when language changes (not on initial load)
   useEffect(() => {
+    // Skip if no movie details yet or if this is the initial load
     if (!movieTitle || !movieDetails) return;
+    
+    // Skip the first run after movie loads (trailer already fetched in fetchMovieData)
+    if (!hasLoadedTrailerRef.current) {
+      hasLoadedTrailerRef.current = true;
+      initialLanguageRef.current = currentLanguage;
+      return;
+    }
+    
+    // Only re-fetch if language actually changed
+    if (currentLanguage === initialLanguageRef.current) return;
+    initialLanguageRef.current = currentLanguage;
     
     const fetchTrailerForLanguage = async () => {
       const titleMatch = movieTitle.match(/^(.+?)\s+(\d{4})$/);
       const title = titleMatch ? titleMatch[1] : movieTitle;
       const year = titleMatch ? titleMatch[2] : undefined;
       
-      console.log('Re-fetching trailer for language:', currentLanguage);
+      console.log('Re-fetching trailer for language change:', currentLanguage);
+      setTrailerLoading(true);
       
       try {
         const trailerResponse = await supabase.functions.invoke('movie-trailer', {
@@ -108,6 +125,8 @@ export const MovieDetail = () => {
         }
       } catch (error) {
         console.warn('Failed to fetch trailer for language:', error);
+      } finally {
+        setTrailerLoading(false);
       }
     };
     
