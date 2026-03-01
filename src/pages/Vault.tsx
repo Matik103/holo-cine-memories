@@ -4,18 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ArrowLeft, Vault as VaultIcon, Users, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useVaultStats } from '@/hooks/useVaultStats';
 import { LivePulse } from '@/components/vault/LivePulse';
 import { TrendingChart } from '@/components/vault/TrendingChart';
 import { HiddenGems } from '@/components/vault/HiddenGems';
-import { UserVaultStats } from '@/components/vault/UserVaultStats';
 import { RecentMysteries } from '@/components/vault/RecentMysteries';
 import { DetectiveLeaderboard } from '@/components/mystery/DetectiveLeaderboard';
 
 export const Vault = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { stats, isLoading, isAuthenticated } = useVaultStats();
   const [trendingPeriod, setTrendingPeriod] = useState<'hour' | 'day' | 'week'>('day');
 
   return (
@@ -40,21 +37,13 @@ export const Vault = () => {
             <span className="hidden sm:inline">{t('common.back')}</span>
           </Button>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <div className="p-1.5 sm:p-2 rounded-full bg-primary/10">
-                <VaultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-              </div>
-              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                {t('vault.title')}
-              </h1>
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className="p-1.5 sm:p-2 rounded-full bg-primary/10">
+              <VaultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </div>
-            {stats && (
-              <div className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                <span className="text-[10px] sm:text-xs text-primary/70">{t('vault.score')}</span>
-                <span className="text-xs sm:text-sm font-bold text-primary">{stats.vault_score}</span>
-              </div>
-            )}
+            <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              {t('vault.title')}
+            </h1>
           </div>
 
           {/* Quick nav to Collective Memory */}
@@ -143,30 +132,6 @@ export const Vault = () => {
           </h2>
           <DetectiveLeaderboard />
         </Card>
-
-        {/* User Stats */}
-        {isAuthenticated && (
-          <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
-            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-              <span className="text-lg sm:text-xl">📊</span>
-              <span className="hidden xs:inline">{t('vault.yourStats.title')}</span>
-              <span className="xs:hidden">Your Stats</span>
-            </h2>
-            <UserVaultStats stats={stats} isLoading={isLoading} />
-          </Card>
-        )}
-
-        {/* Sign in prompt for non-authenticated users */}
-        {!isAuthenticated && (
-          <Card className="neural-card p-4 sm:p-6 mb-3 sm:mb-4 text-center">
-            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
-              {t('vault.signInPrompt')}
-            </p>
-            <Button onClick={() => navigate('/auth')} className="neural-button w-full sm:w-auto">
-              {t('auth.signIn')}
-            </Button>
-          </Card>
-        )}
       </div>
     </div>
   );
