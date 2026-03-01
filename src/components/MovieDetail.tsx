@@ -63,11 +63,12 @@ export const MovieDetail = () => {
   const { movieTitle } = useParams<{ movieTitle: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentLanguage } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   
   const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
   const [trailer, setTrailer] = useState<Trailer | null>(null);
   const [insights, setInsights] = useState<Insights | null>(null);
+  const [translatedInsights, setTranslatedInsights] = useState<Insights | null>(null);
   const [streamingOptions, setStreamingOptions] = useState<StreamingOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [insightsLoading, setInsightsLoading] = useState(true);
@@ -113,6 +114,50 @@ export const MovieDetail = () => {
     return () => { mounted = false; };
   }, [movieDetails?.plot, currentLanguage]);
 
+  useEffect(() => {
+    let mounted = true;
+    
+    const translateInsightsContent = async () => {
+      if (!insights) {
+        setTranslatedInsights(null);
+        return;
+      }
+      
+      if (currentLanguage === 'en') {
+        setTranslatedInsights(insights);
+        return;
+      }
+      
+      try {
+        const [summary, themes, symbolism, culturalImpact] = await Promise.all([
+          translationService.translateText(insights.summary, currentLanguage),
+          translationService.translateText(insights.themes, currentLanguage),
+          translationService.translateText(insights.symbolism, currentLanguage),
+          translationService.translateText(insights.culturalImpact, currentLanguage),
+        ]);
+        
+        if (mounted) {
+          setTranslatedInsights({
+            ...insights,
+            summary,
+            themes,
+            symbolism,
+            culturalImpact,
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to translate insights:', error);
+        if (mounted) {
+          setTranslatedInsights(insights);
+        }
+      }
+    };
+
+    translateInsightsContent();
+    
+    return () => { mounted = false; };
+  }, [insights, currentLanguage]);
+
   const fetchMovieData = async () => {
     if (!movieTitle) return;
 
@@ -133,7 +178,7 @@ export const MovieDetail = () => {
           body: { movieTitle: title, movieYear: year }
         }),
         supabase.functions.invoke('movie-trailer', {
-          body: { movieTitle: title, movieYear: year }
+          body: { movieTitle: title, movieYear: year, language: currentLanguage }
         }),
         supabase.functions.invoke('movie-streaming', {
           body: { movieTitle: title }
@@ -204,8 +249,8 @@ export const MovieDetail = () => {
         <div className="text-center space-y-4">
           <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto" />
           <div className="space-y-2">
-            <h3 className="text-lg font-semibold">Loading movie details...</h3>
-            <p className="text-sm text-muted-foreground">Fetching data from multiple sources</p>
+            <h3 className="text-lg font-semibold">{t('movie.loadingDetails')}</h3>
+            <p className="text-sm text-muted-foreground">{t('movie.fetchingData')}</p>
           </div>
         </div>
       </div>
@@ -216,10 +261,11 @@ export const MovieDetail = () => {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5">
         <div className="text-center space-y-4">
-          <h3 className="text-lg font-semibold">Movie not found</h3>
+          <h3 className="text-lg font-semibold">{t('movie.notFound')}</h3>
+          <p className="text-sm text-muted-foreground">{t('movie.notFoundDesc')}</p>
           <Button onClick={() => navigate('/')} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Go Back
+            {t('movie.goBack')}
           </Button>
         </div>
       </div>
@@ -239,7 +285,7 @@ export const MovieDetail = () => {
               className="flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
+              {t('common.back')}
             </Button>
             <div className="flex-1 min-w-0">
               <h1 className="text-lg font-semibold truncate">{movieDetails.title}</h1>
@@ -275,8 +321,8 @@ export const MovieDetail = () => {
                         className="bg-primary/90 hover:bg-primary text-white"
                       >
                         <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2" />
-                        <span className="hidden sm:inline">Watch Trailer</span>
-                        <span className="sm:hidden">Play</span>
+                        <span className="hidden sm:inline">{t('movie.watchTrailer')}</span>
+                        <span className="sm:hidden">{t('common.play') || 'Play'}</span>
                       </Button>
                     </div>
                   )}
@@ -311,19 +357,19 @@ export const MovieDetail = () => {
                 <div className="flex items-start gap-2">
                   <User className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0">
-                    <span className="font-medium">Director:</span> {movieDetails.director}
+                    <span className="font-medium">{t('movie.director')}:</span> {movieDetails.director}
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0">
-                    <span className="font-medium">Released:</span> {movieDetails.released}
+                    <span className="font-medium">{t('movie.released')}:</span> {movieDetails.released}
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Eye className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0">
-                    <span className="font-medium">Genre:</span> {movieDetails.genre}
+                    <span className="font-medium">{t('movie.genres')}:</span> {movieDetails.genre}
                   </div>
                 </div>
               </div>
@@ -337,7 +383,7 @@ export const MovieDetail = () => {
                   className="w-full sm:flex-1 sm:max-w-fit text-sm sm:text-base"
                 >
                   <Play className="w-4 h-4 mr-2" />
-                  Watch Trailer
+                  {t('movie.watchTrailer')}
                 </Button>
               )}
               <div className="flex gap-2 sm:gap-3">
@@ -347,8 +393,8 @@ export const MovieDetail = () => {
                   onClick={() => navigate('/auth')}
                 >
                   <Heart className="w-4 h-4 mr-2" />
-                  <span className="hidden sm:inline">Add to Favorites</span>
-                  <span className="sm:hidden">Favorite</span>
+                  <span className="hidden sm:inline">{t('movie.addToFavorites')}</span>
+                  <span className="sm:hidden">{t('profile.favorites')}</span>
                 </Button>
                 <ShareMovieMenu
                   title={movieDetails.title}
@@ -362,13 +408,13 @@ export const MovieDetail = () => {
 
             {/* Plot */}
             <div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Plot</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">{t('movie.plot')}</h3>
               <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{translatedPlot || movieDetails.plot}</p>
             </div>
 
             {/* Cast */}
             <div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">Cast</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">{t('movie.cast')}</h3>
               <p className="text-muted-foreground text-sm sm:text-base break-words">{movieDetails.cast}</p>
             </div>
           </div>
@@ -381,7 +427,7 @@ export const MovieDetail = () => {
               <div className="w-6 h-6 sm:w-8 sm:h-8 bg-primary/10 rounded-full flex items-center justify-center flex-shrink-0">
                 <Award className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
               </div>
-              <span className="text-base sm:text-2xl">AI-Powered Insights</span>
+              <span className="text-base sm:text-2xl">{t('movie.aiInsights')}</span>
               {insightsLoading && (
                 <Loader2 className="w-4 h-4 animate-spin text-muted-foreground ml-2 flex-shrink-0" />
               )}
@@ -390,9 +436,9 @@ export const MovieDetail = () => {
             {/* Tabs */}
             <div className="flex gap-1 sm:gap-2 mb-4 sm:mb-6 border-b overflow-x-auto">
               {[
-                { key: 'summary', label: 'Summary' },
-                { key: 'themes', label: 'Themes & Meaning' },
-                { key: 'similar', label: 'Similar Movies' }
+                { key: 'summary', label: t('movie.summary') },
+                { key: 'themes', label: t('movie.themesAndMeaning') },
+                { key: 'similar', label: t('movie.similarMovies') }
               ].map(tab => (
                 <button
                   key={tab.key}
@@ -415,11 +461,11 @@ export const MovieDetail = () => {
                   {insightsLoading ? (
                     <div className="flex items-center space-x-2 text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-                      <span className="text-sm">AI is analyzing the movie...</span>
+                      <span className="text-sm">{t('movie.loadingInsights')}</span>
                     </div>
                   ) : (
                     <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                      {insights?.summary || 'AI insights will appear here once analysis is complete.'}
+                      {translatedInsights?.summary || insights?.summary || t('movie.loadingInsights')}
                     </p>
                   )}
                 </div>
@@ -431,27 +477,27 @@ export const MovieDetail = () => {
                     <div className="space-y-4">
                       <div className="flex items-center space-x-2 text-muted-foreground">
                         <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-                        <span className="text-sm">Discovering themes and meanings...</span>
+                        <span className="text-sm">{t('movie.discoveringThemes')}</span>
                       </div>
                     </div>
                   ) : (
                     <>
                       <div>
-                        <h4 className="text-sm sm:text-base font-semibold mb-2">Main Themes</h4>
+                        <h4 className="text-sm sm:text-base font-semibold mb-2">{t('movie.mainThemes')}</h4>
                         <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                          {insights?.themes || 'Theme analysis will appear here.'}
+                          {translatedInsights?.themes || insights?.themes || t('movie.loadingInsights')}
                         </p>
                       </div>
                       <div>
-                        <h4 className="text-sm sm:text-base font-semibold mb-2">Symbolism & Hidden Meanings</h4>
+                        <h4 className="text-sm sm:text-base font-semibold mb-2">{t('movie.symbolismMeanings')}</h4>
                         <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                          {insights?.symbolism || 'Symbolism analysis will appear here.'}
+                          {translatedInsights?.symbolism || insights?.symbolism || t('movie.loadingInsights')}
                         </p>
                       </div>
                       <div>
-                        <h4 className="text-sm sm:text-base font-semibold mb-2">Cultural Impact</h4>
+                        <h4 className="text-sm sm:text-base font-semibold mb-2">{t('movie.culturalImpact')}</h4>
                         <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">
-                          {insights?.culturalImpact || 'Cultural impact analysis will appear here.'}
+                          {translatedInsights?.culturalImpact || insights?.culturalImpact || t('movie.loadingInsights')}
                         </p>
                       </div>
                     </>
@@ -461,11 +507,11 @@ export const MovieDetail = () => {
               
               {activeTab === 'similar' && (
                 <div>
-                  <h4 className="text-sm sm:text-base font-semibold mb-3">Movies You Might Like</h4>
+                  <h4 className="text-sm sm:text-base font-semibold mb-3">{t('movie.moviesYouMightLike')}</h4>
                   {insightsLoading ? (
                     <div className="flex items-center space-x-2 text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin flex-shrink-0" />
-                      <span className="text-sm">Finding similar movies...</span>
+                      <span className="text-sm">{t('movie.findingSimilar')}</span>
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -474,7 +520,7 @@ export const MovieDetail = () => {
                           <p className="text-sm font-medium">{movie}</p>
                         </Card>
                       )) || (
-                        <p className="text-muted-foreground text-sm col-span-full">Similar movie recommendations will appear here.</p>
+                        <p className="text-muted-foreground text-sm col-span-full">{t('movie.loadingInsights')}</p>
                       )}
                     </div>
                   )}
@@ -488,14 +534,19 @@ export const MovieDetail = () => {
         {streamingOptions.length > 0 && (
           <Card>
             <CardContent className="p-4 sm:p-6">
-              <h2 className="text-xl sm:text-2xl font-bold mb-4">Where to Watch</h2>
+              <h2 className="text-xl sm:text-2xl font-bold mb-4">{t('movie.whereToWatch')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 {streamingOptions.map((option, index) => (
                   <Card key={index} className="p-3 sm:p-4 hover:bg-accent/50 transition-colors">
                     <div className="flex items-center justify-between">
                       <div className="min-w-0 flex-1 mr-3">
                         <p className="font-medium text-sm sm:text-base truncate">{option.platform}</p>
-                        <p className="text-xs sm:text-sm text-muted-foreground capitalize">{option.type}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground capitalize">
+                          {option.type === 'subscription' ? t('movie.subscription') :
+                           option.type === 'rent' ? t('movie.rent') :
+                           option.type === 'buy' ? t('movie.buy') :
+                           option.type === 'free' ? t('movie.free') : option.type}
+                        </p>
                         {option.price && (
                           <p className="text-xs sm:text-sm font-medium text-primary">{option.price}</p>
                         )}

@@ -32,26 +32,56 @@ const fetchWithRetry = async (url: string, maxRetries = 3): Promise<Response> =>
   throw new Error('All retry attempts failed');
 };
 
-// Industry-standard: Multiple search strategies
-const generateSearchQueries = (movieTitle: string, movieYear?: string): string[] => {
+// Language-specific trailer keywords
+const TRAILER_KEYWORDS: Record<string, string[]> = {
+  en: ['official trailer', 'trailer official', 'movie trailer', 'trailer'],
+  es: ['tráiler oficial', 'trailer oficial', 'tráiler', 'trailer español'],
+  fr: ['bande-annonce officielle', 'bande annonce', 'trailer vf', 'bande-annonce'],
+  de: ['offizieller trailer', 'trailer deutsch', 'filmtrailer', 'trailer'],
+  pt: ['trailer oficial', 'trailer legendado', 'trailer dublado', 'trailer'],
+  zh: ['官方预告片', '预告片', '中文预告', 'trailer'],
+  ja: ['予告編', '公式予告', 'トレーラー', 'trailer'],
+  ko: ['공식 예고편', '예고편', '트레일러', 'trailer'],
+  ar: ['الإعلان الرسمي', 'إعلان الفيلم', 'تريلر', 'trailer'],
+  hi: ['आधिकारिक ट्रेलर', 'ट्रेलर', 'हिंदी ट्रेलर', 'trailer'],
+  id: ['trailer resmi', 'cuplikan film', 'trailer', 'trailer indonesia'],
+  ht: ['bann anons ofisyèl', 'trailer', 'bann anons', 'trailer'],
+};
+
+// Industry-standard: Multiple search strategies with language support
+const generateSearchQueries = (movieTitle: string, movieYear?: string, language?: string): string[] => {
   const baseTitle = movieTitle.trim();
   const queries = [];
   
-  if (movieYear) {
-    // Primary searches with year
-    queries.push(`${baseTitle} ${movieYear} official trailer`);
-    queries.push(`${baseTitle} ${movieYear} trailer official`);
-    queries.push(`${baseTitle} ${movieYear} movie trailer`);
-    queries.push(`${baseTitle} official trailer ${movieYear}`);
+  // Get language-specific keywords, fallback to English
+  const langKeywords = TRAILER_KEYWORDS[language || 'en'] || TRAILER_KEYWORDS.en;
+  const englishKeywords = TRAILER_KEYWORDS.en;
+  
+  // First, try language-specific searches if not English
+  if (language && language !== 'en') {
+    if (movieYear) {
+      langKeywords.forEach(keyword => {
+        queries.push(`${baseTitle} ${movieYear} ${keyword}`);
+      });
+    }
+    langKeywords.forEach(keyword => {
+      queries.push(`${baseTitle} ${keyword}`);
+    });
   }
   
-  // Secondary searches without year
-  queries.push(`${baseTitle} official trailer`);
-  queries.push(`${baseTitle} trailer official`);
-  queries.push(`${baseTitle} movie trailer`);
-  queries.push(`${baseTitle} trailer`);
+  // Then fall back to English searches
+  if (movieYear) {
+    englishKeywords.forEach(keyword => {
+      queries.push(`${baseTitle} ${movieYear} ${keyword}`);
+    });
+  }
   
-  return queries;
+  englishKeywords.forEach(keyword => {
+    queries.push(`${baseTitle} ${keyword}`);
+  });
+  
+  // Remove duplicates while preserving order
+  return [...new Set(queries)];
 };
 
 // Industry-standard: Official channel prioritization
@@ -120,7 +150,7 @@ serve(async (req) => {
   }
 
   try {
-    const { movieTitle, movieYear } = await req.json();
+    const { movieTitle, movieYear, language } = await req.json();
     const youtubeApiKey = Deno.env.get('YOUTUBE_API_KEY');
 
     if (!movieTitle || !youtubeApiKey) {
@@ -130,10 +160,10 @@ serve(async (req) => {
       );
     }
 
-    console.log(`🎬 Searching for trailer: ${movieTitle} (${movieYear || 'any year'})`);
+    console.log(`🎬 Searching for trailer: ${movieTitle} (${movieYear || 'any year'}) [Language: ${language || 'en'}]`);
 
-    // Generate multiple search strategies
-    const searchQueries = generateSearchQueries(movieTitle, movieYear);
+    // Generate multiple search strategies with language support
+    const searchQueries = generateSearchQueries(movieTitle, movieYear, language);
     console.log(`📝 Generated ${searchQueries.length} search queries`);
 
     let allTrailers: any[] = [];
