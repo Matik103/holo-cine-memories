@@ -42,25 +42,22 @@ export function getMysteryShareUrl(mysteryId: string): string {
   return `${SHARE_DOMAIN}/mysteries/${mysteryId}`;
 }
 
-/** Mystery share text for challenging others - short version for Twitter/X */
+/** Mystery share text - short version for Twitter/X */
 export function getMysteryShareText(description: string): string {
-  const shortDesc = description.length > 80 ? description.slice(0, 80) + '...' : description;
-  return `🎬 Can you name this movie?\n\n"${shortDesc}"\n\nChallenge accepted? 🔍`;
+  const shortDesc = description.length > 120 ? description.slice(0, 120) + '...' : description;
+  return `🎬 Movie Mystery\n\n${shortDesc}\n\nCan you help? 🔍`;
 }
 
-/** Mystery share text - full structured version for WhatsApp, Telegram, Copy */
+/** Mystery share text - full version for WhatsApp, Telegram, Copy */
 export function getMysteryShareTextFull(description: string): string {
-  const shortDesc = description.length > 150 ? description.slice(0, 150) + '...' : description;
-  return `🎬 *MOVIE MYSTERY CHALLENGE* 🎬
+  const shortDesc = description.length > 250 ? description.slice(0, 250) + '...' : description;
+  return `🎬 *Movie Mystery* 🎬
 
-Can you name this movie?
+${shortDesc}
 
-📝 *The Clue:*
-"${shortDesc}"
+Can you help solve this?
 
-🏆 Think you know it? Prove it!
-
-🔍 Solve it on CineMind`;
+🔍 Answer on CineMind`;
 }
 
 /** Reddit share URL - with engaging title */
@@ -70,8 +67,8 @@ export function getRedditShareUrl(title: string, url: string): string {
 
 /** Reddit mystery title */
 export function getMysteryRedditTitle(description: string): string {
-  const shortDesc = description.length > 60 ? description.slice(0, 60) + '...' : description;
-  return `[Movie Challenge] Can you name this film? "${shortDesc}"`;
+  const shortDesc = description.length > 80 ? description.slice(0, 80) + '...' : description;
+  return `[Help] ${shortDesc}`;
 }
 
 /** Telegram share URL */
@@ -91,19 +88,16 @@ export function getEmailShareUrl(subject: string, body: string): string {
 
 /** Email body for mystery - well formatted */
 export function getMysteryEmailBody(description: string, url: string): string {
-  const shortDesc = description.length > 200 ? description.slice(0, 200) + '...' : description;
+  const desc = description.length > 300 ? description.slice(0, 300) + '...' : description;
   return `Hey!
 
-I found this movie mystery and I bet you can't solve it! 🎬
+I came across this movie mystery and thought you might know the answer:
 
-THE CLUE:
-"${shortDesc}"
+${desc}
 
-Think you know what movie this is?
+Can you help?
 
-Click here to solve it: ${url}
-
-Good luck! 🔍
+${url}
 
 - Sent from CineMind`;
 }

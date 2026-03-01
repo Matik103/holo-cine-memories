@@ -57,16 +57,16 @@ export function ShareMysteryMenu({
   const fullText = getMysteryShareTextFull(description); // For WhatsApp, Telegram, Copy
   const redditTitle = getMysteryRedditTitle(description);
   const emailBody = getMysteryEmailBody(description, url);
-  const challengeTitle = "🎬 Movie Mystery Challenge!";
+  const shareTitle = "🎬 Movie Mystery";
 
   const handleNativeShare = async () => {
     try {
       await navigator.share({
-        title: challengeTitle,
+        title: shareTitle,
         text: fullText,
         url: url,
       });
-      toast({ title: "Shared!", description: "Challenge sent! Let's see who can solve it." });
+      toast({ title: "Shared!", description: "Mystery shared! Let's see who can help." });
     } catch (err) {
       if ((err as Error).name !== "AbortError") {
         handleCopyLink();
@@ -93,17 +93,15 @@ export function ShareMysteryMenu({
 
   const handleInstagramShare = async () => {
     try {
-      const instagramText = `🎬 MOVIE MYSTERY CHALLENGE 🎬
+      const desc = description.length > 180 ? description.slice(0, 180) + '...' : description;
+      const instagramText = `🎬 Movie Mystery 🎬
 
-Can you name this movie? 🤔
+${desc}
 
-📝 The Clue:
-"${description.length > 120 ? description.slice(0, 120) + '...' : description}"
+Can you help? 🔍
+🔗 Link in bio
 
-🏆 Think you know it?
-🔗 Link in bio to solve it!
-
-#MovieChallenge #GuessTheMovie #CineMind #MovieTrivia #FilmBuff`;
+#MovieMystery #CineMind #Movies #Film #HelpMeFind`;
       await navigator.clipboard.writeText(instagramText);
       toast({
         title: "Ready for Instagram!",
@@ -120,16 +118,15 @@ Can you name this movie? 🤔
 
   const handleTikTokShare = async () => {
     try {
-      const tiktokText = `🎬 MOVIE MYSTERY 🎬
+      const desc = description.length > 150 ? description.slice(0, 150) + '...' : description;
+      const tiktokText = `🎬 Movie Mystery 🎬
 
-Can you name this movie?
+${desc}
 
-"${description.length > 100 ? description.slice(0, 100) + '...' : description}"
+Can you help? Comment below! 👇
+Link in bio 🔍
 
-Comment your guess! 👇
-Link in bio to solve it 🔍
-
-#MovieChallenge #GuessTheMovie #MovieTrivia #FilmTok #CineMind`;
+#MovieMystery #CineMind #Movies #FilmTok #HelpMeFind`;
       await navigator.clipboard.writeText(tiktokText);
       toast({
         title: "Ready for TikTok!",
@@ -149,10 +146,10 @@ Link in bio to solve it 🔍
       variant={variant}
       size={size}
       className={triggerClassName}
-      aria-label="Share mystery challenge"
+      aria-label="Share this mystery"
     >
       <Share2 className="w-4 h-4 mr-2" />
-      Challenge Friends
+      Share
     </Button>
   );
 
@@ -261,7 +258,7 @@ Link in bio to solve it 🔍
 
         <DropdownMenuItem asChild>
           <a
-            href={getEmailShareUrl(challengeTitle, emailBody)}
+            href={getEmailShareUrl(shareTitle, emailBody)}
             className="flex items-center"
           >
             <Mail className="w-4 h-4 mr-2" />
