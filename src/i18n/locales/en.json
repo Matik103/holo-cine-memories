@@ -145,6 +145,7 @@
   "auth.login": "Log In",
   "auth.signIn": "Sign In",
   "auth.signup": "Sign Up",
+  "auth.welcomeTo": "Welcome to",
   "auth.logout": "Log Out",
   "auth.email": "Email",
   "auth.password": "Password",

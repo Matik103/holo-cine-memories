@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { supabase } from "@/integrations/supabase/client";
 import { Brain, Mail, Lock, User } from "lucide-react";
 import { scrollInputIntoView } from "@/lib/utils";
@@ -22,6 +23,7 @@ export const Auth = () => {
   const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   // Refs for mobile keyboard handling
   const emailRef = useRef<HTMLInputElement>(null);
@@ -445,10 +447,10 @@ export const Auth = () => {
             </div>
             <div className="text-center">
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Welcome to CineMind
+                {t('auth.welcomeTo')} {t('app.name')}
               </h1>
               <p className="text-sm text-muted-foreground mt-2">
-                Your Personal AI Movie Memory Companion
+                {t('app.tagline')}
               </p>
             </div>
           </div>

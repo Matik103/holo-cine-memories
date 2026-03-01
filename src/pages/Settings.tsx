@@ -224,8 +224,8 @@ export const Settings = () => {
 
         {/* App Version */}
         <div className="text-center text-xs text-muted-foreground">
-          <p>CineMind v1.0.2</p>
-          <p className="mt-1">Your Personal AI Movie Memory Companion</p>
+          <p>{t('app.name')} v1.0.2</p>
+          <p className="mt-1">{t('app.tagline')}</p>
         </div>
       </div>
 

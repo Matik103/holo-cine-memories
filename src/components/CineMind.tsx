@@ -636,7 +636,7 @@ export const CineMind = () => {
           </div>
         </div>
         <p className="text-center text-muted-foreground text-xs sm:text-sm px-2">
-          Your Personal AI Movie Memory Companion
+          {t('app.tagline')}
         </p>
       </div>
 

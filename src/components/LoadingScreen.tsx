@@ -1,6 +1,9 @@
 import { Brain } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export const LoadingScreen = () => {
+  const { t } = useTranslation();
+  
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       {/* Background Neural Network Effect */}
@@ -20,10 +23,10 @@ export const LoadingScreen = () => {
         {/* App Name */}
         <div className="text-center">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            CineMind
+            {t('app.name')}
           </h1>
           <p className="text-muted-foreground mt-2">
-            Your Personal AI Movie Memory Companion
+            {t('app.tagline')}
           </p>
         </div>
 
