@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LanguageSelector } from "./LanguageSelector";
 import { getCachedLocalizedMovie, getTMDBPosterUrl, type TMDBMovie } from "@/services/tmdbService";
+import { translationService } from "@/services/translationService";
 
 interface MovieData {
   id: string;
@@ -92,6 +93,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const { t, currentLanguage } = useTranslation();
   const [movieData, setMovieData] = useState<MovieData[]>([]);
   const [localizedData, setLocalizedData] = useState<Map<string, TMDBMovie>>(new Map());
+  const [translatedDescriptions, setTranslatedDescriptions] = useState<Map<string, string>>(new Map());
   const [currentCard, setCurrentCard] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -103,11 +105,15 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   useEffect(() => {
     if (currentLanguage === 'en') {
       setLocalizedData(new Map());
+      setTranslatedDescriptions(new Map());
       return;
     }
 
+    let mounted = true;
+
     const fetchLocalizedData = async () => {
       const newLocalizedData = new Map<string, TMDBMovie>();
+      const newTranslatedDescriptions = new Map<string, string>();
       
       await Promise.all(
         movies.map(async (movie) => {
@@ -115,20 +121,47 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           if (localized) {
             newLocalizedData.set(movie.id, localized);
           }
+          
+          // If TMDB doesn't have a translation or overview is empty, use translation service
+          if (!localized?.overview || localized.overview.trim() === '') {
+            try {
+              const translated = await translationService.translateText(movie.description, currentLanguage);
+              if (mounted) {
+                newTranslatedDescriptions.set(movie.id, translated);
+              }
+            } catch (error) {
+              console.warn(`Failed to translate description for ${movie.title}:`, error);
+            }
+          }
         })
       );
       
-      setLocalizedData(newLocalizedData);
+      if (mounted) {
+        setLocalizedData(newLocalizedData);
+        setTranslatedDescriptions(newTranslatedDescriptions);
+      }
     };
 
     fetchLocalizedData();
+    
+    return () => { mounted = false; };
   }, [currentLanguage]);
 
   const getLocalizedMovieData = (movie: MovieData) => {
     const localized = localizedData.get(movie.id);
+    const translatedDesc = translatedDescriptions.get(movie.id);
+    
+    // Priority: TMDB overview > translated description > original description
+    let overview = movie.description;
+    if (localized?.overview && localized.overview.trim() !== '') {
+      overview = localized.overview;
+    } else if (translatedDesc) {
+      overview = translatedDesc;
+    }
+    
     return {
       title: localized?.title || movie.title,
-      overview: localized?.overview || movie.description,
+      overview,
       poster: localized?.poster_path ? getTMDBPosterUrl(localized.poster_path) : movie.poster,
     };
   };
