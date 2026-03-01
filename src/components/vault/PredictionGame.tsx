@@ -152,7 +152,7 @@ export function PredictionGame() {
                     {option.icon && <span className="text-lg sm:text-xl">{option.icon}</span>}
                     <span className="font-medium">{option.label}</span>
                     {hasVoted && voteCount > 0 && (
-                      <span className="text-[10px] text-muted-foreground mt-1">
+                      <span className="text-[10px] text-cyan-300 mt-1">
                         {voteCount} votes ({votePercentage}%)
                       </span>
                     )}
