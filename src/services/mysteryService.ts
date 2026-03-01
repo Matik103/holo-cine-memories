@@ -755,6 +755,111 @@ class MysteryService {
     return count || 0;
   }
 
+  async updateMystery(
+    mysteryId: string,
+    userId: string,
+    updates: {
+      description?: string;
+      additional_clues?: string | null;
+    }
+  ): Promise<MysteryResult<Mystery>> {
+    if (!validateUUID(mysteryId)) {
+      return { data: null, error: { code: 'INVALID_ID', message: 'Invalid mystery ID format' } };
+    }
+
+    // Validate description if provided
+    if (updates.description !== undefined) {
+      const trimmedDescription = updates.description.trim();
+      if (trimmedDescription.length < MIN_DESCRIPTION_LENGTH) {
+        return { 
+          data: null, 
+          error: { 
+            code: 'DESCRIPTION_TOO_SHORT', 
+            message: `Description must be at least ${MIN_DESCRIPTION_LENGTH} characters` 
+          } 
+        };
+      }
+      if (trimmedDescription.length > MAX_DESCRIPTION_LENGTH) {
+        return { 
+          data: null, 
+          error: { 
+            code: 'DESCRIPTION_TOO_LONG', 
+            message: `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters` 
+          } 
+        };
+      }
+    }
+
+    try {
+      // First verify the user owns this mystery and it's still unsolved
+      const { data: existingMystery, error: fetchError } = await supabase
+        .from('memory_mysteries')
+        .select('*')
+        .eq('id', mysteryId)
+        .single();
+
+      if (fetchError || !existingMystery) {
+        return { data: null, error: { code: 'NOT_FOUND', message: 'Mystery not found' } };
+      }
+
+      if (existingMystery.user_id !== userId) {
+        return { data: null, error: { code: 'UNAUTHORIZED', message: 'You can only edit your own mysteries' } };
+      }
+
+      if (existingMystery.status !== 'unsolved') {
+        return { data: null, error: { code: 'CANNOT_EDIT', message: 'Cannot edit a mystery that has been solved or closed' } };
+      }
+
+      // Build update object
+      const updateData: Record<string, any> = {
+        updated_at: new Date().toISOString()
+      };
+
+      if (updates.description !== undefined) {
+        updateData.description = sanitizeString(updates.description, MAX_DESCRIPTION_LENGTH);
+      }
+
+      if (updates.additional_clues !== undefined) {
+        updateData.additional_clues = updates.additional_clues 
+          ? sanitizeString(updates.additional_clues, MAX_CLUES_LENGTH)
+          : null;
+      }
+
+      const { data, error } = await supabase
+        .from('memory_mysteries')
+        .update(updateData)
+        .eq('id', mysteryId)
+        .eq('user_id', userId)
+        .eq('status', 'unsolved')
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating mystery:', error);
+        return { data: null, error: { code: 'UPDATE_ERROR', message: error.message } };
+      }
+
+      // Get poster name
+      const { data: profile } = await supabase
+        .from('vault_user_stats')
+        .select('display_name')
+        .eq('user_id', userId)
+        .single();
+
+      const mystery: Mystery = {
+        ...data,
+        status: data.status as Mystery['status'],
+        difficulty: data.difficulty as Mystery['difficulty'],
+        poster_name: profile?.display_name || 'Anonymous'
+      };
+
+      return { data: mystery, error: null };
+    } catch (err) {
+      console.error('Unexpected error updating mystery:', err);
+      return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
+    }
+  }
+
   getDetectiveRankInfo(rank: DetectiveStats['detective_rank']): {
     label: string;
     icon: string;

@@ -34,7 +34,8 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
-  LogIn
+  LogIn,
+  Pencil
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -68,10 +69,16 @@ export function MysteryDetail() {
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [votingAttemptId, setVotingAttemptId] = useState<string | null>(null);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [editDescription, setEditDescription] = useState('');
+  const [editClues, setEditClues] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
 
   const titleId = useId();
   const yearId = useId();
   const explanationId = useId();
+  const editDescriptionId = useId();
+  const editCluesId = useId();
 
   const handleSubmitAttempt = async () => {
     if (!movieTitle.trim()) {
@@ -195,6 +202,51 @@ export function MysteryDetail() {
         redirectTo: window.location.href
       }
     });
+  };
+
+  const handleOpenEdit = () => {
+    if (mystery) {
+      setEditDescription(mystery.description);
+      setEditClues(mystery.additional_clues || '');
+      setShowEditForm(true);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!mystery || !userId) return;
+
+    if (editDescription.trim().length < 20) {
+      toast({
+        title: 'Description too short',
+        description: 'Description must be at least 20 characters.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsEditing(true);
+    const result = await mysteryService.updateMystery(mystery.id, userId, {
+      description: editDescription.trim(),
+      additional_clues: editClues.trim() || null
+    });
+    setIsEditing(false);
+
+    if (result.error) {
+      toast({
+        title: 'Error',
+        description: result.error.message,
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    toast({
+      title: 'Mystery updated',
+      description: 'Your changes have been saved.'
+    });
+
+    setShowEditForm(false);
+    refetch();
   };
 
   if (isLoading) {
@@ -378,7 +430,16 @@ export function MysteryDetail() {
 
             {/* Owner actions */}
             {isOwner && !isSolved && !isClosed && (
-              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50 flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleOpenEdit}
+                  className="text-muted-foreground text-xs sm:text-sm"
+                >
+                  <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" aria-hidden="true" />
+                  Edit Mystery
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -637,6 +698,70 @@ export function MysteryDetail() {
                 </>
               ) : (
                 'Close Mystery'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Edit mystery dialog */}
+      <AlertDialog open={showEditForm} onOpenChange={setShowEditForm}>
+        <AlertDialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-base sm:text-lg">Edit Mystery</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-sm">
+              Update your mystery description or add more clues to help others find the movie.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor={editDescriptionId} className="text-xs sm:text-sm">
+                Description <span className="text-destructive" aria-hidden="true">*</span>
+              </Label>
+              <Textarea
+                id={editDescriptionId}
+                placeholder="Describe the movie scene or plot you remember..."
+                value={editDescription}
+                onChange={(e) => setEditDescription(e.target.value)}
+                className="min-h-[120px] text-sm"
+                maxLength={5000}
+              />
+              <p className="text-[10px] sm:text-xs text-muted-foreground text-right">
+                {editDescription.length}/5000
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={editCluesId} className="text-xs sm:text-sm">Additional Clues (optional)</Label>
+              <Textarea
+                id={editCluesId}
+                placeholder="Any additional details like actors, era, genre..."
+                value={editClues}
+                onChange={(e) => setEditClues(e.target.value)}
+                className="min-h-[80px] text-sm"
+                maxLength={2000}
+              />
+              <p className="text-[10px] sm:text-xs text-muted-foreground text-right">
+                {editClues.length}/2000
+              </p>
+            </div>
+          </div>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel disabled={isEditing} className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleSaveEdit}
+              disabled={isEditing || editDescription.trim().length < 20}
+              className="neural-button w-full sm:w-auto"
+            >
+              {isEditing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Pencil className="h-4 w-4 mr-2" aria-hidden="true" />
+                  Save Changes
+                </>
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
