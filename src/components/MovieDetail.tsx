@@ -71,6 +71,8 @@ export const MovieDetail = () => {
   const [translatedInsights, setTranslatedInsights] = useState<Insights | null>(null);
   const [streamingOptions, setStreamingOptions] = useState<StreamingOption[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [trailerLoading, setTrailerLoading] = useState(true);
+  const [streamingLoading, setStreamingLoading] = useState(true);
   const [insightsLoading, setInsightsLoading] = useState(true);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'themes' | 'similar'>('summary');
@@ -268,6 +270,8 @@ export const MovieDetail = () => {
 
     try {
       setIsLoading(true);
+      setTrailerLoading(true);
+      setStreamingLoading(true);
       setInsightsLoading(true);
       
       // Extract year from movie title if present (e.g., "Inception 2010" -> "Inception", "2010")
@@ -277,64 +281,79 @@ export const MovieDetail = () => {
 
       console.log('Fetching data for:', title, year);
 
-      // Fetch essential data first (details, trailer, streaming) in parallel for immediate display
-      const [detailsResponse, trailerResponse, streamingResponse] = await Promise.allSettled([
-        supabase.functions.invoke('movie-details', {
-          body: { movieTitle: title, movieYear: year }
-        }),
-        supabase.functions.invoke('movie-trailer', {
-          body: { movieTitle: title, movieYear: year, language: currentLanguage }
-        }),
-        supabase.functions.invoke('movie-streaming', {
-          body: { movieTitle: title }
-        })
-      ]);
+      // PRIORITY 1: Fetch movie details first - this is the critical path
+      const detailsResponse = await supabase.functions.invoke('movie-details', {
+        body: { movieTitle: title, movieYear: year }
+      });
 
-      // Handle movie details
-      if (detailsResponse.status === 'fulfilled' && detailsResponse.value.data?.movieDetails) {
-        setMovieDetails(detailsResponse.value.data.movieDetails);
-        
-        // Load insights in the background after basic data is shown
-        setTimeout(async () => {
-          try {
-            const insightsResponse = await supabase.functions.invoke('movie-insights', {
-              body: { 
-                movieTitle: title, 
-                movieYear: year,
-                moviePlot: detailsResponse.value.data.movieDetails.plot
-              }
-            });
-            
-            if (insightsResponse.data?.insights) {
-              setInsights(insightsResponse.data.insights);
-            }
-          } catch (insightsError) {
-            console.error('Error loading insights:', insightsError);
-          } finally {
-            setInsightsLoading(false);
-          }
-        }, 100); // Small delay to show main content first
-        
-      } else {
+      if (!detailsResponse.data?.movieDetails) {
         throw new Error('Failed to fetch movie details');
       }
 
-      // Handle trailer
-      if (trailerResponse.status === 'fulfilled' && trailerResponse.value.data?.trailer) {
-        setTrailer(trailerResponse.value.data.trailer);
-      }
+      // Show movie details immediately
+      setMovieDetails(detailsResponse.data.movieDetails);
+      setIsLoading(false); // Stop showing loading screen - show content now!
 
-      // Handle streaming options - always include Amazon Prime
-      let options: StreamingOption[] = [];
-      if (streamingResponse.status === 'fulfilled') {
-        const streamingData = streamingResponse.value.data;
-        if (Array.isArray(streamingData)) {
-          options = streamingData;
-        } else if (streamingData?.streamingOptions) {
-          options = streamingData.streamingOptions;
+      // PRIORITY 2: Fetch trailer, streaming, and insights in parallel (background)
+      // These will update the UI as they complete
+      const fetchTrailer = async () => {
+        try {
+          const trailerResponse = await supabase.functions.invoke('movie-trailer', {
+            body: { movieTitle: title, movieYear: year, language: currentLanguage }
+          });
+          if (trailerResponse.data?.trailer) {
+            setTrailer(trailerResponse.data.trailer);
+          }
+        } catch (error) {
+          console.warn('Error loading trailer:', error);
+        } finally {
+          setTrailerLoading(false);
         }
-      }
-      setStreamingOptions(withAmazonPrime(options));
+      };
+
+      const fetchStreaming = async () => {
+        try {
+          const streamingResponse = await supabase.functions.invoke('movie-streaming', {
+            body: { movieTitle: title }
+          });
+          let options: StreamingOption[] = [];
+          if (streamingResponse.data) {
+            if (Array.isArray(streamingResponse.data)) {
+              options = streamingResponse.data;
+            } else if (streamingResponse.data.streamingOptions) {
+              options = streamingResponse.data.streamingOptions;
+            }
+          }
+          setStreamingOptions(withAmazonPrime(options));
+        } catch (error) {
+          console.warn('Error loading streaming:', error);
+          setStreamingOptions(withAmazonPrime([]));
+        } finally {
+          setStreamingLoading(false);
+        }
+      };
+
+      const fetchInsights = async () => {
+        try {
+          const insightsResponse = await supabase.functions.invoke('movie-insights', {
+            body: { 
+              movieTitle: title, 
+              movieYear: year,
+              moviePlot: detailsResponse.data.movieDetails.plot
+            }
+          });
+          if (insightsResponse.data?.insights) {
+            setInsights(insightsResponse.data.insights);
+          }
+        } catch (error) {
+          console.warn('Error loading insights:', error);
+        } finally {
+          setInsightsLoading(false);
+        }
+      };
+
+      // Fire all background requests in parallel - don't await them
+      Promise.all([fetchTrailer(), fetchStreaming(), fetchInsights()]);
 
     } catch (error) {
       console.error('Error fetching movie data:', error);
@@ -343,7 +362,6 @@ export const MovieDetail = () => {
         description: t('toast.errorLoadingDetails'),
         variant: "destructive",
       });
-    } finally {
       setIsLoading(false);
     }
   };
@@ -482,7 +500,15 @@ export const MovieDetail = () => {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-              {trailer && (
+              {trailerLoading ? (
+                <Button
+                  disabled
+                  className="w-full sm:flex-1 sm:max-w-fit text-sm sm:text-base"
+                >
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {t('common.loading')}
+                </Button>
+              ) : trailer && (
                 <Button
                   onClick={() => setIsVideoPlayerOpen(true)}
                   className="w-full sm:flex-1 sm:max-w-fit text-sm sm:text-base"
