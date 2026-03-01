@@ -369,7 +369,7 @@ export const MovieDetail = () => {
                 <div className="flex items-start gap-2">
                   <Eye className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0">
-                    <span className="font-medium">{t('movie.genres')}:</span> {movieDetails.genre}
+                    <span className="font-medium">{t('movie.genre')}:</span> {movieDetails.genre}
                   </div>
                 </div>
               </div>
