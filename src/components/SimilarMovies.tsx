@@ -1,7 +1,10 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft, Search, Star, Calendar, User, Clapperboard } from "lucide-react";
 import { Movie } from "./MovieCard";
+import { useTranslation } from "@/hooks/useTranslation";
+import { translationService } from "@/services/translationService";
 
 interface SimilarMoviesProps {
   originalMovie: Movie;
@@ -11,11 +14,45 @@ interface SimilarMoviesProps {
 }
 
 export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSearch }: SimilarMoviesProps) => {
-  // Debug logging
-  console.log('SimilarMovies component received:', { originalMovie, similarMovies });
+  const { currentLanguage } = useTranslation();
+  const [translatedPlots, setTranslatedPlots] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    let mounted = true;
+    
+    const translatePlots = async () => {
+      if (currentLanguage === 'en') {
+        const plots: Record<string, string> = {};
+        similarMovies.forEach(movie => {
+          if (movie.plot) plots[movie.title] = movie.plot;
+        });
+        setTranslatedPlots(plots);
+        return;
+      }
+      
+      const plots: Record<string, string> = {};
+      await Promise.all(
+        similarMovies.map(async (movie) => {
+          if (movie.plot) {
+            try {
+              const translated = await translationService.translateText(movie.plot, currentLanguage);
+              if (mounted) plots[movie.title] = translated;
+            } catch {
+              plots[movie.title] = movie.plot;
+            }
+          }
+        })
+      );
+      
+      if (mounted) setTranslatedPlots(plots);
+    };
+
+    translatePlots();
+    
+    return () => { mounted = false; };
+  }, [similarMovies, currentLanguage]);
   
   const handleMovieClick = (movie: Movie) => {
-    // Search for the movie using its title
     onMovieSearch(movie.title);
   };
   
@@ -82,7 +119,7 @@ export const SimilarMovies = ({ originalMovie, similarMovies, onBack, onMovieSea
                   
                   {movie.plot && (
                     <p className="text-sm text-muted-foreground mt-2 line-clamp-2 leading-relaxed">
-                      {movie.plot}
+                      {translatedPlots[movie.title] || movie.plot}
                     </p>
                   )}
                 </div>

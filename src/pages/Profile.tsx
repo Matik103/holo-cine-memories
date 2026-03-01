@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { ShareMovieMenu } from "@/components/ShareMovieMenu";
 import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings, Check, List, MessageSquare, Pencil } from "lucide-react";
 import { scrollInputIntoView } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
+import { translationService } from "@/services/translationService";
 
 interface MovieSearch {
   id: string;
@@ -62,8 +64,10 @@ export const Profile = () => {
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [reviewDraft, setReviewDraft] = useState("");
   const [loading, setLoading] = useState(true);
+  const [translatedPlots, setTranslatedPlots] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentLanguage } = useTranslation();
 
   const filteredFavorites =
     watchlistFilter === "all"
@@ -117,6 +121,41 @@ export const Profile = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    let mounted = true;
+    
+    const translatePlots = async () => {
+      if (currentLanguage === 'en') {
+        const plots: Record<string, string> = {};
+        movieSearches.forEach(search => {
+          if (search.movie_plot) plots[search.id] = search.movie_plot;
+        });
+        setTranslatedPlots(plots);
+        return;
+      }
+      
+      const plots: Record<string, string> = {};
+      await Promise.all(
+        movieSearches.map(async (search) => {
+          if (search.movie_plot) {
+            try {
+              const translated = await translationService.translateText(search.movie_plot, currentLanguage);
+              if (mounted) plots[search.id] = translated;
+            } catch {
+              plots[search.id] = search.movie_plot;
+            }
+          }
+        })
+      );
+      
+      if (mounted) setTranslatedPlots(plots);
+    };
+
+    translatePlots();
+    
+    return () => { mounted = false; };
+  }, [movieSearches, currentLanguage]);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -970,7 +1009,7 @@ export const Profile = () => {
                               </p>
                               {search.movie_plot && (
                                 <p className="text-xs text-muted-foreground mt-2 line-clamp-2 sm:line-clamp-2 leading-relaxed">
-                                  {search.movie_plot}
+                                  {translatedPlots[search.id] || search.movie_plot}
                                 </p>
                               )}
                             </div>

@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { ShareMovieMenu } from "@/components/ShareMovieMenu";
 import { Calendar, Clock, Star, Play, BookOpen, Lightbulb } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { translationService } from "@/services/translationService";
 
 export interface Movie {
   title: string;
@@ -28,6 +30,35 @@ interface MovieCardProps {
 
 export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindSimilarMovies }: MovieCardProps) => {
   const [imageError, setImageError] = useState(false);
+  const [translatedPlot, setTranslatedPlot] = useState(movie.plot);
+  const { currentLanguage } = useTranslation();
+
+  useEffect(() => {
+    let mounted = true;
+    
+    const translatePlot = async () => {
+      if (currentLanguage === 'en') {
+        setTranslatedPlot(movie.plot);
+        return;
+      }
+      
+      try {
+        const translated = await translationService.translateText(movie.plot, currentLanguage);
+        if (mounted) {
+          setTranslatedPlot(translated);
+        }
+      } catch (error) {
+        console.warn('Failed to translate plot:', error);
+        if (mounted) {
+          setTranslatedPlot(movie.plot);
+        }
+      }
+    };
+
+    translatePlot();
+    
+    return () => { mounted = false; };
+  }, [movie.plot, currentLanguage]);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
 
   return (
@@ -160,7 +191,7 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
           <div className="space-y-2">
             <h3 className="font-semibold text-foreground text-sm sm:text-base">Plot</h3>
             <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-              {movie.plot}
+              {translatedPlot}
             </p>
           </div>
 

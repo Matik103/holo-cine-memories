@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { withAmazonPrime, type StreamingOption } from "@/lib/streaming";
 import { ShareMovieMenu } from "./ShareMovieMenu";
+import { useTranslation } from "@/hooks/useTranslation";
+import { translationService } from "@/services/translationService";
 import { 
   ArrowLeft, 
   Play, 
@@ -61,6 +63,7 @@ export const MovieDetail = () => {
   const { movieTitle } = useParams<{ movieTitle: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { currentLanguage } = useTranslation();
   
   const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
   const [trailer, setTrailer] = useState<Trailer | null>(null);
@@ -70,12 +73,45 @@ export const MovieDetail = () => {
   const [insightsLoading, setInsightsLoading] = useState(true);
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'themes' | 'similar'>('summary');
+  const [translatedPlot, setTranslatedPlot] = useState<string>('');
 
   useEffect(() => {
     if (movieTitle) {
       fetchMovieData();
     }
   }, [movieTitle]);
+
+  useEffect(() => {
+    let mounted = true;
+    
+    const translatePlot = async () => {
+      if (!movieDetails?.plot) {
+        setTranslatedPlot('');
+        return;
+      }
+      
+      if (currentLanguage === 'en') {
+        setTranslatedPlot(movieDetails.plot);
+        return;
+      }
+      
+      try {
+        const translated = await translationService.translateText(movieDetails.plot, currentLanguage);
+        if (mounted) {
+          setTranslatedPlot(translated);
+        }
+      } catch (error) {
+        console.warn('Failed to translate plot:', error);
+        if (mounted) {
+          setTranslatedPlot(movieDetails.plot);
+        }
+      }
+    };
+
+    translatePlot();
+    
+    return () => { mounted = false; };
+  }, [movieDetails?.plot, currentLanguage]);
 
   const fetchMovieData = async () => {
     if (!movieTitle) return;
@@ -327,7 +363,7 @@ export const MovieDetail = () => {
             {/* Plot */}
             <div>
               <h3 className="text-base sm:text-lg font-semibold mb-2">Plot</h3>
-              <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{movieDetails.plot}</p>
+              <p className="text-muted-foreground leading-relaxed text-sm sm:text-base">{translatedPlot || movieDetails.plot}</p>
             </div>
 
             {/* Cast */}
