@@ -1,70 +1,63 @@
-import { DetectiveStats } from '@/services/mysteryService';
-import { mysteryService } from '@/services/mysteryService';
-import { Badge } from '@/components/ui/badge';
+import { mysteryService, DetectiveStats } from '@/services/mysteryService';
 import { Progress } from '@/components/ui/progress';
 
 interface DetectiveRankBadgeProps {
   rank: DetectiveStats['detective_rank'];
-  solves: number;
+  solves?: number;
   showProgress?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }
 
 export function DetectiveRankBadge({ 
   rank, 
-  solves, 
+  solves = 0, 
   showProgress = false,
   size = 'md' 
 }: DetectiveRankBadgeProps) {
   const rankInfo = mysteryService.getDetectiveRankInfo(rank);
   
   const sizeClasses = {
-    sm: 'text-[10px] px-1.5 py-0.5',
-    md: 'text-xs px-2 py-1',
-    lg: 'text-sm px-3 py-1.5'
+    sm: 'text-xs gap-1',
+    md: 'text-sm gap-2',
+    lg: 'text-base gap-2'
   };
 
   const iconSizes = {
     sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg'
+    md: 'text-lg',
+    lg: 'text-xl'
   };
 
-  // Calculate progress to next rank
-  const getProgressToNextRank = () => {
-    const thresholds = {
-      rookie: { current: 0, next: 5 },
-      sleuth: { current: 5, next: 20 },
-      detective: { current: 20, next: 50 },
-      master_detective: { current: 50, next: 100 },
-      legend: { current: 100, next: 100 }
-    };
-    
-    const { current, next } = thresholds[rank];
-    if (rank === 'legend') return 100;
-    
-    const progress = ((solves - current) / (next - current)) * 100;
-    return Math.min(Math.max(progress, 0), 100);
-  };
+  const progressToNext = rankInfo.nextRank 
+    ? Math.min(100, (solves / rankInfo.solvesNeeded) * 100)
+    : 100;
+
+  const solvesRemaining = rankInfo.nextRank 
+    ? Math.max(0, rankInfo.solvesNeeded - solves)
+    : 0;
 
   return (
-    <div className="inline-flex flex-col items-start gap-1">
-      <Badge 
-        variant="outline" 
-        className={`${sizeClasses[size]} ${rankInfo.color} bg-background/50 border-current/30`}
-      >
-        <span className={iconSizes[size]}>{rankInfo.icon}</span>
-        <span className="ml-1">{rankInfo.label}</span>
-      </Badge>
-      
-      {showProgress && rankInfo.nextRank && (
-        <div className="w-full max-w-[120px]">
-          <Progress value={getProgressToNextRank()} className="h-1" />
-          <p className="text-[10px] text-muted-foreground mt-0.5">
-            {solves}/{rankInfo.solvesNeeded} to {mysteryService.getDetectiveRankInfo(rankInfo.nextRank as DetectiveStats['detective_rank']).label}
-          </p>
-        </div>
-      )}
+    <div 
+      className={`flex items-center ${sizeClasses[size]}`}
+      role="img"
+      aria-label={`Detective rank: ${rankInfo.label}${showProgress && rankInfo.nextRank ? `. ${solvesRemaining} more solves needed for ${rankInfo.nextRank.replace('_', ' ')}` : ''}`}
+    >
+      <span className={iconSizes[size]} aria-hidden="true">{rankInfo.icon}</span>
+      <div className="flex flex-col">
+        <span className={`font-medium ${rankInfo.color}`}>{rankInfo.label}</span>
+        {showProgress && rankInfo.nextRank && (
+          <div className="mt-1">
+            <Progress 
+              value={progressToNext} 
+              className="h-1.5 w-24" 
+              aria-label={`Progress to ${rankInfo.nextRank.replace('_', ' ')}: ${Math.round(progressToNext)}%`}
+            />
+            <p className="text-[10px] text-muted-foreground mt-0.5">
+              {solvesRemaining} more to {rankInfo.nextRank.replace('_', ' ')}
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

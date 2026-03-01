@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   mysteryService, 
@@ -6,8 +6,15 @@ import {
   MysteryAttempt, 
   DetectiveStats,
   MysteryFilter,
-  MysterySort
+  MysterySort,
+  MysteryServiceError
 } from '@/services/mysteryService';
+
+interface UseMysteryState<T> {
+  data: T;
+  isLoading: boolean;
+  error: MysteryServiceError | null;
+}
 
 export function useMysteries(
   initialFilter: MysteryFilter = 'unsolved',
@@ -16,32 +23,46 @@ export function useMysteries(
   const [user, setUser] = useState<any>(null);
   const [mysteries, setMysteries] = useState<Mystery[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<MysteryServiceError | null>(null);
   const [filter, setFilter] = useState<MysteryFilter>(initialFilter);
   const [sort, setSort] = useState<MysterySort>(initialSort);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(0);
   const LIMIT = 20;
+  
+  // Track mounted state to prevent state updates after unmount
+  const isMounted = useRef(true);
+  // Track current fetch to handle race conditions
+  const fetchIdRef = useRef(0);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      if (isMounted.current) setUser(user);
     };
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null);
+      if (isMounted.current) setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchMysteries = useCallback(async (reset = false) => {
-    const currentPage = reset ? 0 : page;
+  const fetchMysteries = useCallback(async (reset = false, currentPage = 0) => {
+    const fetchId = ++fetchIdRef.current;
+    
+    if (!isMounted.current) return;
     setIsLoading(true);
+    setError(null);
     
     try {
-      const data = await mysteryService.getMysteries(
+      const result = await mysteryService.getMysteries(
         filter,
         sort,
         LIMIT,
@@ -49,52 +70,72 @@ export function useMysteries(
         user?.id
       );
       
+      // Check if this is still the latest fetch and component is mounted
+      if (fetchId !== fetchIdRef.current || !isMounted.current) return;
+      
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      
+      const data = result.data || [];
+      
       if (reset) {
         setMysteries(data);
-        setPage(0);
       } else {
         setMysteries(prev => [...prev, ...data]);
       }
       
       setHasMore(data.length === LIMIT);
     } catch (err) {
-      console.error('Error fetching mysteries:', err);
+      if (fetchId === fetchIdRef.current && isMounted.current) {
+        setError({ code: 'UNEXPECTED_ERROR', message: 'Failed to load mysteries' });
+      }
     } finally {
-      setIsLoading(false);
+      if (fetchId === fetchIdRef.current && isMounted.current) {
+        setIsLoading(false);
+      }
     }
-  }, [filter, sort, page, user?.id]);
-
-  useEffect(() => {
-    fetchMysteries(true);
   }, [filter, sort, user?.id]);
+
+  // Fetch when filter, sort, or user changes
+  useEffect(() => {
+    setPage(0);
+    fetchMysteries(true, 0);
+  }, [filter, sort, user?.id, fetchMysteries]);
 
   const loadMore = useCallback(() => {
     if (!isLoading && hasMore) {
-      setPage(prev => prev + 1);
-      fetchMysteries(false);
+      const nextPage = page + 1;
+      setPage(nextPage);
+      fetchMysteries(false, nextPage);
     }
-  }, [isLoading, hasMore, fetchMysteries]);
+  }, [isLoading, hasMore, page, fetchMysteries]);
 
   const changeFilter = useCallback((newFilter: MysteryFilter) => {
     setFilter(newFilter);
-    setPage(0);
   }, []);
 
   const changeSort = useCallback((newSort: MysterySort) => {
     setSort(newSort);
-    setPage(0);
   }, []);
+
+  const refetch = useCallback(() => {
+    setPage(0);
+    fetchMysteries(true, 0);
+  }, [fetchMysteries]);
 
   return {
     mysteries,
     isLoading,
+    error,
     filter,
     sort,
     hasMore,
     loadMore,
     changeFilter,
     changeSort,
-    refetch: () => fetchMysteries(true),
+    refetch,
     isAuthenticated: !!user
   };
 }
@@ -104,17 +145,26 @@ export function useMystery(mysteryId: string | null) {
   const [attempts, setAttempts] = useState<MysteryAttempt[]>([]);
   const [userVotes, setUserVotes] = useState<Record<string, 'up' | 'down'>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<MysteryServiceError | null>(null);
   const [user, setUser] = useState<any>(null);
+  
+  const isMounted = useRef(true);
+  const fetchIdRef = useRef(0);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      if (isMounted.current) setUser(user);
     };
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null);
+      if (isMounted.current) setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -128,28 +178,48 @@ export function useMystery(mysteryId: string | null) {
       return;
     }
 
+    const fetchId = ++fetchIdRef.current;
+    
+    if (!isMounted.current) return;
     setIsLoading(true);
+    setError(null);
+
     try {
-      const [mysteryData, attemptsData] = await Promise.all([
+      const [mysteryResult, attemptsResult] = await Promise.all([
         mysteryService.getMysteryById(mysteryId),
         mysteryService.getAttempts(mysteryId)
       ]);
       
-      setMystery(mysteryData);
-      setAttempts(attemptsData);
+      if (fetchId !== fetchIdRef.current || !isMounted.current) return;
+      
+      if (mysteryResult.error) {
+        setError(mysteryResult.error);
+        setMystery(null);
+        setAttempts([]);
+        return;
+      }
+      
+      setMystery(mysteryResult.data);
+      setAttempts(attemptsResult.data || []);
 
       // Fetch user votes if authenticated
-      if (user?.id && attemptsData.length > 0) {
+      if (user?.id && attemptsResult.data && attemptsResult.data.length > 0) {
         const votes = await mysteryService.getUserVotes(
           user.id,
-          attemptsData.map(a => a.id)
+          attemptsResult.data.map(a => a.id)
         );
-        setUserVotes(votes);
+        if (fetchId === fetchIdRef.current && isMounted.current) {
+          setUserVotes(votes);
+        }
       }
     } catch (err) {
-      console.error('Error fetching mystery:', err);
+      if (fetchId === fetchIdRef.current && isMounted.current) {
+        setError({ code: 'UNEXPECTED_ERROR', message: 'Failed to load mystery' });
+      }
     } finally {
-      setIsLoading(false);
+      if (fetchId === fetchIdRef.current && isMounted.current) {
+        setIsLoading(false);
+      }
     }
   }, [mysteryId, user?.id]);
 
@@ -163,10 +233,12 @@ export function useMystery(mysteryId: string | null) {
     tmdbId?: number,
     posterUrl?: string,
     explanation?: string
-  ): Promise<boolean> => {
-    if (!user?.id || !mysteryId) return false;
+  ): Promise<{ success: boolean; error?: MysteryServiceError }> => {
+    if (!user?.id || !mysteryId) {
+      return { success: false, error: { code: 'AUTH_REQUIRED', message: 'Please sign in to submit a solution' } };
+    }
 
-    const attempt = await mysteryService.submitAttempt(
+    const result = await mysteryService.submitAttempt(
       mysteryId,
       user.id,
       movieTitle,
@@ -176,41 +248,57 @@ export function useMystery(mysteryId: string | null) {
       explanation
     );
 
-    if (attempt) {
-      await fetchMystery();
-      return true;
+    if (result.error) {
+      return { success: false, error: result.error };
     }
-    return false;
+
+    await fetchMystery();
+    return { success: true };
   }, [user?.id, mysteryId, fetchMystery]);
 
-  const vote = useCallback(async (attemptId: string, voteType: 'up' | 'down'): Promise<boolean> => {
-    if (!user?.id) return false;
-
-    const success = await mysteryService.voteOnAttempt(attemptId, user.id, voteType);
-    if (success) {
-      await fetchMystery();
+  const vote = useCallback(async (attemptId: string, voteType: 'up' | 'down'): Promise<{ success: boolean; error?: MysteryServiceError }> => {
+    if (!user?.id) {
+      return { success: false, error: { code: 'AUTH_REQUIRED', message: 'Please sign in to vote' } };
     }
-    return success;
+
+    const result = await mysteryService.voteOnAttempt(attemptId, user.id, voteType);
+    
+    if (result.error) {
+      return { success: false, error: result.error };
+    }
+
+    await fetchMystery();
+    return { success: true };
   }, [user?.id, fetchMystery]);
 
-  const acceptSolution = useCallback(async (attemptId: string): Promise<boolean> => {
-    if (!user?.id || !mysteryId) return false;
-
-    const success = await mysteryService.acceptSolution(mysteryId, attemptId, user.id);
-    if (success) {
-      await fetchMystery();
+  const acceptSolution = useCallback(async (attemptId: string): Promise<{ success: boolean; error?: MysteryServiceError }> => {
+    if (!user?.id || !mysteryId) {
+      return { success: false, error: { code: 'AUTH_REQUIRED', message: 'Please sign in' } };
     }
-    return success;
+
+    const result = await mysteryService.acceptSolution(mysteryId, attemptId, user.id);
+    
+    if (result.error) {
+      return { success: false, error: result.error };
+    }
+
+    await fetchMystery();
+    return { success: true };
   }, [user?.id, mysteryId, fetchMystery]);
 
-  const closeMystery = useCallback(async (): Promise<boolean> => {
-    if (!user?.id || !mysteryId) return false;
-
-    const success = await mysteryService.closeMystery(mysteryId, user.id);
-    if (success) {
-      await fetchMystery();
+  const closeMystery = useCallback(async (): Promise<{ success: boolean; error?: MysteryServiceError }> => {
+    if (!user?.id || !mysteryId) {
+      return { success: false, error: { code: 'AUTH_REQUIRED', message: 'Please sign in' } };
     }
-    return success;
+
+    const result = await mysteryService.closeMystery(mysteryId, user.id);
+    
+    if (result.error) {
+      return { success: false, error: result.error };
+    }
+
+    await fetchMystery();
+    return { success: true };
   }, [user?.id, mysteryId, fetchMystery]);
 
   const isOwner = mystery?.user_id === user?.id;
@@ -221,6 +309,7 @@ export function useMystery(mysteryId: string | null) {
     attempts,
     userVotes,
     isLoading,
+    error,
     isOwner,
     hasUserAttempted,
     submitAttempt,
@@ -236,16 +325,22 @@ export function useMystery(mysteryId: string | null) {
 export function useCreateMystery() {
   const [user, setUser] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      if (isMounted.current) setUser(user);
     };
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null);
+      if (isMounted.current) setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -256,21 +351,24 @@ export function useCreateMystery() {
     additionalClues?: string,
     originalSearchQuery?: string,
     aiSuggestions?: any
-  ): Promise<Mystery | null> => {
-    if (!user?.id) return null;
+  ): Promise<{ data: Mystery | null; error: MysteryServiceError | null }> => {
+    if (!user?.id) {
+      return { data: null, error: { code: 'AUTH_REQUIRED', message: 'Please sign in to post a mystery' } };
+    }
 
-    setIsSubmitting(true);
+    if (isMounted.current) setIsSubmitting(true);
+    
     try {
-      const mystery = await mysteryService.createMystery(
+      const result = await mysteryService.createMystery(
         user.id,
         description,
         additionalClues,
         originalSearchQuery,
         aiSuggestions
       );
-      return mystery;
+      return result;
     } finally {
-      setIsSubmitting(false);
+      if (isMounted.current) setIsSubmitting(false);
     }
   }, [user?.id]);
 
@@ -285,16 +383,23 @@ export function useDetectiveStats() {
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState<DetectiveStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<MysteryServiceError | null>(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      if (isMounted.current) setUser(user);
     };
     getUser();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      setUser(session?.user ?? null);
+      if (isMounted.current) setUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
@@ -303,18 +408,36 @@ export function useDetectiveStats() {
   useEffect(() => {
     const fetchStats = async () => {
       if (!user?.id) {
-        setStats(null);
-        setIsLoading(false);
+        if (isMounted.current) {
+          setStats(null);
+          setIsLoading(false);
+        }
         return;
       }
 
+      if (isMounted.current) {
+        setIsLoading(true);
+        setError(null);
+      }
+
       try {
-        const data = await mysteryService.getDetectiveStats(user.id);
-        setStats(data);
+        const result = await mysteryService.getDetectiveStats(user.id);
+        
+        if (!isMounted.current) return;
+        
+        if (result.error) {
+          setError(result.error);
+        } else {
+          setStats(result.data);
+        }
       } catch (err) {
-        console.error('Error fetching detective stats:', err);
+        if (isMounted.current) {
+          setError({ code: 'UNEXPECTED_ERROR', message: 'Failed to load stats' });
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -327,6 +450,7 @@ export function useDetectiveStats() {
     stats,
     rankInfo,
     isLoading,
+    error,
     isAuthenticated: !!user
   };
 }
@@ -339,36 +463,62 @@ export function useTopDetectives(limit = 10) {
     solve_streak: number;
   }>>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<MysteryServiceError | null>(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   useEffect(() => {
     const fetchDetectives = async () => {
+      if (isMounted.current) {
+        setIsLoading(true);
+        setError(null);
+      }
+
       try {
         const data = await mysteryService.getTopDetectives(limit);
-        setDetectives(data);
+        if (isMounted.current) {
+          setDetectives(data);
+        }
       } catch (err) {
-        console.error('Error fetching top detectives:', err);
+        if (isMounted.current) {
+          setError({ code: 'UNEXPECTED_ERROR', message: 'Failed to load leaderboard' });
+        }
       } finally {
-        setIsLoading(false);
+        if (isMounted.current) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchDetectives();
   }, [limit]);
 
-  return { detectives, isLoading };
+  return { detectives, isLoading, error };
 }
 
 export function useUnsolvedCount() {
   const [count, setCount] = useState(0);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
 
   useEffect(() => {
     const fetchCount = async () => {
       const unsolvedCount = await mysteryService.getUnsolvedCount();
-      setCount(unsolvedCount);
+      if (isMounted.current) {
+        setCount(unsolvedCount);
+      }
     };
 
     fetchCount();
-    const interval = setInterval(fetchCount, 60000); // Update every minute
+    const interval = setInterval(fetchCount, 60000);
     return () => clearInterval(interval);
   }, []);
 

@@ -1,200 +1,242 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useState, ReactNode, useId } from 'react';
+import { useCreateMystery } from '@/hooks/useMysteries';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { useCreateMystery } from '@/hooks/useMysteries';
-import { Plus, HelpCircle, Loader2 } from 'lucide-react';
+import { HelpCircle, Loader2, LogIn, AlertCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface CreateMysteryDialogProps {
-  trigger?: React.ReactNode;
+  trigger?: ReactNode;
   initialDescription?: string;
-  initialClues?: string;
   originalSearchQuery?: string;
   aiSuggestions?: any;
-  onSuccess?: (mysteryId: string) => void;
+  onSuccess?: () => void;
 }
+
+const MIN_DESCRIPTION_LENGTH = 20;
+const MAX_DESCRIPTION_LENGTH = 5000;
+const MAX_CLUES_LENGTH = 2000;
 
 export function CreateMysteryDialog({
   trigger,
   initialDescription = '',
-  initialClues = '',
   originalSearchQuery,
   aiSuggestions,
   onSuccess
 }: CreateMysteryDialogProps) {
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState(initialDescription);
-  const [additionalClues, setAdditionalClues] = useState(initialClues);
+  const [clues, setClues] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
   const { createMystery, isSubmitting, isAuthenticated } = useCreateMystery();
   const { toast } = useToast();
-  const navigate = useNavigate();
+  
+  const descriptionId = useId();
+  const cluesId = useId();
+  const errorId = useId();
+
+  const validateDescription = (text: string): string | null => {
+    const trimmed = text.trim();
+    if (trimmed.length < MIN_DESCRIPTION_LENGTH) {
+      return `Description must be at least ${MIN_DESCRIPTION_LENGTH} characters (currently ${trimmed.length})`;
+    }
+    if (trimmed.length > MAX_DESCRIPTION_LENGTH) {
+      return `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`;
+    }
+    return null;
+  };
 
   const handleSubmit = async () => {
-    if (!description.trim()) {
-      toast({
-        title: 'Description required',
-        description: 'Please describe what you remember about the movie',
-        variant: 'destructive'
-      });
+    const error = validateDescription(description);
+    if (error) {
+      setValidationError(error);
       return;
     }
 
-    if (description.trim().length < 20) {
-      toast({
-        title: 'More details needed',
-        description: 'Please provide at least 20 characters to help others identify the movie',
-        variant: 'destructive'
-      });
+    if (clues.trim().length > MAX_CLUES_LENGTH) {
+      setValidationError(`Additional clues must be less than ${MAX_CLUES_LENGTH} characters`);
       return;
     }
 
-    const mystery = await createMystery(
-      description.trim(),
-      additionalClues.trim() || undefined,
+    setValidationError(null);
+
+    const result = await createMystery(
+      description,
+      clues || undefined,
       originalSearchQuery,
       aiSuggestions
     );
 
-    if (mystery) {
-      toast({
-        title: 'Mystery posted!',
-        description: 'The community will help you find this movie',
-        className: 'bg-primary/10 border-primary/20'
-      });
-      setOpen(false);
-      setDescription('');
-      setAdditionalClues('');
-      
-      if (onSuccess) {
-        onSuccess(mystery.id);
-      } else {
-        navigate(`/mysteries/${mystery.id}`);
-      }
-    } else {
+    if (result.error) {
       toast({
         title: 'Error',
-        description: 'Failed to post mystery. Please try again.',
+        description: result.error.message,
         variant: 'destructive'
       });
+      return;
+    }
+
+    toast({
+      title: 'Mystery Posted!',
+      description: 'Your mystery has been posted. The community will help identify it!'
+    });
+
+    setOpen(false);
+    setDescription('');
+    setClues('');
+    onSuccess?.();
+  };
+
+  const handleSignIn = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href
+      }
+    });
+  };
+
+  const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    setDescription(newValue);
+    if (validationError) {
+      setValidationError(validateDescription(newValue));
     }
   };
 
-  if (!isAuthenticated) {
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          {trigger || (
-            <Button className="neural-button gap-2">
-              <Plus className="h-4 w-4" />
-              Post Mystery
-            </Button>
-          )}
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sign in required</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground mb-4">
-            You need to sign in to post a mystery for the community to solve.
-          </p>
-          <Button onClick={() => navigate('/auth')} className="w-full neural-button">
-            Sign In
-          </Button>
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  const characterCount = description.trim().length;
+  const isValidLength = characterCount >= MIN_DESCRIPTION_LENGTH && characterCount <= MAX_DESCRIPTION_LENGTH;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="neural-button gap-2">
-            <Plus className="h-4 w-4" />
-            Post Mystery
+            <HelpCircle className="h-4 w-4" aria-hidden="true" />
+            Post a Mystery
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5 text-primary" />
-            Post a Movie Mystery
-          </DialogTitle>
+          <DialogTitle>Post a Movie Mystery</DialogTitle>
+          <DialogDescription>
+            Describe the movie you're trying to find. Include any details you remember - scenes, actors, plot points, or even feelings the movie gave you.
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 mt-4">
-          <div>
-            <Label htmlFor="description" className="text-sm font-medium">
-              What do you remember? *
-            </Label>
-            <Textarea
-              id="description"
-              placeholder="Describe the movie scene, plot, characters, or any details you remember..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="mt-2 min-h-[120px] resize-none"
-              maxLength={1000}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {description.length}/1000 characters
+        {!isAuthenticated ? (
+          <div className="py-8 text-center">
+            <LogIn className="h-12 w-12 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
+            <p className="text-muted-foreground mb-4">
+              Sign in to post mysteries and help others find movies
             </p>
-          </div>
-
-          <div>
-            <Label htmlFor="clues" className="text-sm font-medium">
-              Additional clues (optional)
-            </Label>
-            <Textarea
-              id="clues"
-              placeholder="Any other details: approximate year, genre, actors, language, where you saw it..."
-              value={additionalClues}
-              onChange={(e) => setAdditionalClues(e.target.value)}
-              className="mt-2 min-h-[80px] resize-none"
-              maxLength={500}
-            />
-            <p className="text-xs text-muted-foreground mt-1">
-              {additionalClues.length}/500 characters
-            </p>
-          </div>
-
-          <div className="bg-primary/5 rounded-lg p-3 text-xs text-muted-foreground">
-            <p className="font-medium text-primary mb-1">Tips for better results:</p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Describe specific scenes or memorable moments</li>
-              <li>Mention any actors or characters you remember</li>
-              <li>Include the approximate time period you watched it</li>
-              <li>Note any distinctive visual elements or music</li>
-            </ul>
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => setOpen(false)}
-              className="flex-1"
-            >
-              Cancel
+            <Button onClick={handleSignIn} className="neural-button">
+              Sign in with Google
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || description.trim().length < 20}
-              className="flex-1 neural-button"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Posting...
-                </>
-              ) : (
-                'Post Mystery'
+          </div>
+        ) : (
+          <>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor={descriptionId}>
+                  What do you remember? <span className="text-destructive" aria-hidden="true">*</span>
+                  <span className="sr-only">(required)</span>
+                </Label>
+                <Textarea
+                  id={descriptionId}
+                  placeholder="e.g., There's this movie where a guy wakes up and realizes he's been living the same day over and over..."
+                  value={description}
+                  onChange={handleDescriptionChange}
+                  className={`min-h-[120px] ${validationError ? 'border-destructive' : ''}`}
+                  aria-describedby={validationError ? errorId : undefined}
+                  aria-invalid={!!validationError}
+                  required
+                />
+                <div className="flex justify-between text-xs">
+                  <span 
+                    className={`${isValidLength ? 'text-muted-foreground' : characterCount < MIN_DESCRIPTION_LENGTH ? 'text-amber-500' : 'text-destructive'}`}
+                    aria-live="polite"
+                  >
+                    {characterCount}/{MAX_DESCRIPTION_LENGTH} characters
+                    {characterCount < MIN_DESCRIPTION_LENGTH && ` (min ${MIN_DESCRIPTION_LENGTH})`}
+                  </span>
+                </div>
+                {validationError && (
+                  <p id={errorId} className="text-xs text-destructive flex items-center gap-1" role="alert">
+                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                    {validationError}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor={cluesId}>Additional clues (optional)</Label>
+                <Textarea
+                  id={cluesId}
+                  placeholder="e.g., I think it was from the 90s, had a famous actor, was a comedy..."
+                  value={clues}
+                  onChange={(e) => setClues(e.target.value)}
+                  className="min-h-[80px]"
+                />
+                <p className="text-xs text-muted-foreground">
+                  {clues.length}/{MAX_CLUES_LENGTH} characters
+                </p>
+              </div>
+
+              {aiSuggestions?.suggestedTitle && (
+                <div className="p-3 rounded-lg bg-muted/50 text-sm">
+                  <p className="text-muted-foreground">
+                    <span className="font-medium">AI suggestion:</span> {aiSuggestions.suggestedTitle}
+                    {aiSuggestions.confidence && (
+                      <span className="text-xs ml-2">
+                        ({Math.round(aiSuggestions.confidence * 100)}% confidence)
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    This will be shared with the community as a starting point.
+                  </p>
+                </div>
               )}
-            </Button>
-          </div>
-        </div>
+            </div>
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting || !isValidLength}
+                className="neural-button"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
+                    Posting...
+                  </>
+                ) : (
+                  'Post Mystery'
+                )}
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
