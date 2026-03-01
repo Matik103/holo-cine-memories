@@ -22,7 +22,7 @@ const filterOptions: { value: MysteryFilter; label: string; shortLabel: string; 
   { value: 'solved', label: 'Solved', shortLabel: 'Solved' },
   { value: 'all', label: 'All', shortLabel: 'All' },
   { value: 'my_mysteries', label: 'My Mysteries', shortLabel: 'Mine', requiresAuth: true },
-  { value: 'my_solves', label: 'My Solves', shortLabel: 'Solved', requiresAuth: true }
+  { value: 'my_solves', label: 'My Solves', shortLabel: 'My Solves', requiresAuth: true }
 ];
 
 const sortOptions: { value: MysterySort; label: string }[] = [
