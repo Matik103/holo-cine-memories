@@ -42,15 +42,36 @@ export function getMysteryShareUrl(mysteryId: string): string {
   return `${SHARE_DOMAIN}/mysteries/${mysteryId}`;
 }
 
-/** Mystery share text for challenging others */
+/** Mystery share text for challenging others - short version for Twitter/X */
 export function getMysteryShareText(description: string): string {
-  const shortDesc = description.length > 100 ? description.slice(0, 100) + '...' : description;
-  return `🎬 Can you name this movie? "${shortDesc}" — Challenge accepted? 🔍`;
+  const shortDesc = description.length > 80 ? description.slice(0, 80) + '...' : description;
+  return `🎬 Can you name this movie?\n\n"${shortDesc}"\n\nChallenge accepted? 🔍`;
 }
 
-/** Reddit share URL */
+/** Mystery share text - full structured version for WhatsApp, Telegram, Copy */
+export function getMysteryShareTextFull(description: string): string {
+  const shortDesc = description.length > 150 ? description.slice(0, 150) + '...' : description;
+  return `🎬 *MOVIE MYSTERY CHALLENGE* 🎬
+
+Can you name this movie?
+
+📝 *The Clue:*
+"${shortDesc}"
+
+🏆 Think you know it? Prove it!
+
+🔍 Solve it on CineMind`;
+}
+
+/** Reddit share URL - with engaging title */
 export function getRedditShareUrl(title: string, url: string): string {
   return `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+}
+
+/** Reddit mystery title */
+export function getMysteryRedditTitle(description: string): string {
+  const shortDesc = description.length > 60 ? description.slice(0, 60) + '...' : description;
+  return `[Movie Challenge] Can you name this film? "${shortDesc}"`;
 }
 
 /** Telegram share URL */
@@ -66,4 +87,23 @@ export function getLinkedInShareUrl(url: string): string {
 /** Email share URL */
 export function getEmailShareUrl(subject: string, body: string): string {
   return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+/** Email body for mystery - well formatted */
+export function getMysteryEmailBody(description: string, url: string): string {
+  const shortDesc = description.length > 200 ? description.slice(0, 200) + '...' : description;
+  return `Hey!
+
+I found this movie mystery and I bet you can't solve it! 🎬
+
+THE CLUE:
+"${shortDesc}"
+
+Think you know what movie this is?
+
+Click here to solve it: ${url}
+
+Good luck! 🔍
+
+- Sent from CineMind`;
 }

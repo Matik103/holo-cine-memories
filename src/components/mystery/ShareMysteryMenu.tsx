@@ -11,6 +11,9 @@ import { useToast } from "@/hooks/use-toast";
 import {
   getMysteryShareUrl,
   getMysteryShareText,
+  getMysteryShareTextFull,
+  getMysteryRedditTitle,
+  getMysteryEmailBody,
   getTwitterShareUrl,
   getWhatsAppShareUrl,
   getFacebookShareUrl,
@@ -50,14 +53,17 @@ export function ShareMysteryMenu({
 }: ShareMysteryMenuProps) {
   const { toast } = useToast();
   const url = getMysteryShareUrl(mysteryId);
-  const text = getMysteryShareText(description);
+  const shortText = getMysteryShareText(description); // For Twitter (character limit)
+  const fullText = getMysteryShareTextFull(description); // For WhatsApp, Telegram, Copy
+  const redditTitle = getMysteryRedditTitle(description);
+  const emailBody = getMysteryEmailBody(description, url);
   const challengeTitle = "🎬 Movie Mystery Challenge!";
 
   const handleNativeShare = async () => {
     try {
       await navigator.share({
         title: challengeTitle,
-        text: text,
+        text: fullText,
         url: url,
       });
       toast({ title: "Shared!", description: "Challenge sent! Let's see who can solve it." });
@@ -70,7 +76,8 @@ export function ShareMysteryMenu({
 
   const handleCopyLink = async () => {
     try {
-      await navigator.clipboard.writeText(`${text}\n\n${url}`);
+      const copyText = `${fullText}\n\n👉 ${url}`;
+      await navigator.clipboard.writeText(copyText);
       toast({ 
         title: "Link copied!", 
         description: "Share this challenge with your friends!" 
@@ -84,20 +91,57 @@ export function ShareMysteryMenu({
     }
   };
 
-  const handleInstagramShare = () => {
-    handleCopyLink();
-    toast({
-      title: "Ready for Instagram!",
-      description: "Link copied! Paste it in your Instagram story or bio.",
-    });
+  const handleInstagramShare = async () => {
+    try {
+      const instagramText = `🎬 MOVIE MYSTERY CHALLENGE 🎬
+
+Can you name this movie? 🤔
+
+📝 The Clue:
+"${description.length > 120 ? description.slice(0, 120) + '...' : description}"
+
+🏆 Think you know it?
+🔗 Link in bio to solve it!
+
+#MovieChallenge #GuessTheMovie #CineMind #MovieTrivia #FilmBuff`;
+      await navigator.clipboard.writeText(instagramText);
+      toast({
+        title: "Ready for Instagram!",
+        description: "Caption copied! Perfect for your story or post.",
+      });
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy to clipboard.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleTikTokShare = () => {
-    handleCopyLink();
-    toast({
-      title: "Ready for TikTok!",
-      description: "Link copied! Paste it in your TikTok bio or comments.",
-    });
+  const handleTikTokShare = async () => {
+    try {
+      const tiktokText = `🎬 MOVIE MYSTERY 🎬
+
+Can you name this movie?
+
+"${description.length > 100 ? description.slice(0, 100) + '...' : description}"
+
+Comment your guess! 👇
+Link in bio to solve it 🔍
+
+#MovieChallenge #GuessTheMovie #MovieTrivia #FilmTok #CineMind`;
+      await navigator.clipboard.writeText(tiktokText);
+      toast({
+        title: "Ready for TikTok!",
+        description: "Caption copied! Perfect for your video.",
+      });
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: "Could not copy to clipboard.",
+        variant: "destructive",
+      });
+    }
   };
 
   const defaultTrigger = (
@@ -165,7 +209,7 @@ export function ShareMysteryMenu({
         {/* Messaging Apps */}
         <DropdownMenuItem asChild>
           <a
-            href={getTwitterShareUrl(text, url)}
+            href={getTwitterShareUrl(shortText, url)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center"
@@ -177,7 +221,7 @@ export function ShareMysteryMenu({
 
         <DropdownMenuItem asChild>
           <a
-            href={getWhatsAppShareUrl(text, url)}
+            href={getWhatsAppShareUrl(fullText, url)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center"
@@ -189,7 +233,7 @@ export function ShareMysteryMenu({
 
         <DropdownMenuItem asChild>
           <a
-            href={getTelegramShareUrl(text, url)}
+            href={getTelegramShareUrl(fullText, url)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center"
@@ -201,7 +245,7 @@ export function ShareMysteryMenu({
 
         <DropdownMenuItem asChild>
           <a
-            href={getRedditShareUrl(challengeTitle, url)}
+            href={getRedditShareUrl(redditTitle, url)}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center"
@@ -217,7 +261,7 @@ export function ShareMysteryMenu({
 
         <DropdownMenuItem asChild>
           <a
-            href={getEmailShareUrl(challengeTitle, `${text}\n\nSolve it here: ${url}`)}
+            href={getEmailShareUrl(challengeTitle, emailBody)}
             className="flex items-center"
           >
             <Mail className="w-4 h-4 mr-2" />
