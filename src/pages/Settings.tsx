@@ -3,14 +3,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Shield, FileText, Scale, Cookie, Database, HelpCircle, Info, Trash2, User, Megaphone } from "lucide-react";
+import { ArrowLeft, Shield, FileText, Scale, Cookie, Database, HelpCircle, Info, Trash2, User, Megaphone, Globe } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { DeleteAccountModal } from "@/components/DeleteAccountModal";
+import { LanguageSelector } from "@/components/LanguageSelector";
+import { useTranslation } from "@/hooks/useTranslation";
 
 export const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [user, setUser] = useState<any>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -29,15 +32,15 @@ export const Settings = () => {
   };
 
   const legalItems = [
-    { icon: Shield, label: "Privacy Policy", path: "/privacy" },
-    { icon: FileText, label: "Terms of Service", path: "/terms" },
+    { icon: Shield, label: t("nav.privacy"), path: "/privacy" },
+    { icon: FileText, label: t("nav.terms"), path: "/terms" },
     { icon: Megaphone, label: "Advertising", path: "/advertising" },
     { icon: Scale, label: "Legal", path: "/legal" },
   ];
 
   const supportItems = [
-    { icon: HelpCircle, label: "Help Center", path: "/help" },
-    { icon: Info, label: "About", path: "/about" },
+    { icon: HelpCircle, label: t("nav.help"), path: "/help" },
+    { icon: Info, label: t("nav.about"), path: "/about" },
   ];
 
   return (
@@ -54,7 +57,7 @@ export const Settings = () => {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Settings
+            {t("settings.title")}
           </h1>
         </div>
       </div>
@@ -65,20 +68,20 @@ export const Settings = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <User className="w-5 h-5" />
-              <span>Account</span>
+              <span>{t("settings.account")}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="text-sm font-medium">{user?.email || "Loading..."}</p>
+              <p className="text-sm text-muted-foreground">{t("settings.email")}</p>
+              <p className="text-sm font-medium">{user?.email || t("common.loading")}</p>
             </div>
             
             <Separator />
             
             <div className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data.
+                {t("settings.deleteAccountWarning")}
               </p>
               <Button
                 variant="destructive"
@@ -86,8 +89,26 @@ export const Settings = () => {
                 className="w-full sm:w-auto"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete Account
+                {t("settings.deleteAccount")}
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Language Section */}
+        <Card className="neural-card">
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <Globe className="w-5 h-5" />
+              <span>{t("settings.language")}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Select your preferred language
+              </p>
+              <LanguageSelector variant="dialog" />
             </div>
           </CardContent>
         </Card>

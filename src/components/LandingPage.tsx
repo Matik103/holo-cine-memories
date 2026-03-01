@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Brain, Search, Lightbulb, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useTranslation } from "@/hooks/useTranslation";
+import { LanguageSelector } from "./LanguageSelector";
 
 interface MovieData {
   title: string;
@@ -77,6 +79,7 @@ const movies: MovieData[] = [
 
 export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [movieData, setMovieData] = useState<MovieData[]>([]);
   const [currentCard, setCurrentCard] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -128,7 +131,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="neural-card p-8 flex flex-col items-center space-y-4">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-muted-foreground">Loading your movie memories...</p>
+          <p className="text-muted-foreground">{t("common.loading")}</p>
         </div>
       </div>
     );
@@ -136,13 +139,16 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
   return (
     <div className="min-h-screen relative overflow-hidden pt-safe-top">
-      {/* Desktop: legal links top-right */}
-      <nav className="hidden md:block fixed top-4 right-4 z-20 text-xs text-primary/80 hover:text-primary transition-colors" aria-label="Legal">
-        <Link to="/privacy" className="hover:underline">Privacy</Link>
-        <span className="mx-2 text-primary/50">·</span>
-        <Link to="/terms" className="hover:underline">Terms</Link>
-        <span className="mx-2 text-primary/50">·</span>
-        <Link to="/advertising" className="hover:underline">Advertising</Link>
+      {/* Desktop: legal links + language selector top-right */}
+      <nav className="hidden md:flex fixed top-4 right-4 z-20 items-center gap-4" aria-label="Legal">
+        <div className="text-xs text-primary/80 hover:text-primary transition-colors">
+          <Link to="/privacy" className="hover:underline">{t("nav.privacy")}</Link>
+          <span className="mx-2 text-primary/50">·</span>
+          <Link to="/terms" className="hover:underline">{t("nav.terms")}</Link>
+          <span className="mx-2 text-primary/50">·</span>
+          <Link to="/advertising" className="hover:underline">Advertising</Link>
+        </div>
+        <LanguageSelector variant="compact" />
       </nav>
 
       {/* Cinematic Background Effects */}
@@ -220,8 +226,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           </h2>
           
           <p className="text-xs sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto px-2 sm:px-4 opacity-0 animate-fade-in-up animation-delay-500">
-            Your AI-powered movie memory companion that never forgets a single detail, 
-            meaning, or where to watch your favorite films.
+            {t("app.description")}
           </p>
         </div>
 
@@ -336,7 +341,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
             className="neural-button text-sm sm:text-base md:text-lg px-6 sm:px-8 py-3 sm:py-4 h-auto w-full sm:w-auto"
           >
             <Brain className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            Start Your Memory Journey
+            {t("landing.cta.start")}
           </Button>
         </div>
       </div>
