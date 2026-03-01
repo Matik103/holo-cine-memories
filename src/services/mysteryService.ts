@@ -206,9 +206,11 @@ class MysteryService {
       }
 
       // Atomically increment view count using database function
-      await supabase.rpc('increment_mystery_views', { p_mystery_id: mysteryId }).catch(err => {
+      try {
+        await supabase.rpc('increment_mystery_views', { p_mystery_id: mysteryId });
+      } catch (err) {
         console.error('Failed to increment view count:', err);
-      });
+      }
 
       // Get poster name
       const { data: stats } = await supabase
@@ -300,9 +302,11 @@ class MysteryService {
       }
 
       // Increment mysteries_posted using database function
-      await supabase.rpc('increment_mysteries_posted', { p_user_id: userId }).catch(err => {
+      try {
+        await supabase.rpc('increment_mysteries_posted', { p_user_id: userId });
+      } catch (err) {
         console.error('Failed to increment mysteries_posted:', err);
-      });
+      }
 
       // Add to activity feed
       const { data: profile } = await supabase
@@ -461,9 +465,11 @@ class MysteryService {
       }
 
       // Atomically increment attempt count
-      await supabase.rpc('increment_mystery_attempts', { p_mystery_id: mysteryId }).catch(err => {
+      try {
+        await supabase.rpc('increment_mystery_attempts', { p_mystery_id: mysteryId });
+      } catch (err) {
         console.error('Failed to increment attempt count:', err);
-      });
+      }
 
       const attempt: MysteryAttempt = {
         ...data,
