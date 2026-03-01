@@ -568,38 +568,41 @@ export const CineMind = () => {
             </h1>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-0.5 sm:gap-2">
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => navigate("/mysteries")}
-              className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
+              className="flex items-center gap-1 hover:bg-secondary/60 text-xs px-1.5 sm:px-3 h-7 sm:h-8"
             >
-              <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">{t('nav.mysteries')}</span>
+              <HelpCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden md:inline">{t('nav.mysteries')}</span>
             </Button>
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => navigate("/vault")}
-              className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
+              className="flex items-center gap-1 hover:bg-secondary/60 text-xs px-1.5 sm:px-3 h-7 sm:h-8"
             >
-              <Vault className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">{t('nav.vault')}</span>
+              <Vault className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden md:inline">{t('nav.vault')}</span>
             </Button>
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => navigate("/discover")}
-              className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
+              className="flex items-center gap-1 hover:bg-secondary/60 text-xs px-1.5 sm:px-3 h-7 sm:h-8"
             >
-              <Compass className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">{t('nav.discover')}</span>
+              <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              <span className="hidden md:inline">{t('nav.discover')}</span>
             </Button>
 
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4">
-                    <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <Menu className="w-2 h-2 sm:w-3 sm:h-3" />
+                  <Button variant="ghost" size="sm" className="flex items-center gap-1 px-1.5 sm:px-3 h-7 sm:h-8">
+                    <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <Menu className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -617,17 +620,19 @@ export const CineMind = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                 <Button
                   onClick={() => navigate("/auth")}
                   variant="outline"
-                  className="text-xs sm:text-sm px-2 sm:px-4"
+                  size="sm"
+                  className="text-[10px] sm:text-xs px-1.5 sm:px-3 h-7 sm:h-8 whitespace-nowrap"
                 >
                   {t('auth.signIn')}
                 </Button>
                 <Button
                   onClick={() => navigate("/auth")}
-                  className="neural-button text-xs sm:text-sm px-2 sm:px-4"
+                  size="sm"
+                  className="neural-button text-[10px] sm:text-xs px-1.5 sm:px-3 h-7 sm:h-8 whitespace-nowrap"
                 >
                   {t('auth.signup')}
                 </Button>
