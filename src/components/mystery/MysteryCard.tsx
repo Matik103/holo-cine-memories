@@ -2,9 +2,11 @@ import { Mystery } from '@/services/mysteryService';
 import { mysteryService } from '@/services/mysteryService';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Eye, MessageSquare, Clock, Trophy, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Eye, MessageSquare, Clock, Trophy, CheckCircle, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { KeyboardEvent } from 'react';
+import { KeyboardEvent, MouseEvent } from 'react';
+import { ShareMysteryMenu } from './ShareMysteryMenu';
 
 interface MysteryCardProps {
   mystery: Mystery;
@@ -130,9 +132,29 @@ export function MysteryCard({ mystery, compact = false }: MysteryCardProps) {
         </div>
       </div>
 
-      {/* Poster info */}
-      <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/50 text-[10px] sm:text-xs text-muted-foreground">
-        Posted by <span className="text-primary/80">{mystery.poster_name}</span>
+      {/* Poster info and share */}
+      <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-border/50 flex items-center justify-between">
+        <span className="text-[10px] sm:text-xs text-muted-foreground">
+          Posted by <span className="text-primary/80">{mystery.poster_name}</span>
+        </span>
+        <ShareMysteryMenu
+          mysteryId={mystery.id}
+          description={mystery.description}
+          variant="ghost"
+          size="sm"
+          trigger={
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-[10px] sm:text-xs text-muted-foreground hover:text-primary"
+              onClick={(e: MouseEvent) => e.stopPropagation()}
+              aria-label="Share this mystery"
+            >
+              <Share2 className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1" />
+              Share
+            </Button>
+          }
+        />
       </div>
     </Card>
   );

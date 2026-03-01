@@ -38,6 +38,7 @@ import {
   Pencil
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { ShareMysteryMenu } from '@/components/mystery';
 
 export function MysteryDetail() {
   const { id } = useParams<{ id: string }>();
@@ -412,20 +413,30 @@ export function MysteryDetail() {
               </div>
             )}
 
-            {/* Stats - responsive wrap */}
-            <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-                <span>{mystery.view_count} views</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-                <span>{mystery.attempt_count} attempts</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-                <span>{timeAgo}</span>
-              </span>
+            {/* Stats and Share - responsive wrap */}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+                  <span>{mystery.view_count} views</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+                  <span>{mystery.attempt_count} attempts</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+                  <span>{timeAgo}</span>
+                </span>
+              </div>
+              
+              {/* Share button */}
+              <ShareMysteryMenu
+                mysteryId={mystery.id}
+                description={mystery.description}
+                size="sm"
+                triggerClassName="text-xs sm:text-sm"
+              />
             </div>
 
             {/* Owner actions */}

@@ -36,3 +36,34 @@ export function getWhatsAppShareUrl(text: string, url: string): string {
 export function getFacebookShareUrl(url: string): string {
   return `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
 }
+
+/** Mystery share URL */
+export function getMysteryShareUrl(mysteryId: string): string {
+  return `${SHARE_DOMAIN}/mysteries/${mysteryId}`;
+}
+
+/** Mystery share text for challenging others */
+export function getMysteryShareText(description: string): string {
+  const shortDesc = description.length > 100 ? description.slice(0, 100) + '...' : description;
+  return `🎬 Can you name this movie? "${shortDesc}" — Challenge accepted? 🔍`;
+}
+
+/** Reddit share URL */
+export function getRedditShareUrl(title: string, url: string): string {
+  return `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+}
+
+/** Telegram share URL */
+export function getTelegramShareUrl(text: string, url: string): string {
+  return `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+}
+
+/** LinkedIn share URL */
+export function getLinkedInShareUrl(url: string): string {
+  return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
+}
+
+/** Email share URL */
+export function getEmailShareUrl(subject: string, body: string): string {
+  return `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
