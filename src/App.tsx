@@ -7,6 +7,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import MobileAppInit from "@/components/MobileAppInit";
 import { AdMobBanner } from "@/components/AdMobBanner";
 import { LanguageAutoDetect } from "@/components/LanguageAutoDetect";
+import { VaultNotifications } from "@/components/vault/VaultNotifications";
 import Index from "./pages/Index";
 import { Auth } from "./pages/Auth";
 import { Profile } from "./pages/Profile";
@@ -22,6 +23,7 @@ import { Help } from "./pages/Help";
 import { About } from "./pages/About";
 import { Advertising } from "./pages/Advertising";
 import { AdSenseReview } from "./pages/AdSenseReview";
+import { Vault } from "./pages/Vault";
 import NotFound from "./pages/NotFound";
 import { MovieDetail } from "./components/MovieDetail";
 
@@ -67,6 +69,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/advertising" element={<Advertising />} />
           <Route path="/review" element={<AdSenseReview />} />
+          <Route path="/vault" element={<Vault />} />
           <Route path="/movie/:movieTitle" element={<MovieDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
@@ -74,6 +77,7 @@ const App = () => (
           </main>
         <AdMobBanner position="bottom" autoShow={true} />
           <LanguageAutoDetect />
+          <VaultNotifications />
         </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

@@ -25,7 +25,7 @@ interface LanguageSelectorProps {
 }
 
 export function LanguageSelector({ variant = 'dropdown', className }: LanguageSelectorProps) {
-  const { currentLanguage, currentLanguageInfo, changeLanguage, supportedLanguages, isLoading } = useTranslation();
+  const { t, currentLanguage, currentLanguageInfo, changeLanguage, supportedLanguages, isLoading } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -46,25 +46,29 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className={cn('h-9 w-9', className)} disabled={isLoading}>
+          <Button variant="ghost" size="icon" className={cn('h-9 w-9 relative', className)} disabled={isLoading}>
             <Globe className="h-4 w-4" />
+            <span className="absolute -bottom-0.5 -right-0.5 text-xs leading-none">
+              {currentLanguageInfo.flag}
+            </span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
-          {supportedLanguages.slice(0, 10).map((lang) => (
+          {supportedLanguages.slice(0, 12).map((lang) => (
             <DropdownMenuItem
               key={lang.code}
               onClick={() => handleSelectLanguage(lang.code)}
-              className="flex items-center justify-between"
+              className="flex items-center justify-between gap-2"
             >
-              <span>{lang.nativeName}</span>
-              {currentLanguage === lang.code && <Check className="h-4 w-4 ml-2" />}
+              <span className="text-base">{lang.flag}</span>
+              <span className="flex-1">{lang.nativeName}</span>
+              {currentLanguage === lang.code && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
           ))}
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <span className="text-muted-foreground">More languages...</span>
+                <span className="text-muted-foreground">{t('language.moreLanguages')}</span>
               </DropdownMenuItem>
             </DialogTrigger>
           </Dialog>
@@ -78,19 +82,19 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="outline" className={cn('gap-2', className)} disabled={isLoading}>
-            <Globe className="h-4 w-4" />
+            <span className="text-base">{currentLanguageInfo.flag}</span>
             <span>{currentLanguageInfo.nativeName}</span>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Select Language</DialogTitle>
+            <DialogTitle>{t('language.selectTitle')}</DialogTitle>
           </DialogHeader>
           <div className="relative mb-4">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search languages..."
+              placeholder={t('language.searchPlaceholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
@@ -105,9 +109,12 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
                   className="w-full justify-between h-auto py-3"
                   onClick={() => handleSelectLanguage(lang.code)}
                 >
-                  <div className="flex flex-col items-start">
-                    <span className="font-medium">{lang.nativeName}</span>
-                    <span className="text-xs text-muted-foreground">{lang.name}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">{lang.flag}</span>
+                    <div className="flex flex-col items-start">
+                      <span className="font-medium">{lang.nativeName}</span>
+                      <span className="text-xs text-muted-foreground">{lang.name}</span>
+                    </div>
                   </div>
                   {currentLanguage === lang.code && <Check className="h-4 w-4" />}
                 </Button>
@@ -123,20 +130,21 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className={cn('gap-2', className)} disabled={isLoading}>
-          <Globe className="h-4 w-4" />
+          <span className="text-base">{currentLanguageInfo.flag}</span>
           <span className="hidden sm:inline">{currentLanguageInfo.nativeName}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[200px]">
+      <DropdownMenuContent align="end" className="w-[220px]">
         <ScrollArea className="h-[300px]">
           {supportedLanguages.map((lang) => (
             <DropdownMenuItem
               key={lang.code}
               onClick={() => handleSelectLanguage(lang.code)}
-              className="flex items-center justify-between cursor-pointer"
+              className="flex items-center justify-between cursor-pointer gap-2"
             >
-              <div className="flex flex-col">
+              <span className="text-base">{lang.flag}</span>
+              <div className="flex flex-col flex-1">
                 <span>{lang.nativeName}</span>
                 <span className="text-xs text-muted-foreground">{lang.name}</span>
               </div>

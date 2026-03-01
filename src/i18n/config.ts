@@ -6,34 +6,53 @@ import { translationService } from '@/services/translationService';
 import en from './locales/en.json';
 
 const SUPPORTED_LANGUAGES = [
-  { code: 'en', name: 'English', nativeName: 'English' },
-  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia' },
-  { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu' },
-  { code: 'zh', name: 'Chinese', nativeName: '中文' },
-  { code: 'ja', name: 'Japanese', nativeName: '日本語' },
-  { code: 'ko', name: 'Korean', nativeName: '한국어' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español' },
-  { code: 'fr', name: 'French', nativeName: 'Français' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch' },
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português' },
-  { code: 'ru', name: 'Russian', nativeName: 'Русский' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
-  { code: 'th', name: 'Thai', nativeName: 'ไทย' },
-  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt' },
-  { code: 'it', name: 'Italian', nativeName: 'Italiano' },
-  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands' },
-  { code: 'pl', name: 'Polish', nativeName: 'Polski' },
-  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
-  { code: 'uk', name: 'Ukrainian', nativeName: 'Українська' },
-  { code: 'fil', name: 'Filipino', nativeName: 'Filipino' },
-  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা' },
-  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்' },
-  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు' },
-  { code: 'mr', name: 'Marathi', nativeName: 'मराठी' },
+  { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
+  { code: 'id', name: 'Indonesian', nativeName: 'Bahasa Indonesia', flag: '🇮🇩' },
+  { code: 'ms', name: 'Malay', nativeName: 'Bahasa Melayu', flag: '🇲🇾' },
+  { code: 'zh', name: 'Chinese', nativeName: '中文', flag: '🇨🇳' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
+  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
+  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
+  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'th', name: 'Thai', nativeName: 'ไทย', flag: '🇹🇭' },
+  { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt', flag: '🇻🇳' },
+  { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
+  { code: 'nl', name: 'Dutch', nativeName: 'Nederlands', flag: '🇳🇱' },
+  { code: 'pl', name: 'Polish', nativeName: 'Polski', flag: '🇵🇱' },
+  { code: 'tr', name: 'Turkish', nativeName: 'Türkçe', flag: '🇹🇷' },
+  { code: 'uk', name: 'Ukrainian', nativeName: 'Українська', flag: '🇺🇦' },
+  { code: 'fil', name: 'Filipino', nativeName: 'Filipino', flag: '🇵🇭' },
+  { code: 'bn', name: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩' },
+  { code: 'ta', name: 'Tamil', nativeName: 'தமிழ்', flag: '🇮🇳' },
+  { code: 'te', name: 'Telugu', nativeName: 'తెలుగు', flag: '🇮🇳' },
+  { code: 'mr', name: 'Marathi', nativeName: 'मराठी', flag: '🇮🇳' },
 ];
 
 export { SUPPORTED_LANGUAGES };
+
+const TRANSLATION_CACHE_PREFIX = 'cinemind_i18n_';
+const TRANSLATION_CACHE_VERSION = 'v1';
+
+function getCachedTranslations(lang: string): Record<string, string> | null {
+  try {
+    const cached = localStorage.getItem(`${TRANSLATION_CACHE_PREFIX}${lang}_${TRANSLATION_CACHE_VERSION}`);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch {}
+  return null;
+}
+
+function setCachedTranslations(lang: string, translations: Record<string, string>): void {
+  try {
+    localStorage.setItem(`${TRANSLATION_CACHE_PREFIX}${lang}_${TRANSLATION_CACHE_VERSION}`, JSON.stringify(translations));
+  } catch {}
+}
 
 const translatedResources: Record<string, Record<string, Record<string, string>>> = {
   en: { translation: en },
@@ -43,16 +62,24 @@ async function translateResource(targetLang: string): Promise<Record<string, str
   const translated: Record<string, string> = {};
   const entries = Object.entries(en);
   
-  const batchSize = 10;
+  const batchSize = 25;
+  const batches: [string, string][][] = [];
+  
   for (let i = 0; i < entries.length; i += batchSize) {
-    const batch = entries.slice(i, i + batchSize);
-    const texts = batch.map(([, value]) => value);
-    const translatedTexts = await translationService.translateBatch(texts, targetLang);
-    
-    batch.forEach(([key], index) => {
-      translated[key] = translatedTexts[index];
-    });
+    batches.push(entries.slice(i, i + batchSize));
   }
+  
+  const results = await Promise.all(
+    batches.map(async (batch) => {
+      const texts = batch.map(([, value]) => value);
+      const translatedTexts = await translationService.translateBatch(texts, targetLang);
+      return batch.map(([key], index) => [key, translatedTexts[index]] as [string, string]);
+    })
+  );
+  
+  results.flat().forEach(([key, value]) => {
+    translated[key] = value;
+  });
   
   return translated;
 }
@@ -62,10 +89,18 @@ export async function loadLanguage(lang: string): Promise<void> {
     return;
   }
 
+  const cached = getCachedTranslations(lang);
+  if (cached) {
+    translatedResources[lang] = { translation: cached };
+    i18n.addResourceBundle(lang, 'translation', cached, true, true);
+    return;
+  }
+
   try {
     const translated = await translateResource(lang);
     translatedResources[lang] = { translation: translated };
     i18n.addResourceBundle(lang, 'translation', translated, true, true);
+    setCachedTranslations(lang, translated);
   } catch (error) {
     console.warn(`Failed to load language ${lang}:`, error);
   }

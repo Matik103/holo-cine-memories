@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react';
-import { Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from '@/hooks/useTranslation';
 import { getDetectedLanguageInfo } from '@/i18n';
@@ -8,7 +7,7 @@ const LANGUAGE_NOTIFIED_KEY = 'cinemind_language_notified';
 
 export function LanguageAutoDetect() {
   const { toast } = useToast();
-  const { currentLanguageInfo } = useTranslation();
+  const { t, currentLanguageInfo } = useTranslation();
   const hasNotified = useRef(false);
 
   useEffect(() => {
@@ -24,8 +23,8 @@ export function LanguageAutoDetect() {
       
       const timer = setTimeout(() => {
         toast({
-          title: `${currentLanguageInfo.nativeName}`,
-          description: `Language set to ${currentLanguageInfo.name}. Change in Settings.`,
+          title: `${currentLanguageInfo.flag} ${currentLanguageInfo.nativeName}`,
+          description: t('toast.languageSet'),
           duration: 4000,
         });
         localStorage.setItem(LANGUAGE_NOTIFIED_KEY, 'true');
@@ -33,7 +32,7 @@ export function LanguageAutoDetect() {
       
       return () => clearTimeout(timer);
     }
-  }, [toast, currentLanguageInfo]);
+  }, [toast, currentLanguageInfo, t]);
 
   return null;
 }

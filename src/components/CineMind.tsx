@@ -14,7 +14,7 @@ import { validateSearchQuery } from "@/lib/validation";
 import { useToast } from "@/hooks/use-toast";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, User, Compass, Menu, Settings } from "lucide-react";
+import { Brain, User, Compass, Menu, Settings, Vault } from "lucide-react";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
@@ -547,6 +547,14 @@ export const CineMind = () => {
           </div>
 
           <div className="flex items-center gap-1 sm:gap-2">
+            <Button
+              variant="ghost"
+              onClick={() => navigate("/vault")}
+              className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
+            >
+              <Vault className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Vault</span>
+            </Button>
             <Button
               variant="ghost"
               onClick={() => navigate("/discover")}
