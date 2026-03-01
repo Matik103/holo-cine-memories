@@ -339,8 +339,8 @@ export const MovieDetail = () => {
     } catch (error) {
       console.error('Error fetching movie data:', error);
       toast({
-        title: "Error",
-        description: "Failed to load movie details. Please try again.",
+        title: t('toast.error'),
+        description: t('toast.errorLoadingDetails'),
         variant: "destructive",
       });
     } finally {

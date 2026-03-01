@@ -12,6 +12,7 @@ import { identifyMovie, explainMovie, getStreamingOptions, findSimilarMovies } f
 import { withAmazonPrime, type StreamingOption } from "@/lib/streaming";
 import { validateSearchQuery } from "@/lib/validation";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { vaultService } from "@/services/vaultService";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,6 +45,7 @@ export const CineMind = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
   const isOnline = useNetworkStatus();
 
   useEffect(() => {
@@ -162,7 +164,7 @@ export const CineMind = () => {
     const validation = validateSearchQuery(query);
     if (!validation.valid) {
       toast({
-        title: "Invalid Input",
+        title: t('toast.invalidInput'),
         description: validation.error,
         variant: "destructive",
       });
@@ -238,8 +240,8 @@ export const CineMind = () => {
         setCurrentMovie(movie);
         setCurrentView('movie-details');
         toast({
-          title: "Movie Found!",
-          description: `Identified: ${movie.title} (${movie.year})`
+          title: t('toast.movieFound'),
+          description: t('toast.movieIdentified', { title: movie.title, year: movie.year })
         });
 
         // Save search and CineDNA in background so UX feels faster
@@ -273,8 +275,8 @@ export const CineMind = () => {
                   const newBadges = await vaultService.checkAndUnlockBadges(user.id);
                   if (newBadges.length > 0) {
                     toast({
-                      title: "🎉 Badge Unlocked!",
-                      description: `You earned: ${newBadges.map(b => b.name).join(', ')}`,
+                      title: `🎉 ${t('toast.badgeUnlocked')}`,
+                      description: t('toast.badgeEarned', { badges: newBadges.map(b => b.name).join(', ') }),
                     });
                   }
                 } catch (vaultError) {
@@ -306,8 +308,8 @@ export const CineMind = () => {
         
         // Show friendly message encouraging community help
         toast({
-          title: "No exact match found",
-          description: "The community might know this one! Post it as a mystery.",
+          title: t('toast.noExactMatch'),
+          description: t('toast.communityHelp'),
         });
       }
     } catch (error) {
@@ -327,8 +329,8 @@ export const CineMind = () => {
       
       // Show a friendly message encouraging community help
       toast({
-        title: "AI couldn't find a match",
-        description: "No worries! The community can help identify your movie.",
+        title: t('toast.aiNoMatch'),
+        description: t('toast.communityCanHelp'),
       });
     } finally {
       // Save analytics data regardless of success/failure
@@ -366,13 +368,13 @@ export const CineMind = () => {
         setPreviousView('movie-details');
         setCurrentView('explanation');
         toast({
-          title: "Explanation Ready!",
-          description: "AI analysis complete. Explore the different perspectives below."
+          title: t('toast.explanationReady'),
+          description: t('toast.explanationComplete')
         });
       } else {
         toast({
-          title: "No Explanation Available",
-          description: "Unable to generate explanation for this movie.",
+          title: t('toast.noExplanation'),
+          description: t('toast.noExplanationDesc'),
           variant: "destructive"
         });
       }
@@ -404,8 +406,8 @@ export const CineMind = () => {
       setCurrentView('explanation');
       
       toast({
-        title: "Using Fallback Explanation",
-        description: "AI service temporarily unavailable. Showing a general explanation instead.",
+        title: t('toast.fallbackExplanation'),
+        description: t('toast.fallbackExplanationDesc'),
         variant: "destructive"
       });
     } finally {
@@ -434,10 +436,10 @@ export const CineMind = () => {
       setCurrentView('streaming');
       if (optionsWithAmazon.length > 0) {
         toast({
-          title: "Where to Watch",
+          title: t('toast.whereToWatch'),
           description: options.length > 0
-            ? `Found ${optionsWithAmazon.length} ways to watch ${currentMovie.title}`
-            : "Check out Amazon Prime and more.",
+            ? t('toast.foundWaysToWatch', { count: optionsWithAmazon.length, title: currentMovie.title })
+            : t('toast.checkAmazon'),
         });
       }
     } finally {
@@ -481,32 +483,32 @@ export const CineMind = () => {
         setPreviousView('movie-details');
         setCurrentView('similar-movies');
         toast({
-          title: "Similar Movies Found!",
-          description: `Found ${similarMoviesData.length} movies similar to ${currentMovie.title}`
+          title: t('toast.similarMoviesFound'),
+          description: t('toast.foundSimilarMovies', { count: similarMoviesData.length, title: currentMovie.title })
         });
       } else {
         toast({
-          title: "No Similar Movies",
-          description: "No similar movies found for this movie.",
+          title: t('toast.noSimilarMovies'),
+          description: t('toast.noSimilarMoviesDesc'),
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error('Similar movies error:', error);
       
-      let errorMessage = "Failed to find similar movies. Please try again.";
+      let errorMessage = t('errors.generic');
       if (error instanceof Error) {
         if (error.message.includes('CORS')) {
-          errorMessage = "Service temporarily unavailable. Please try again in a moment.";
+          errorMessage = t('errors.server');
         } else if (error.message.includes('API')) {
-          errorMessage = "AI service error. Please try again.";
+          errorMessage = t('errors.server');
         } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = "Network error. Please check your connection and try again.";
+          errorMessage = t('errors.network');
         }
       }
       
       toast({
-        title: "Similar Movies Search Failed",
+        title: t('toast.similarMoviesFailed'),
         description: errorMessage,
         variant: "destructive"
       });
