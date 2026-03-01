@@ -23,16 +23,20 @@ import {
   Plus,
   Zap,
   Eye,
-  MessageSquare
+  MessageSquare,
+  Vault,
+  ArrowRight
 } from 'lucide-react';
 import { ShareMysteryMenu } from '@/components/mystery';
 import { useNavigate } from 'react-router-dom';
+import { useVaultStats } from '@/hooks/useVaultStats';
 
 export function CollectiveMemory() {
   const navigate = useNavigate();
   const unsolvedCount = useUnsolvedCount();
   const { mystery: featuredMystery, isLoading: featuredLoading } = useFeaturedMystery();
   const { stats, rankInfo, isLoading: statsLoading, isAuthenticated } = useDetectiveStats();
+  const { stats: vaultStats, isLoading: vaultLoading } = useVaultStats();
   const {
     mysteries,
     isLoading,
@@ -72,21 +76,43 @@ export function CollectiveMemory() {
                 </p>
               </div>
             </div>
-            {/* Icon-only button on mobile, full button on larger screens */}
-            <CreateMysteryDialog 
-              onSuccess={refetch}
-              trigger={
-                <>
-                  <Button className="neural-button gap-2 hidden sm:inline-flex">
-                    <HelpCircle className="h-4 w-4" aria-hidden="true" />
-                    Post a Mystery
-                  </Button>
-                  <Button className="neural-button sm:hidden" size="icon" aria-label="Post a Mystery">
-                    <Plus className="h-5 w-5" />
-                  </Button>
-                </>
-              }
-            />
+            <div className="flex items-center gap-2">
+              {/* Quick nav to Vault */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/vault')}
+                className="gap-1 text-primary/80 hover:text-primary px-2 hidden sm:flex"
+              >
+                <Vault className="h-4 w-4" />
+                <span>Vault</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/vault')}
+                className="text-primary/80 hover:text-primary sm:hidden"
+                aria-label="Go to Vault"
+              >
+                <Vault className="h-5 w-5" />
+              </Button>
+
+              {/* Icon-only button on mobile, full button on larger screens */}
+              <CreateMysteryDialog 
+                onSuccess={refetch}
+                trigger={
+                  <>
+                    <Button className="neural-button gap-2 hidden sm:inline-flex">
+                      <HelpCircle className="h-4 w-4" aria-hidden="true" />
+                      Post a Mystery
+                    </Button>
+                    <Button className="neural-button sm:hidden" size="icon" aria-label="Post a Mystery">
+                      <Plus className="h-5 w-5" />
+                    </Button>
+                  </>
+                }
+              />
+            </div>
           </div>
         </div>
       </header>
@@ -381,6 +407,38 @@ export function CollectiveMemory() {
                 </li>
               </ul>
             </Card>
+
+            {/* Vault Link */}
+            <Card 
+              className="neural-card p-4 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 cursor-pointer hover:border-primary/40 transition-all"
+              onClick={() => navigate('/vault')}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="font-semibold flex items-center gap-2">
+                  <Vault className="h-4 w-4 text-primary" aria-hidden="true" />
+                  The Vault
+                </h2>
+                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <p className="text-xs text-muted-foreground mb-3">
+                Explore trending movies, hidden gems, and community stats
+              </p>
+              {isAuthenticated && vaultStats && (
+                <div className="flex items-center gap-3 text-xs">
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10">
+                    <Trophy className="h-3 w-3 text-primary" />
+                    <span className="font-medium">{vaultStats.vault_score}</span>
+                    <span className="text-muted-foreground">score</span>
+                  </div>
+                  {vaultStats.current_streak > 0 && (
+                    <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/10">
+                      <Flame className="h-3 w-3 text-orange-400" />
+                      <span className="font-medium text-orange-400">{vaultStats.current_streak}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Card>
           </aside>
 
           {/* Mobile-only: Collapsible sections at bottom */}
@@ -420,6 +478,25 @@ export function CollectiveMemory() {
                 Top Detectives
               </h2>
               <DetectiveLeaderboard />
+            </Card>
+
+            {/* Vault Link for mobile */}
+            <Card 
+              className="neural-card p-3 sm:p-4 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 cursor-pointer"
+              onClick={() => navigate('/vault')}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Vault className="h-4 w-4 text-primary" aria-hidden="true" />
+                  <span className="font-semibold text-sm">The Vault</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isAuthenticated && vaultStats && (
+                    <span className="text-xs text-primary font-medium">{vaultStats.vault_score} pts</span>
+                  )}
+                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
             </Card>
           </div>
         </div>

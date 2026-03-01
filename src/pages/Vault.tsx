@@ -2,15 +2,15 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, Vault as VaultIcon } from 'lucide-react';
+import { ArrowLeft, Vault as VaultIcon, Users, ArrowRight } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useVaultStats } from '@/hooks/useVaultStats';
 import { LivePulse } from '@/components/vault/LivePulse';
 import { TrendingChart } from '@/components/vault/TrendingChart';
 import { HiddenGems } from '@/components/vault/HiddenGems';
-import { PredictionGame } from '@/components/vault/PredictionGame';
-import { Champions } from '@/components/vault/Champions';
 import { UserVaultStats } from '@/components/vault/UserVaultStats';
+import { RecentMysteries } from '@/components/vault/RecentMysteries';
+import { DetectiveLeaderboard } from '@/components/mystery/DetectiveLeaderboard';
 
 export const Vault = () => {
   const navigate = useNavigate();
@@ -56,6 +56,17 @@ export const Vault = () => {
               </div>
             )}
           </div>
+
+          {/* Quick nav to Collective Memory */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/mysteries')}
+            className="gap-1 sm:gap-2 text-purple-400 hover:text-purple-300 px-2 sm:px-4"
+          >
+            <Users className="h-4 w-4" />
+            <span className="hidden sm:inline">Mysteries</span>
+          </Button>
         </div>
 
         {/* Live Pulse */}
@@ -99,24 +110,38 @@ export const Vault = () => {
           <HiddenGems />
         </Card>
 
-        {/* Prediction Game */}
-        <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
-          <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-            <span className="text-lg sm:text-xl">🎯</span>
-            <span className="hidden xs:inline">{t('vault.predictions.title')}</span>
-            <span className="xs:hidden">Predictions</span>
-          </h2>
-          <PredictionGame />
+        {/* Collective Memory Section */}
+        <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4 border-purple-500/20 bg-gradient-to-br from-purple-500/5 to-transparent">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2">
+              <Users className="h-5 w-5 text-purple-400" />
+              <span className="hidden xs:inline">Collective Memory</span>
+              <span className="xs:hidden">Mysteries</span>
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/mysteries')}
+              className="text-xs gap-1 text-purple-400 hover:text-purple-300"
+            >
+              Explore
+              <ArrowRight className="h-3 w-3" />
+            </Button>
+          </div>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+            Help identify movies from memories and earn detective points
+          </p>
+          <RecentMysteries />
         </Card>
 
-        {/* Champions */}
+        {/* Top Detectives */}
         <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
           <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-            <span className="text-lg sm:text-xl">🏆</span>
-            <span className="hidden xs:inline">{t('vault.champions.title')}</span>
-            <span className="xs:hidden">Champions</span>
+            <span className="text-lg sm:text-xl">🔍</span>
+            <span className="hidden xs:inline">Top Detectives</span>
+            <span className="xs:hidden">Detectives</span>
           </h2>
-          <Champions />
+          <DetectiveLeaderboard />
         </Card>
 
         {/* User Stats */}

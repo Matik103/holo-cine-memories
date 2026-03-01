@@ -206,6 +206,8 @@
   "vault.activity.favorite": "{{name}} added {{movie}} to watchlist",
   "vault.activity.rating": "{{name}} rated {{movie}}",
   "vault.activity.badge": "{{name}} earned a new badge!",
+  "vault.activity.mystery_posted": "{{name}} posted a new mystery",
+  "vault.activity.mystery_solved": "{{name}} solved a mystery!",
   "vault.activity.generic": "{{name}} is exploring movies",
   
   "vault.trending.title": "Trending Now",
@@ -217,7 +219,7 @@
   "vault.trending.empty": "No trending movies yet. Start searching!",
   
   "vault.hiddenGems.title": "Hidden Gems",
-  "vault.hiddenGems.description": "Highly rated movies with fewer than 100 recalls - discover something unique!",
+  "vault.hiddenGems.description": "Critically acclaimed films you might have missed - high ratings, low mainstream buzz",
   "vault.hiddenGems.empty": "No hidden gems found yet. Keep exploring!",
   
   "vault.predictions.title": "Prediction Game",

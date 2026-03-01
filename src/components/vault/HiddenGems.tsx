@@ -3,7 +3,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useVaultHiddenGems } from '@/hooks/useVaultStats';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
-import { Gem, Sparkles } from 'lucide-react';
+import { Gem, Sparkles, Star } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 export function HiddenGems() {
@@ -50,6 +50,14 @@ export function HiddenGems() {
                 </div>
               </div>
 
+              {/* Rating badge */}
+              <div className="absolute top-2 left-2 z-10">
+                <Badge className="text-[10px] px-1.5 py-0.5 bg-black/70 border-yellow-500/50 text-yellow-400 flex items-center gap-0.5">
+                  <Star className="h-2.5 w-2.5 fill-yellow-400" />
+                  {(gem.recall_count / 10).toFixed(1)}
+                </Badge>
+              </div>
+
               {/* Poster */}
               {gem.poster_url ? (
                 <img
@@ -71,11 +79,17 @@ export function HiddenGems() {
               {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               
-              {/* Hover info */}
+              {/* Hover info - show genres if available */}
               <div className="absolute bottom-0 left-0 right-0 p-3 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                <Badge variant="outline" className="text-[10px] border-cyan-400/50 text-cyan-400 bg-black/50">
-                  {gem.recall_count} {t('vault.trending.recalls')}
-                </Badge>
+                {gem.genres && gem.genres.length > 0 ? (
+                  <Badge variant="outline" className="text-[10px] border-cyan-400/50 text-cyan-400 bg-black/50">
+                    {gem.genres.slice(0, 2).join(' • ')}
+                  </Badge>
+                ) : (
+                  <Badge variant="outline" className="text-[10px] border-cyan-400/50 text-cyan-400 bg-black/50">
+                    Hidden Gem
+                  </Badge>
+                )}
               </div>
             </div>
 

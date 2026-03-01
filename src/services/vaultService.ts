@@ -62,7 +62,7 @@ export interface VaultPrediction {
 
 export interface VaultActivity {
   id: string;
-  activity_type: 'search' | 'favorite' | 'rating' | 'badge' | 'prediction';
+  activity_type: 'search' | 'favorite' | 'rating' | 'badge' | 'prediction' | 'mystery_posted' | 'mystery_solved';
   movie_title: string | null;
   movie_year: number | null;
   display_name: string | null;
@@ -176,13 +176,13 @@ class VaultService {
       }));
     }
 
-    const { data: anyMovies } = await supabase
+    const { data: lowSearchMovies } = await supabase
       .from('vault_trending')
       .select('*')
       .order('recall_count_total', { ascending: true })
       .limit(limit);
 
-    return (anyMovies || []).map(t => ({
+    return (lowSearchMovies || []).map(t => ({
       movie_title: t.movie_title,
       movie_year: t.movie_year,
       poster_url: t.poster_url,

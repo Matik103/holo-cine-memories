@@ -7,3 +7,4 @@ export { UserVaultStats } from './UserVaultStats';
 export { BadgeCard, BadgeGrid } from './BadgeCard';
 export { ShareableCard } from './ShareableCard';
 export { VaultNotifications, useVaultNotifications } from './VaultNotifications';
+export { RecentMysteries } from './RecentMysteries';

@@ -70,21 +70,32 @@ export function useVaultTrending(period: 'hour' | 'day' | 'week' = 'day') {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    
     const fetchTrending = async () => {
+      if (!mounted) return;
       setIsLoading(true);
       try {
         const data = await vaultService.getTrending(period, 10);
-        setTrending(data);
+        if (mounted) {
+          setTrending(data);
+        }
       } catch (err) {
         console.error('Error fetching trending:', err);
       } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchTrending();
     const interval = setInterval(fetchTrending, 5 * 60 * 1000);
-    return () => clearInterval(interval);
+    
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
   }, [period]);
 
   return { trending, isLoading };
@@ -95,19 +106,40 @@ export function useVaultHiddenGems() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+    let retryCount = 0;
+    const maxRetries = 2;
+    
     const fetchGems = async () => {
+      if (!mounted) return;
       setIsLoading(true);
+      
       try {
         const data = await vaultService.getHiddenGems(10);
-        setGems(data);
+        if (mounted) {
+          setGems(data);
+          setIsLoading(false);
+        }
       } catch (err) {
         console.error('Error fetching hidden gems:', err);
-      } finally {
-        setIsLoading(false);
+        // Retry on failure (handles race condition with auth)
+        if (retryCount < maxRetries && mounted) {
+          retryCount++;
+          console.log(`Retrying hidden gems fetch (attempt ${retryCount + 1})...`);
+          setTimeout(fetchGems, 1000 * retryCount);
+        } else if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchGems();
+    // Small delay to let Supabase client initialize
+    const timer = setTimeout(fetchGems, 100);
+    
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   return { gems, isLoading };

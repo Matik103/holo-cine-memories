@@ -21,34 +21,30 @@ export function LivePulse() {
       setIsTyping(true);
       
       let message = '';
+      const name = activity.display_name || 'Someone';
+      const movie = activity.movie_title || 'a movie';
+      
       switch (activity.activity_type) {
         case 'search':
-          message = t('vault.activity.search', { 
-            name: activity.display_name || 'Someone',
-            movie: activity.movie_title || 'a movie'
-          });
+          message = t('vault.activity.search', { name, movie });
           break;
         case 'favorite':
-          message = t('vault.activity.favorite', {
-            name: activity.display_name || 'Someone',
-            movie: activity.movie_title || 'a movie'
-          });
+          message = t('vault.activity.favorite', { name, movie });
           break;
         case 'rating':
-          message = t('vault.activity.rating', {
-            name: activity.display_name || 'Someone',
-            movie: activity.movie_title || 'a movie'
-          });
+          message = t('vault.activity.rating', { name, movie });
           break;
         case 'badge':
-          message = t('vault.activity.badge', {
-            name: activity.display_name || 'Someone'
-          });
+          message = t('vault.activity.badge', { name });
+          break;
+        case 'mystery_posted':
+          message = `🔍 ${t('vault.activity.mystery_posted', { name })}`;
+          break;
+        case 'mystery_solved':
+          message = `🎉 ${t('vault.activity.mystery_solved', { name })}`;
           break;
         default:
-          message = t('vault.activity.generic', {
-            name: activity.display_name || 'Someone'
-          });
+          message = t('vault.activity.generic', { name });
       }
 
       setTimeout(() => {
