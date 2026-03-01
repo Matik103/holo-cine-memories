@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import MobileAppInit from "@/components/MobileAppInit";
 import { AdMobBanner } from "@/components/AdMobBanner";
+import { LanguageDetectionBanner } from "@/components/LanguageDetectionBanner";
 import Index from "./pages/Index";
 import { Auth } from "./pages/Auth";
 import { Profile } from "./pages/Profile";
@@ -72,6 +73,7 @@ const App = () => (
             </Routes>
           </main>
         <AdMobBanner position="bottom" autoShow={true} />
+          <LanguageDetectionBanner />
         </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

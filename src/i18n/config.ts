@@ -71,11 +71,34 @@ export async function loadLanguage(lang: string): Promise<void> {
   }
 }
 
+function getBrowserLanguage(): string {
+  const browserLang = navigator.language || (navigator as any).userLanguage || 'en';
+  const langCode = browserLang.split('-')[0].toLowerCase();
+  
+  const supported = SUPPORTED_LANGUAGES.find(l => l.code === langCode);
+  return supported ? langCode : 'en';
+}
+
+function getInitialLanguage(): string {
+  try {
+    const stored = localStorage.getItem('cinemind_language');
+    if (stored) {
+      const supported = SUPPORTED_LANGUAGES.find(l => l.code === stored);
+      if (supported) return stored;
+    }
+  } catch {}
+  
+  return getBrowserLanguage();
+}
+
+const initialLanguage = getInitialLanguage();
+
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: translatedResources,
+    lng: initialLanguage,
     fallbackLng: 'en',
     debug: false,
     
@@ -83,6 +106,11 @@ i18n
       order: ['localStorage', 'navigator', 'htmlTag'],
       caches: ['localStorage'],
       lookupLocalStorage: 'cinemind_language',
+      convertDetectedLanguage: (lng: string) => {
+        const langCode = lng.split('-')[0].toLowerCase();
+        const supported = SUPPORTED_LANGUAGES.find(l => l.code === langCode);
+        return supported ? langCode : 'en';
+      },
     },
 
     interpolation: {
@@ -95,20 +123,40 @@ i18n
   });
 
 i18n.on('languageChanged', (lng) => {
-  if (lng !== 'en') {
-    loadLanguage(lng);
-  }
-  document.documentElement.lang = lng;
+  const langCode = lng.split('-')[0].toLowerCase();
   
-  if (['ar', 'he', 'fa', 'ur'].includes(lng)) {
+  if (langCode !== 'en') {
+    loadLanguage(langCode);
+  }
+  
+  document.documentElement.lang = langCode;
+  
+  if (['ar', 'he', 'fa', 'ur'].includes(langCode)) {
     document.documentElement.dir = 'rtl';
   } else {
     document.documentElement.dir = 'ltr';
   }
+  
+  try {
+    localStorage.setItem('cinemind_language', langCode);
+  } catch {}
 });
 
-if (i18n.language && i18n.language !== 'en') {
-  loadLanguage(i18n.language);
+if (initialLanguage !== 'en') {
+  loadLanguage(initialLanguage);
+}
+
+export function getDetectedLanguageInfo() {
+  const browserLang = getBrowserLanguage();
+  const currentLang = i18n.language?.split('-')[0] || 'en';
+  const isAutoDetected = !localStorage.getItem('cinemind_language');
+  
+  return {
+    browserLanguage: browserLang,
+    currentLanguage: currentLang,
+    isAutoDetected,
+    languageInfo: SUPPORTED_LANGUAGES.find(l => l.code === currentLang) || SUPPORTED_LANGUAGES[0],
+  };
 }
 
 export default i18n;
