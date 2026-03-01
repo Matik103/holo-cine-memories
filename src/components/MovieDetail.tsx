@@ -375,7 +375,7 @@ export const MovieDetail = () => {
                 )}
                 <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
                   <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                  {movieDetails.runtime}
+                  {movieDetails.runtime?.replace(/\s*min\s*$/i, ` ${t('common.min')}`)}
                 </div>
                 {movieDetails.imdbRating && movieDetails.imdbRating !== 'N/A' && (
                   <div className="flex items-center gap-1 text-xs sm:text-sm">

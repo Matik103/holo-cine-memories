@@ -204,6 +204,7 @@
   "common.seeLess": "See Less",
   "common.viewAll": "View All",
   "common.minutes": "minutes",
+  "common.min": "min",
   "common.hours": "hours",
   
   "errors.network": "Network error. Please check your connection.",
