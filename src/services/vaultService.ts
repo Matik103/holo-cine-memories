@@ -56,6 +56,8 @@ export interface VaultPrediction {
   is_active: boolean;
   is_resolved: boolean;
   user_selection?: string;
+  total_votes?: number;
+  vote_distribution?: Record<string, number>;
 }
 
 export interface VaultActivity {
@@ -367,8 +369,13 @@ class VaultService {
         });
       }
 
-      case 'early_discovery':
-        return false;
+      case 'early_discovery': {
+        const { data, error } = await supabase.rpc('check_early_discovery', {
+          p_user_id: userId,
+          p_movie_title: ''
+        });
+        return !error && data === true;
+      }
 
       default:
         return false;
@@ -394,7 +401,9 @@ class VaultService {
       starts_at: p.starts_at,
       ends_at: p.ends_at,
       is_active: p.is_active || false,
-      is_resolved: p.is_resolved || false
+      is_resolved: p.is_resolved || false,
+      total_votes: p.total_votes || 0,
+      vote_distribution: p.vote_distribution || {}
     }));
 
     if (userId && predictions.length > 0) {
@@ -410,6 +419,56 @@ class VaultService {
 
       predictions.forEach(p => {
         p.user_selection = userSelections.get(p.id);
+      });
+    }
+
+    return predictions;
+  }
+
+  async getResolvedPredictions(userId?: string, limit = 5): Promise<VaultPrediction[]> {
+    const { data } = await supabase
+      .from('vault_predictions')
+      .select('*')
+      .eq('is_resolved', true)
+      .order('ends_at', { ascending: false })
+      .limit(limit);
+
+    const predictions = (data || []).map(p => ({
+      id: p.id,
+      prediction_type: p.prediction_type,
+      title: p.title,
+      description: p.description,
+      options: p.options as VaultPrediction['options'],
+      correct_answer: p.correct_answer,
+      points_reward: p.points_reward || 50,
+      starts_at: p.starts_at,
+      ends_at: p.ends_at,
+      is_active: false,
+      is_resolved: true
+    }));
+
+    if (userId && predictions.length > 0) {
+      const { data: userPredictions } = await supabase
+        .from('vault_user_predictions')
+        .select('prediction_id, selected_option, is_correct, points_earned')
+        .eq('user_id', userId)
+        .in('prediction_id', predictions.map(p => p.id));
+
+      const userSelections = new Map(
+        (userPredictions || []).map(up => [up.prediction_id, { 
+          selected_option: up.selected_option,
+          is_correct: up.is_correct,
+          points_earned: up.points_earned
+        }])
+      );
+
+      predictions.forEach(p => {
+        const userPred = userSelections.get(p.id);
+        if (userPred) {
+          p.user_selection = userPred.selected_option;
+          (p as any).is_correct = userPred.is_correct;
+          (p as any).points_earned = userPred.points_earned;
+        }
       });
     }
 

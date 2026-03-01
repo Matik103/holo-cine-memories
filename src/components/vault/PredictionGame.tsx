@@ -136,6 +136,8 @@ export function PredictionGame() {
             <div className="grid grid-cols-2 gap-2">
               {prediction.options.map((option) => {
                 const isSelected = prediction.user_selection === option.id;
+                const voteCount = prediction.vote_distribution?.[option.id] || 0;
+                const votePercentage = prediction.total_votes ? Math.round((voteCount / prediction.total_votes) * 100) : 0;
                 
                 return (
                   <Button
@@ -149,6 +151,11 @@ export function PredictionGame() {
                   >
                     {option.icon && <span className="text-lg sm:text-xl">{option.icon}</span>}
                     <span className="font-medium">{option.label}</span>
+                    {hasVoted && voteCount > 0 && (
+                      <span className="text-[10px] text-muted-foreground mt-1">
+                        {voteCount} votes ({votePercentage}%)
+                      </span>
+                    )}
                     {isSelected && (
                       <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-primary rounded-full flex items-center justify-center">
                         <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary-foreground" />
@@ -161,9 +168,14 @@ export function PredictionGame() {
 
             {/* Status */}
             {hasVoted && (
-              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                <Lock className="h-3 w-3 sm:h-4 sm:w-4" />
-                <span>{t('vault.predictions.voteLocked')}</span>
+              <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span>{t('vault.predictions.voteLocked')}</span>
+                </div>
+                {prediction.total_votes && prediction.total_votes > 0 && (
+                  <span>{prediction.total_votes} total votes</span>
+                )}
               </div>
             )}
           </div>
