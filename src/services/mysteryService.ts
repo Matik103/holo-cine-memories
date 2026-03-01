@@ -755,14 +755,21 @@ class MysteryService {
     return count || 0;
   }
 
-  async getFeaturedMystery(): Promise<MysteryResult<Mystery>> {
+  async getFeaturedMystery(excludeUserId?: string): Promise<MysteryResult<Mystery>> {
     try {
       // Get the "hottest" unsolved mystery based on engagement
       // Priority: high view count + recent activity + high points
-      const { data, error } = await supabase
+      // Exclude the current user's mysteries so they see others' mysteries
+      let query = supabase
         .from('memory_mysteries')
         .select('*')
-        .eq('status', 'unsolved')
+        .eq('status', 'unsolved');
+      
+      if (excludeUserId) {
+        query = query.neq('user_id', excludeUserId);
+      }
+      
+      const { data, error } = await query
         .order('view_count', { ascending: false })
         .order('attempt_count', { ascending: false })
         .order('points_reward', { ascending: false })
@@ -770,11 +777,17 @@ class MysteryService {
         .single();
 
       if (error || !data) {
-        // Fallback: get the most recent unsolved mystery
-        const { data: recentData, error: recentError } = await supabase
+        // Fallback: get the most recent unsolved mystery (excluding user's own)
+        let fallbackQuery = supabase
           .from('memory_mysteries')
           .select('*')
-          .eq('status', 'unsolved')
+          .eq('status', 'unsolved');
+        
+        if (excludeUserId) {
+          fallbackQuery = fallbackQuery.neq('user_id', excludeUserId);
+        }
+        
+        const { data: recentData, error: recentError } = await fallbackQuery
           .order('created_at', { ascending: false })
           .limit(1)
           .single();

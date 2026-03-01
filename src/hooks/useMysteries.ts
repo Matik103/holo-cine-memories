@@ -529,6 +529,7 @@ export function useFeaturedMystery() {
   const [mystery, setMystery] = useState<Mystery | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<MysteryServiceError | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const isMounted = useRef(true);
 
   useEffect(() => {
@@ -536,12 +537,32 @@ export function useFeaturedMystery() {
     return () => { isMounted.current = false; };
   }, []);
 
+  // Get current user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (isMounted.current) {
+        setUserId(user?.id || null);
+      }
+    };
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      if (isMounted.current) {
+        setUserId(session?.user?.id || null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   useEffect(() => {
     const fetchFeatured = async () => {
       setIsLoading(true);
       setError(null);
       
-      const result = await mysteryService.getFeaturedMystery();
+      // Pass userId to exclude user's own mysteries from featured
+      const result = await mysteryService.getFeaturedMystery(userId || undefined);
       
       if (isMounted.current) {
         if (result.error) {
@@ -554,7 +575,7 @@ export function useFeaturedMystery() {
     };
 
     fetchFeatured();
-  }, []);
+  }, [userId]); // Re-fetch when userId changes
 
   return { mystery, isLoading, error };
 }
