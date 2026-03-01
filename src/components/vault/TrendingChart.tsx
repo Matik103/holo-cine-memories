@@ -66,13 +66,19 @@ export function TrendingChart({ period }: TrendingChartProps) {
               <img
                 src={movie.poster_url}
                 alt={movie.movie_title}
+                loading="lazy"
                 className="w-8 h-12 sm:w-10 sm:h-14 object-cover rounded shadow-md group-hover:scale-105 transition-transform"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.style.display = 'none';
+                  const fallback = target.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
               />
-            ) : (
-              <div className="w-8 h-12 sm:w-10 sm:h-14 bg-primary/10 rounded flex items-center justify-center">
-                <Flame className="h-3 w-3 sm:h-4 sm:w-4 text-primary/50" />
-              </div>
-            )}
+            ) : null}
+            <div className="w-8 h-12 sm:w-10 sm:h-14 bg-primary/10 rounded flex items-center justify-center" style={{ display: movie.poster_url ? 'none' : 'flex' }}>
+              <Flame className="h-3 w-3 sm:h-4 sm:w-4 text-primary/50" />
+            </div>
 
             {/* Info */}
             <div className="flex-1 min-w-0">

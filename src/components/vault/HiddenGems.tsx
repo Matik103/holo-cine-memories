@@ -35,7 +35,7 @@ export function HiddenGems() {
 
   return (
     <ScrollArea className="w-full whitespace-nowrap">
-      <div className="flex gap-4 pb-4">
+      <div className="flex gap-4 pb-4 px-1">
         {gems.map((gem) => (
           <div
             key={`${gem.movie_title}_${gem.movie_year}`}
@@ -55,13 +55,18 @@ export function HiddenGems() {
                 <img
                   src={gem.poster_url}
                   alt={gem.movie_title}
+                  loading="lazy"
                   className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-300"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
                 />
-              ) : (
-                <div className="w-full h-52 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                  <Gem className="h-8 w-8 text-primary/50" />
-                </div>
-              )}
+              ) : null}
+              <div className={`w-full h-52 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center ${gem.poster_url ? 'hidden' : ''}`}>
+                <Gem className="h-8 w-8 text-primary/50" />
+              </div>
 
               {/* Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

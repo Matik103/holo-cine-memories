@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useVaultPredictions } from '@/hooks/useVaultStats';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,8 @@ import { Clock, Check, Trophy, Lock } from 'lucide-react';
 export function PredictionGame() {
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { predictions, isLoading, submitPrediction } = useVaultPredictions();
+  const navigate = useNavigate();
+  const { predictions, isLoading, submitPrediction, isAuthenticated } = useVaultPredictions();
   const [submitting, setSubmitting] = useState<string | null>(null);
 
   const formatTimeRemaining = (endDate: string) => {
@@ -30,6 +32,16 @@ export function PredictionGame() {
   };
 
   const handleSubmit = async (predictionId: string, option: string) => {
+    if (!isAuthenticated) {
+      toast({
+        title: 'Sign in required',
+        description: 'Please sign in to vote on predictions',
+        className: 'bg-primary/10 border-primary/20',
+      });
+      setTimeout(() => navigate('/auth'), 1500);
+      return;
+    }
+
     setSubmitting(predictionId);
     try {
       const success = await submitPrediction(predictionId, option);
@@ -37,12 +49,28 @@ export function PredictionGame() {
         toast({
           title: t('vault.predictions.submitted'),
           description: t('vault.predictions.submittedDesc'),
+          className: 'bg-primary/10 border-primary/20',
         });
       } else {
         toast({
           title: t('toast.error'),
           description: t('vault.predictions.submitError'),
-          variant: 'destructive',
+          className: 'bg-primary/10 border-primary/20',
+        });
+      }
+    } catch (err: any) {
+      if (err.message === 'AUTH_REQUIRED') {
+        toast({
+          title: 'Sign in required',
+          description: 'Please sign in to vote on predictions',
+          className: 'bg-primary/10 border-primary/20',
+        });
+        setTimeout(() => navigate('/auth'), 1500);
+      } else {
+        toast({
+          title: t('toast.error'),
+          description: t('vault.predictions.submitError'),
+          className: 'bg-primary/10 border-primary/20',
         });
       }
     } finally {

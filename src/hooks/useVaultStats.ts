@@ -143,7 +143,9 @@ export function useVaultPredictions() {
   }, [fetchPredictions]);
 
   const submitPrediction = useCallback(async (predictionId: string, option: string): Promise<boolean> => {
-    if (!user?.id) return false;
+    if (!user?.id) {
+      throw new Error('AUTH_REQUIRED');
+    }
     const success = await vaultService.submitPrediction(user.id, predictionId, option);
     if (success) {
       await fetchPredictions();
@@ -151,7 +153,7 @@ export function useVaultPredictions() {
     return success;
   }, [user?.id, fetchPredictions]);
 
-  return { predictions, isLoading, submitPrediction, refetch: fetchPredictions };
+  return { predictions, isLoading, submitPrediction, refetch: fetchPredictions, isAuthenticated: !!user };
 }
 
 export function useVaultChampions() {
