@@ -386,7 +386,7 @@ export function MysteryDetail() {
 
             {/* Description */}
             <blockquote className="text-sm sm:text-lg mb-3 sm:mb-4 border-l-4 border-primary/50 pl-3 sm:pl-4">
-              "{mystery.description}"
+              {mystery.description}
             </blockquote>
 
             {/* Additional clues */}
