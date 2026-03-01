@@ -85,7 +85,7 @@ export function MysteryCard({ mystery, compact = false }: MysteryCardProps) {
 
       {/* Mystery description */}
       <p className="text-sm sm:text-base mb-2 sm:mb-3 line-clamp-3 group-hover:text-primary/90 transition-colors">
-        "{mystery.description}"
+        {mystery.description}
       </p>
 
       {/* Additional clues */}
