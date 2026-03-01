@@ -15,6 +15,7 @@ import {
   getFacebookShareUrl,
 } from "@/lib/share";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   Share2,
   Link2,
@@ -48,16 +49,17 @@ export function ShareMovieMenu({
   triggerClassName,
 }: ShareMovieMenuProps) {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const { shareMovie, copyLink } = useShareMovie();
   const url = getMovieShareUrl(title, year);
   const text = getMovieShareText(title, year);
 
   const showCopiedToast = () => {
-    toast({ title: "Link copied", description: "Share link copied to clipboard." });
+    toast({ title: t('share.linkCopied'), description: t('share.linkCopiedDesc') });
   };
 
   const showSharedToast = () => {
-    toast({ title: "Shared!", description: "Thanks for sharing." });
+    toast({ title: t('share.shared'), description: t('share.sharedDesc') });
   };
 
   const handleNativeShare = async () => {
@@ -75,8 +77,8 @@ export function ShareMovieMenu({
       onSuccess: showCopiedToast,
       onError: () =>
         toast({
-          title: "Copy failed",
-          description: "Could not copy to clipboard.",
+          title: t('share.copyFailed'),
+          description: t('share.copyFailedDesc'),
           variant: "destructive",
         }),
     });
@@ -87,10 +89,10 @@ export function ShareMovieMenu({
       variant={variant}
       size={size}
       className={triggerClassName}
-      aria-label="Share movie"
+      aria-label={t('share.share')}
     >
       <Share2 className="w-4 h-4 mr-2" />
-      Share
+      {t('share.share')}
     </Button>
   );
 
@@ -103,12 +105,12 @@ export function ShareMovieMenu({
         {canNativeShare && (
           <DropdownMenuItem onClick={handleNativeShare}>
             <Share2 className="w-4 h-4 mr-2" />
-            Share via...
+            {t('share.shareVia')}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={handleCopyLink}>
           <Link2 className="w-4 h-4 mr-2" />
-          Copy link
+          {t('share.copyLink')}
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <a
@@ -118,7 +120,7 @@ export function ShareMovieMenu({
             className="flex items-center"
           >
             <span className="mr-2 inline-block w-4 h-4 text-[1rem] leading-none">𝕏</span>
-            Share on X
+            {t('share.shareOnX')}
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -129,7 +131,7 @@ export function ShareMovieMenu({
             className="flex items-center"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
-            Share on WhatsApp
+            {t('share.shareOnWhatsApp')}
           </a>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -140,7 +142,7 @@ export function ShareMovieMenu({
             className="flex items-center"
           >
             <span className="mr-2 inline-block w-4 h-4 text-[1rem] leading-none font-semibold">f</span>
-            Share on Facebook
+            {t('share.shareOnFacebook')}
           </a>
         </DropdownMenuItem>
       </DropdownMenuContent>
