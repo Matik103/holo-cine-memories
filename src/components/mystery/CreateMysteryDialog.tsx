@@ -128,29 +128,29 @@ export function CreateMysteryDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Post a Movie Mystery</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="space-y-1.5 sm:space-y-2">
+          <DialogTitle className="text-base sm:text-lg">Post a Movie Mystery</DialogTitle>
+          <DialogDescription className="text-xs sm:text-sm">
             Describe the movie you're trying to find. Include any details you remember - scenes, actors, plot points, or even feelings the movie gave you.
           </DialogDescription>
         </DialogHeader>
 
         {!isAuthenticated ? (
-          <div className="py-8 text-center">
-            <LogIn className="h-12 w-12 mx-auto mb-4 text-muted-foreground" aria-hidden="true" />
-            <p className="text-muted-foreground mb-4">
+          <div className="py-6 sm:py-8 text-center">
+            <LogIn className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" aria-hidden="true" />
+            <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
               Sign in to post mysteries and help others find movies
             </p>
-            <Button onClick={handleSignIn} className="neural-button">
+            <Button onClick={handleSignIn} className="neural-button w-full sm:w-auto">
               Sign in with Google
             </Button>
           </div>
         ) : (
           <>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor={descriptionId}>
+            <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor={descriptionId} className="text-xs sm:text-sm">
                   What do you remember? <span className="text-destructive" aria-hidden="true">*</span>
                   <span className="sr-only">(required)</span>
                 </Label>
@@ -159,71 +159,72 @@ export function CreateMysteryDialog({
                   placeholder="e.g., There's this movie where a guy wakes up and realizes he's been living the same day over and over..."
                   value={description}
                   onChange={handleDescriptionChange}
-                  className={`min-h-[120px] ${validationError ? 'border-destructive' : ''}`}
+                  className={`min-h-[100px] sm:min-h-[120px] text-sm ${validationError ? 'border-destructive' : ''}`}
                   aria-describedby={validationError ? errorId : undefined}
                   aria-invalid={!!validationError}
                   required
                 />
-                <div className="flex justify-between text-xs">
+                <div className="flex justify-between text-[10px] sm:text-xs">
                   <span 
                     className={`${isValidLength ? 'text-muted-foreground' : characterCount < MIN_DESCRIPTION_LENGTH ? 'text-amber-500' : 'text-destructive'}`}
                     aria-live="polite"
                   >
-                    {characterCount}/{MAX_DESCRIPTION_LENGTH} characters
+                    {characterCount}/{MAX_DESCRIPTION_LENGTH}
                     {characterCount < MIN_DESCRIPTION_LENGTH && ` (min ${MIN_DESCRIPTION_LENGTH})`}
                   </span>
                 </div>
                 {validationError && (
-                  <p id={errorId} className="text-xs text-destructive flex items-center gap-1" role="alert">
-                    <AlertCircle className="h-3 w-3" aria-hidden="true" />
-                    {validationError}
+                  <p id={errorId} className="text-[10px] sm:text-xs text-destructive flex items-center gap-1" role="alert">
+                    <AlertCircle className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+                    <span>{validationError}</span>
                   </p>
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor={cluesId}>Additional clues (optional)</Label>
+              <div className="space-y-1.5 sm:space-y-2">
+                <Label htmlFor={cluesId} className="text-xs sm:text-sm">Additional clues (optional)</Label>
                 <Textarea
                   id={cluesId}
                   placeholder="e.g., I think it was from the 90s, had a famous actor, was a comedy..."
                   value={clues}
                   onChange={(e) => setClues(e.target.value)}
-                  className="min-h-[80px]"
+                  className="min-h-[60px] sm:min-h-[80px] text-sm"
                 />
-                <p className="text-xs text-muted-foreground">
-                  {clues.length}/{MAX_CLUES_LENGTH} characters
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
+                  {clues.length}/{MAX_CLUES_LENGTH}
                 </p>
               </div>
 
               {aiSuggestions?.suggestedTitle && (
-                <div className="p-3 rounded-lg bg-muted/50 text-sm">
+                <div className="p-2.5 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm">
                   <p className="text-muted-foreground">
                     <span className="font-medium">AI suggestion:</span> {aiSuggestions.suggestedTitle}
                     {aiSuggestions.confidence && (
-                      <span className="text-xs ml-2">
+                      <span className="text-[10px] sm:text-xs ml-1 sm:ml-2">
                         ({Math.round(aiSuggestions.confidence * 100)}% confidence)
                       </span>
                     )}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-1">
+                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
                     This will be shared with the community as a starting point.
                   </p>
                 </div>
               )}
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
               <Button
                 variant="outline"
                 onClick={() => setOpen(false)}
                 disabled={isSubmitting}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting || !isValidLength}
-                className="neural-button"
+                className="neural-button w-full sm:w-auto"
               >
                 {isSubmitting ? (
                   <>

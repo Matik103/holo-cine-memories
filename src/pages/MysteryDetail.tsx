@@ -10,14 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -28,7 +20,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { DetectiveRankBadge } from '@/components/mystery/DetectiveRankBadge';
 import {
   ArrowLeft,
   Eye,
@@ -210,20 +201,20 @@ export function MysteryDetail() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
         <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label="Back to mysteries">
+          <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label="Back to mysteries" className="flex-shrink-0">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <Skeleton className="h-6 w-48" />
+              <Skeleton className="h-5 sm:h-6 w-32 sm:w-48" />
             </div>
           </div>
         </header>
-        <main className="container mx-auto px-4 py-6" role="status" aria-label="Loading mystery">
-          <div className="max-w-3xl mx-auto space-y-6">
-            <Skeleton className="h-48 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
-            <Skeleton className="h-32 w-full rounded-xl" />
+        <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6" role="status" aria-label="Loading mystery">
+          <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
+            <Skeleton className="h-40 sm:h-48 w-full rounded-xl" />
+            <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
+            <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
           </div>
         </main>
       </div>
@@ -234,27 +225,27 @@ export function MysteryDetail() {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
         <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
-          <div className="container mx-auto px-4 py-4">
+          <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
             <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label="Back to mysteries">
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
         </header>
-        <main className="container mx-auto px-4 py-6">
-          <Card className="max-w-lg mx-auto neural-card p-8 text-center" role="alert">
-            <AlertCircle className="h-12 w-12 mx-auto mb-4 text-destructive" aria-hidden="true" />
-            <h1 className="text-xl font-semibold mb-2">
+        <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+          <Card className="max-w-lg mx-auto neural-card p-6 sm:p-8 text-center" role="alert">
+            <AlertCircle className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-destructive" aria-hidden="true" />
+            <h1 className="text-lg sm:text-xl font-semibold mb-2">
               {error?.code === 'NOT_FOUND' ? 'Mystery Not Found' : 'Error Loading Mystery'}
             </h1>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-sm text-muted-foreground mb-4 sm:mb-6">
               {error?.message || 'This mystery may have been removed or does not exist.'}
             </p>
-            <div className="flex gap-3 justify-center">
-              <Button variant="outline" onClick={() => navigate('/mysteries')}>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
+              <Button variant="outline" onClick={() => navigate('/mysteries')} className="w-full sm:w-auto">
                 Browse Mysteries
               </Button>
               {error?.code !== 'NOT_FOUND' && (
-                <Button onClick={refetch} className="gap-2">
+                <Button onClick={refetch} className="gap-2 w-full sm:w-auto">
                   <RefreshCw className="h-4 w-4" aria-hidden="true" />
                   Try Again
                 </Button>
@@ -276,26 +267,27 @@ export function MysteryDetail() {
     <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label="Back to mysteries">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label="Back to mysteries" className="flex-shrink-0">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div>
-                <h1 className="text-lg font-semibold">Movie Mystery</h1>
-                <p className="text-xs text-muted-foreground">
-                  Posted by {mystery.poster_name} • {timeAgo}
+              <div className="min-w-0">
+                <h1 className="text-base sm:text-lg font-semibold truncate">Movie Mystery</h1>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
+                  by {mystery.poster_name} • {timeAgo}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className={`${difficultyInfo.bgColor} ${difficultyInfo.color}`}>
+            {/* Badges - hide points badge on very small screens if space is tight */}
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+              <Badge variant="outline" className={`${difficultyInfo.bgColor} ${difficultyInfo.color} text-[10px] sm:text-xs px-1.5 sm:px-2`}>
                 {difficultyInfo.label}
               </Badge>
               {!isSolved && !isClosed && (
-                <Badge variant="outline" className="bg-primary/10 text-primary">
-                  <Trophy className="h-3 w-3 mr-1" aria-hidden="true" />
+                <Badge variant="outline" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2 hidden xs:flex">
+                  <Trophy className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" aria-hidden="true" />
                   +{mystery.points_reward}
                 </Badge>
               )}
@@ -304,53 +296,63 @@ export function MysteryDetail() {
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-6">
-        <div className="max-w-3xl mx-auto space-y-6">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
           {/* Mystery content */}
-          <Card className="neural-card p-6">
+          <Card className="neural-card p-4 sm:p-6">
             {/* Status banner */}
             {isSolved && (
-              <div className="flex items-center gap-2 mb-4 p-3 rounded-lg bg-green-500/10 text-green-500">
-                <CheckCircle className="h-5 w-5" aria-hidden="true" />
-                <div>
-                  <span className="font-medium">Solved!</span>
-                  {mystery.solution_movie_title && (
-                    <span className="ml-2 text-sm">
-                      {mystery.solution_movie_title} {mystery.solution_movie_year && `(${mystery.solution_movie_year})`}
-                    </span>
-                  )}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-green-500/10 text-green-500">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" aria-hidden="true" />
+                  <span className="font-medium text-sm sm:text-base">Solved!</span>
                 </div>
+                {mystery.solution_movie_title && (
+                  <span className="text-xs sm:text-sm ml-6 sm:ml-0">
+                    {mystery.solution_movie_title} {mystery.solution_movie_year && `(${mystery.solution_movie_year})`}
+                  </span>
+                )}
               </div>
             )}
 
             {isClosed && (
-              <div className="flex items-center gap-2 mb-4 p-3 rounded-lg bg-muted text-muted-foreground">
-                <X className="h-5 w-5" aria-hidden="true" />
-                <span className="font-medium">Closed without solution</span>
+              <div className="flex items-center gap-2 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-muted text-muted-foreground">
+                <X className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
+                <span className="font-medium text-sm sm:text-base">Closed without solution</span>
+              </div>
+            )}
+
+            {/* Points badge on mobile - shown here since hidden in header */}
+            {!isSolved && !isClosed && (
+              <div className="xs:hidden mb-3">
+                <Badge variant="outline" className="bg-primary/10 text-primary text-xs">
+                  <Trophy className="h-3 w-3 mr-1" aria-hidden="true" />
+                  +{mystery.points_reward} points
+                </Badge>
               </div>
             )}
 
             {/* Description */}
-            <blockquote className="text-lg mb-4 border-l-4 border-primary/50 pl-4">
+            <blockquote className="text-sm sm:text-lg mb-3 sm:mb-4 border-l-4 border-primary/50 pl-3 sm:pl-4">
               "{mystery.description}"
             </blockquote>
 
             {/* Additional clues */}
             {mystery.additional_clues && (
-              <div className="mb-4 p-3 rounded-lg bg-muted/50">
-                <h2 className="text-sm font-medium mb-1">Additional Clues</h2>
-                <p className="text-sm text-muted-foreground">{mystery.additional_clues}</p>
+              <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-muted/50">
+                <h2 className="text-xs sm:text-sm font-medium mb-1">Additional Clues</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">{mystery.additional_clues}</p>
               </div>
             )}
 
             {/* AI suggestion */}
             {mystery.ai_suggestions?.suggestedTitle && (
-              <div className="mb-4 p-3 rounded-lg bg-blue-500/10">
-                <h2 className="text-sm font-medium mb-1 text-blue-400">AI Suggestion</h2>
-                <p className="text-sm text-muted-foreground">
+              <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-blue-500/10">
+                <h2 className="text-xs sm:text-sm font-medium mb-1 text-blue-400">AI Suggestion</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {mystery.ai_suggestions.suggestedTitle}
                   {mystery.ai_suggestions.confidence && (
-                    <span className="ml-2 text-xs">
+                    <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs">
                       ({Math.round(mystery.ai_suggestions.confidence * 100)}% confidence)
                     </span>
                   )}
@@ -358,32 +360,32 @@ export function MysteryDetail() {
               </div>
             )}
 
-            {/* Stats */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            {/* Stats - responsive wrap */}
+            <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
-                <Eye className="h-4 w-4" aria-hidden="true" />
-                <span aria-label={`${mystery.view_count} views`}>{mystery.view_count} views</span>
+                <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+                <span>{mystery.view_count} views</span>
               </span>
               <span className="flex items-center gap-1">
-                <MessageSquare className="h-4 w-4" aria-hidden="true" />
-                <span aria-label={`${mystery.attempt_count} attempts`}>{mystery.attempt_count} attempts</span>
+                <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+                <span>{mystery.attempt_count} attempts</span>
               </span>
               <span className="flex items-center gap-1">
-                <Clock className="h-4 w-4" aria-hidden="true" />
+                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
                 <span>{timeAgo}</span>
               </span>
             </div>
 
             {/* Owner actions */}
             {isOwner && !isSolved && !isClosed && (
-              <div className="mt-4 pt-4 border-t border-border/50">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setShowCloseConfirm(true)}
-                  className="text-muted-foreground"
+                  className="text-muted-foreground text-xs sm:text-sm"
                 >
-                  <X className="h-4 w-4 mr-2" aria-hidden="true" />
+                  <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" aria-hidden="true" />
                   Close Mystery
                 </Button>
               </div>
@@ -392,17 +394,17 @@ export function MysteryDetail() {
 
           {/* Submit solution */}
           {!isAuthenticated && !isSolved && !isClosed && (
-            <Card className="neural-card p-6 text-center">
-              <LogIn className="h-8 w-8 mx-auto mb-3 text-muted-foreground" aria-hidden="true" />
-              <p className="text-muted-foreground mb-4">Sign in to submit a solution</p>
-              <Button onClick={handleSignIn} className="neural-button">
+            <Card className="neural-card p-4 sm:p-6 text-center">
+              <LogIn className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground" aria-hidden="true" />
+              <p className="text-sm text-muted-foreground mb-3 sm:mb-4">Sign in to submit a solution</p>
+              <Button onClick={handleSignIn} className="neural-button w-full sm:w-auto">
                 Sign in with Google
               </Button>
             </Card>
           )}
 
           {canSubmit && !showSubmitForm && (
-            <Card className="neural-card p-4">
+            <Card className="neural-card p-3 sm:p-4">
               <Button
                 onClick={() => setShowSubmitForm(true)}
                 className="w-full neural-button gap-2"
@@ -414,27 +416,27 @@ export function MysteryDetail() {
           )}
 
           {isOwner && !isSolved && !isClosed && (
-            <Card className="neural-card p-4 bg-purple-500/5 border-purple-500/20">
-              <p className="text-sm text-muted-foreground text-center">
+            <Card className="neural-card p-3 sm:p-4 bg-purple-500/5 border-purple-500/20">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">
                 This is your mystery. Review the solutions below and accept the correct one.
               </p>
             </Card>
           )}
 
           {hasUserAttempted && !isOwner && !isSolved && !isClosed && (
-            <Card className="neural-card p-4 bg-blue-500/5 border-blue-500/20">
-              <p className="text-sm text-muted-foreground text-center">
+            <Card className="neural-card p-3 sm:p-4 bg-blue-500/5 border-blue-500/20">
+              <p className="text-xs sm:text-sm text-muted-foreground text-center">
                 You've already submitted a solution. Wait for the mystery poster to review it.
               </p>
             </Card>
           )}
 
           {showSubmitForm && (
-            <Card className="neural-card p-6">
-              <h2 className="font-semibold mb-4">Submit Your Answer</h2>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor={titleId}>
+            <Card className="neural-card p-4 sm:p-6">
+              <h2 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Submit Your Answer</h2>
+              <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor={titleId} className="text-xs sm:text-sm">
                     Movie Title <span className="text-destructive" aria-hidden="true">*</span>
                   </Label>
                   <Input
@@ -443,10 +445,11 @@ export function MysteryDetail() {
                     value={movieTitle}
                     onChange={(e) => setMovieTitle(e.target.value)}
                     required
+                    className="text-sm"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={yearId}>Year (optional)</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor={yearId} className="text-xs sm:text-sm">Year (optional)</Label>
                   <Input
                     id={yearId}
                     type="number"
@@ -455,30 +458,33 @@ export function MysteryDetail() {
                     onChange={(e) => setMovieYear(e.target.value)}
                     min="1888"
                     max={new Date().getFullYear() + 5}
+                    className="text-sm"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor={explanationId}>Why do you think this is the movie? (optional)</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor={explanationId} className="text-xs sm:text-sm">Why do you think this is the movie? (optional)</Label>
                   <Textarea
                     id={explanationId}
                     placeholder="Explain why this movie matches the description..."
                     value={explanation}
                     onChange={(e) => setExplanation(e.target.value)}
-                    className="min-h-[80px]"
+                    className="min-h-[70px] sm:min-h-[80px] text-sm"
                   />
                 </div>
-                <div className="flex gap-3">
+                {/* Buttons - stack on mobile */}
+                <div className="flex flex-col-reverse sm:flex-row gap-2 sm:gap-3">
                   <Button
                     variant="outline"
                     onClick={() => setShowSubmitForm(false)}
                     disabled={isSubmitting}
+                    className="w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleSubmitAttempt}
                     disabled={isSubmitting || !movieTitle.trim()}
-                    className="neural-button flex-1"
+                    className="neural-button w-full sm:flex-1"
                   >
                     {isSubmitting ? (
                       <>
@@ -499,17 +505,17 @@ export function MysteryDetail() {
 
           {/* Attempts */}
           <div>
-            <h2 className="font-semibold mb-4 flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-primary" aria-hidden="true" />
+            <h2 className="font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+              <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" aria-hidden="true" />
               Solutions ({attempts.length})
             </h2>
 
             {attempts.length === 0 ? (
-              <Card className="neural-card p-6 text-center text-muted-foreground">
-                <p>No solutions submitted yet. Be the first to help!</p>
+              <Card className="neural-card p-4 sm:p-6 text-center text-muted-foreground">
+                <p className="text-sm">No solutions submitted yet. Be the first to help!</p>
               </Card>
             ) : (
-              <div className="space-y-4" aria-label="Submitted solutions">
+              <div className="space-y-3 sm:space-y-4" aria-label="Submitted solutions">
                 {attempts.map((attempt) => {
                   const userVote = userVotes[attempt.id];
                   const isOwnAttempt = attempt.user_id === userId;
@@ -518,40 +524,39 @@ export function MysteryDetail() {
                   return (
                     <Card
                       key={attempt.id}
-                      className={`neural-card p-4 ${attempt.is_accepted ? 'border-green-500/50 bg-green-500/5' : ''}`}
+                      className={`neural-card p-3 sm:p-4 ${attempt.is_accepted ? 'border-green-500/50 bg-green-500/5' : ''}`}
                     >
                       {attempt.is_accepted && (
-                        <div className="flex items-center gap-2 mb-3 text-green-500">
-                          <CheckCircle className="h-4 w-4" aria-hidden="true" />
-                          <span className="text-sm font-medium">Accepted Solution</span>
+                        <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 text-green-500">
+                          <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
+                          <span className="text-xs sm:text-sm font-medium">Accepted Solution</span>
                         </div>
                       )}
 
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <h3 className="font-medium">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm sm:text-base">
                             {attempt.movie_title}
                             {attempt.movie_year && (
-                              <span className="text-muted-foreground ml-2">({attempt.movie_year})</span>
+                              <span className="text-muted-foreground ml-1 sm:ml-2">({attempt.movie_year})</span>
                             )}
                           </h3>
                           {attempt.explanation && (
-                            <p className="text-sm text-muted-foreground mt-2">{attempt.explanation}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">{attempt.explanation}</p>
                           )}
-                          <p className="text-xs text-muted-foreground mt-2">
+                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2">
                             by {attempt.solver_name} • {mysteryService.formatTimeAgo(attempt.created_at)}
                           </p>
                         </div>
 
-                        {/* Voting */}
+                        {/* Voting - larger touch targets on mobile */}
                         {!isSolved && !isClosed && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 sm:gap-2 self-end sm:self-start">
                             <Button
                               variant="ghost"
-                              size="sm"
                               onClick={() => handleVote(attempt.id, 'up')}
                               disabled={isOwnAttempt || isVoting}
-                              className={`gap-1 ${userVote === 'up' ? 'text-green-500' : ''}`}
+                              className={`gap-1 h-10 w-14 sm:h-9 sm:w-auto px-2 sm:px-3 ${userVote === 'up' ? 'text-green-500 bg-green-500/10' : ''}`}
                               aria-label={`Upvote (${attempt.upvotes})`}
                               aria-pressed={userVote === 'up'}
                             >
@@ -560,19 +565,18 @@ export function MysteryDetail() {
                               ) : (
                                 <ThumbsUp className="h-4 w-4" />
                               )}
-                              <span>{attempt.upvotes}</span>
+                              <span className="text-sm">{attempt.upvotes}</span>
                             </Button>
                             <Button
                               variant="ghost"
-                              size="sm"
                               onClick={() => handleVote(attempt.id, 'down')}
                               disabled={isOwnAttempt || isVoting}
-                              className={`gap-1 ${userVote === 'down' ? 'text-red-500' : ''}`}
+                              className={`gap-1 h-10 w-14 sm:h-9 sm:w-auto px-2 sm:px-3 ${userVote === 'down' ? 'text-red-500 bg-red-500/10' : ''}`}
                               aria-label={`Downvote (${attempt.downvotes})`}
                               aria-pressed={userVote === 'down'}
                             >
                               <ThumbsDown className="h-4 w-4" />
-                              <span>{attempt.downvotes}</span>
+                              <span className="text-sm">{attempt.downvotes}</span>
                             </Button>
                           </div>
                         )}
@@ -580,7 +584,7 @@ export function MysteryDetail() {
 
                       {/* Accept button for owner */}
                       {isOwner && !isSolved && !isClosed && !attempt.is_accepted && (
-                        <div className="mt-4 pt-4 border-t border-border/50">
+                        <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border/50">
                           <Button
                             onClick={() => handleAcceptSolution(attempt.id)}
                             disabled={acceptingAttemptId === attempt.id}
@@ -611,20 +615,20 @@ export function MysteryDetail() {
 
       {/* Close confirmation dialog */}
       <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
-        <AlertDialogContent>
+        <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle>Close this mystery?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base sm:text-lg">Close this mystery?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-sm">
               This will close the mystery without marking any solution as correct. 
               No points will be awarded. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isClosing}>Cancel</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
+            <AlertDialogCancel disabled={isClosing} className="w-full sm:w-auto">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCloseMystery}
               disabled={isClosing}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full sm:w-auto"
             >
               {isClosing ? (
                 <>
