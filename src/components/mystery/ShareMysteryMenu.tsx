@@ -93,13 +93,14 @@ export function ShareMysteryMenu({
 
   const handleInstagramShare = async () => {
     try {
-      const desc = description.length > 180 ? description.slice(0, 180) + '...' : description;
+      const desc = description.length > 150 ? description.slice(0, 150) + '...' : description;
       const instagramText = `🎬 Movie Mystery 🎬
 
 ${desc}
 
 Can you help? 🔍
-🔗 Link in bio
+
+👉 ${url}
 
 #MovieMystery #CineMind #Movies #Film #HelpMeFind`;
       await navigator.clipboard.writeText(instagramText);
@@ -118,13 +119,14 @@ Can you help? 🔍
 
   const handleTikTokShare = async () => {
     try {
-      const desc = description.length > 150 ? description.slice(0, 150) + '...' : description;
+      const desc = description.length > 120 ? description.slice(0, 120) + '...' : description;
       const tiktokText = `🎬 Movie Mystery 🎬
 
 ${desc}
 
 Can you help? Comment below! 👇
-Link in bio 🔍
+
+👉 ${url}
 
 #MovieMystery #CineMind #Movies #FilmTok #HelpMeFind`;
       await navigator.clipboard.writeText(tiktokText);
