@@ -370,10 +370,37 @@ export function MysteryDetail() {
   }
 
   const difficultyInfo = mysteryService.getDifficultyInfo(mystery.difficulty);
-  const timeAgo = mysteryService.formatTimeAgo(mystery.created_at);
   const isSolved = mystery.status === 'solved';
   const isClosed = mystery.status === 'closed';
   const canSubmit = isAuthenticated && !isOwner && !hasUserAttempted && !isSolved && !isClosed;
+
+  const getTranslatedTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return t('time.unknown');
+    
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 0) return t('time.justNow');
+    if (seconds < 60) return t('time.justNow');
+    if (seconds < 3600) return t('time.minutesAgo', { count: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t('time.hoursAgo', { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t('time.daysAgo', { count: Math.floor(seconds / 86400) });
+    return date.toLocaleDateString(currentLanguage);
+  };
+
+  const getTranslatedDifficulty = (difficulty: string): string => {
+    const difficultyMap: Record<string, string> = {
+      easy: t('mystery.difficulty.easy'),
+      normal: t('mystery.difficulty.normal'),
+      hard: t('mystery.difficulty.hard'),
+      legendary: t('mystery.difficulty.legendary')
+    };
+    return difficultyMap[difficulty] || difficultyMap.normal;
+  };
+
+  const timeAgo = getTranslatedTimeAgo(mystery.created_at);
+  const difficultyLabel = getTranslatedDifficulty(mystery.difficulty);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
@@ -395,7 +422,7 @@ export function MysteryDetail() {
             {/* Badges - hide points badge on very small screens if space is tight */}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
               <Badge variant="outline" className={`${difficultyInfo.bgColor} ${difficultyInfo.color} text-[10px] sm:text-xs px-1.5 sm:px-2`}>
-                {difficultyInfo.label}
+                {difficultyLabel}
               </Badge>
               {!isSolved && !isClosed && (
                 <Badge variant="outline" className="bg-primary/10 text-primary text-[10px] sm:text-xs px-1.5 sm:px-2 hidden xs:flex">
@@ -683,7 +710,7 @@ export function MysteryDetail() {
                             <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">{translatedExplanation || attempt.explanation}</p>
                           )}
                           <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2">
-                            {t('mystery.by')} {attempt.solver_name} • {mysteryService.formatTimeAgo(attempt.created_at)}
+                            {t('mystery.by')} {attempt.solver_name} • {getTranslatedTimeAgo(attempt.created_at)}
                           </p>
                         </div>
 

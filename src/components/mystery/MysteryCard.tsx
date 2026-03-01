@@ -20,10 +20,37 @@ export function MysteryCard({ mystery, compact = false }: MysteryCardProps) {
   const { t, i18n } = useTranslation();
   const currentLanguage = i18n.language?.split('-')[0] || 'en';
   const difficultyInfo = mysteryService.getDifficultyInfo(mystery.difficulty);
-  const timeAgo = mysteryService.formatTimeAgo(mystery.created_at);
   
   const [translatedDescription, setTranslatedDescription] = useState<string>('');
   const [translatedClues, setTranslatedClues] = useState<string>('');
+
+  const getTranslatedTimeAgo = (dateString: string): string => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return t('time.unknown');
+    
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 0) return t('time.justNow');
+    if (seconds < 60) return t('time.justNow');
+    if (seconds < 3600) return t('time.minutesAgo', { count: Math.floor(seconds / 60) });
+    if (seconds < 86400) return t('time.hoursAgo', { count: Math.floor(seconds / 3600) });
+    if (seconds < 604800) return t('time.daysAgo', { count: Math.floor(seconds / 86400) });
+    return date.toLocaleDateString(currentLanguage);
+  };
+
+  const getTranslatedDifficulty = (difficulty: string): string => {
+    const difficultyMap: Record<string, string> = {
+      easy: t('mystery.difficulty.easy'),
+      normal: t('mystery.difficulty.normal'),
+      hard: t('mystery.difficulty.hard'),
+      legendary: t('mystery.difficulty.legendary')
+    };
+    return difficultyMap[difficulty] || difficultyMap.normal;
+  };
+
+  const timeAgo = getTranslatedTimeAgo(mystery.created_at);
+  const difficultyLabel = getTranslatedDifficulty(mystery.difficulty);
 
   useEffect(() => {
     const translateContent = async () => {
@@ -99,7 +126,7 @@ export function MysteryCard({ mystery, compact = false }: MysteryCardProps) {
       onKeyDown={handleKeyDown}
       role="button"
       tabIndex={0}
-      aria-label={`${t('mystery.movieMystery')} ${t('mystery.by')} ${mystery.poster_name}: ${mystery.description.slice(0, 100)}${mystery.description.length > 100 ? '...' : ''}. ${mystery.status === 'solved' ? `${t('mystery.solved')}: ${mystery.solution_movie_title}` : `${mystery.points_reward} ${t('mystery.points')}, ${difficultyInfo.label}`}. ${mystery.view_count} ${t('mystery.views')}, ${mystery.attempt_count} ${t('mystery.attempts')}.`}
+      aria-label={`${t('mystery.movieMystery')} ${t('mystery.by')} ${mystery.poster_name}: ${mystery.description.slice(0, 100)}${mystery.description.length > 100 ? '...' : ''}. ${mystery.status === 'solved' ? `${t('mystery.solved')}: ${mystery.solution_movie_title}` : `${mystery.points_reward} ${t('mystery.points')}, ${difficultyLabel}`}. ${mystery.view_count} ${t('mystery.views')}, ${mystery.attempt_count} ${t('mystery.attempts')}.`}
     >
       {/* Status indicator */}
       {mystery.status === 'solved' && (
@@ -150,7 +177,7 @@ export function MysteryCard({ mystery, compact = false }: MysteryCardProps) {
             variant="outline" 
             className={`${difficultyInfo.bgColor} ${difficultyInfo.color} text-[9px] sm:text-[10px] px-1.5 sm:px-2`}
           >
-            {difficultyInfo.label}
+            {difficultyLabel}
           </Badge>
           {mystery.status === 'unsolved' && (
             <Badge variant="outline" className="bg-primary/10 text-primary text-[9px] sm:text-[10px] px-1.5 sm:px-2">

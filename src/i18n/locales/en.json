@@ -554,5 +554,13 @@
   "mystery.difficulty.medium": "Medium",
   "mystery.difficulty.hard": "Hard",
   "mystery.difficulty.expert": "Expert",
-  "mystery.solvedCount": "{{count}} solved"
+  "mystery.difficulty.normal": "Normal",
+  "mystery.difficulty.legendary": "Legendary",
+  "mystery.solvedCount": "{{count}} solved",
+  
+  "time.justNow": "just now",
+  "time.unknown": "Unknown",
+  "time.minutesAgo": "{{count}}m ago",
+  "time.hoursAgo": "{{count}}h ago",
+  "time.daysAgo": "{{count}}d ago"
 }
