@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Brain, Mail, Lock, User } from "lucide-react";
+import { scrollInputIntoView } from "@/lib/utils";
 
 export const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -21,6 +22,13 @@ export const Auth = () => {
   const [agreeToPrivacy, setAgreeToPrivacy] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Refs for mobile keyboard handling
+  const emailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const fullNameRef = useRef<HTMLInputElement>(null);
+  const newPasswordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
 
   // Handle forgot password - Use Supabase's built-in recovery
   const handleForgotPassword = async () => {
@@ -361,10 +369,12 @@ export const Auth = () => {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
+                    ref={newPasswordRef}
                     id="new-password"
                     type="password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
+                    onFocus={() => scrollInputIntoView(newPasswordRef.current)}
                     className="pl-10"
                     placeholder="Enter your new password"
                     required
@@ -378,10 +388,12 @@ export const Auth = () => {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
+                    ref={confirmPasswordRef}
                     id="confirm-password"
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
+                    onFocus={() => scrollInputIntoView(confirmPasswordRef.current)}
                     className="pl-10"
                     placeholder="Confirm your new password"
                     required
@@ -454,10 +466,12 @@ export const Auth = () => {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
+                      ref={emailRef}
                       id="signin-email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => scrollInputIntoView(emailRef.current)}
                       className="pl-10"
                       placeholder="Enter your email"
                       required
@@ -470,10 +484,12 @@ export const Auth = () => {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
+                      ref={passwordRef}
                       id="signin-password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => scrollInputIntoView(passwordRef.current)}
                       className="pl-10"
                       placeholder="Enter your password"
                       required
@@ -541,10 +557,12 @@ export const Auth = () => {
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
+                      ref={fullNameRef}
                       id="signup-name"
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
+                      onFocus={() => scrollInputIntoView(fullNameRef.current)}
                       className="pl-10"
                       placeholder="Enter your full name"
                       required
@@ -557,10 +575,12 @@ export const Auth = () => {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
+                      ref={emailRef}
                       id="signup-email"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onFocus={() => scrollInputIntoView(emailRef.current)}
                       className="pl-10"
                       placeholder="Enter your email"
                       required
@@ -573,10 +593,12 @@ export const Auth = () => {
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
+                      ref={passwordRef}
                       id="signup-password"
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onFocus={() => scrollInputIntoView(passwordRef.current)}
                       className="pl-10"
                       placeholder="Create a password (6+ characters)"
                       required

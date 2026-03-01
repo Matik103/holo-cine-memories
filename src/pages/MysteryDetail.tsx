@@ -1,4 +1,4 @@
-import { useState, useId } from 'react';
+import { useState, useId, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMystery } from '@/hooks/useMysteries';
 import { mysteryService } from '@/services/mysteryService';
@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { ShareMysteryMenu } from '@/components/mystery';
+import { scrollInputIntoView } from '@/lib/utils';
 
 export function MysteryDetail() {
   const { id } = useParams<{ id: string }>();
@@ -80,6 +81,12 @@ export function MysteryDetail() {
   const explanationId = useId();
   const editDescriptionId = useId();
   const editCluesId = useId();
+  
+  const titleRef = useRef<HTMLInputElement>(null);
+  const yearRef = useRef<HTMLInputElement>(null);
+  const explanationRef = useRef<HTMLTextAreaElement>(null);
+  const editDescriptionRef = useRef<HTMLTextAreaElement>(null);
+  const editCluesRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmitAttempt = async () => {
     if (!movieTitle.trim()) {
@@ -512,10 +519,12 @@ export function MysteryDetail() {
                     Movie Title <span className="text-destructive" aria-hidden="true">*</span>
                   </Label>
                   <Input
+                    ref={titleRef}
                     id={titleId}
                     placeholder="e.g., Groundhog Day"
                     value={movieTitle}
                     onChange={(e) => setMovieTitle(e.target.value)}
+                    onFocus={() => scrollInputIntoView(titleRef.current)}
                     required
                     className="text-sm"
                   />
@@ -523,11 +532,13 @@ export function MysteryDetail() {
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor={yearId} className="text-xs sm:text-sm">Year (optional)</Label>
                   <Input
+                    ref={yearRef}
                     id={yearId}
                     type="number"
                     placeholder="e.g., 1993"
                     value={movieYear}
                     onChange={(e) => setMovieYear(e.target.value)}
+                    onFocus={() => scrollInputIntoView(yearRef.current)}
                     min="1888"
                     max={new Date().getFullYear() + 5}
                     className="text-sm"
@@ -536,10 +547,12 @@ export function MysteryDetail() {
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor={explanationId} className="text-xs sm:text-sm">Why do you think this is the movie? (optional)</Label>
                   <Textarea
+                    ref={explanationRef}
                     id={explanationId}
                     placeholder="Explain why this movie matches the description..."
                     value={explanation}
                     onChange={(e) => setExplanation(e.target.value)}
+                    onFocus={() => scrollInputIntoView(explanationRef.current)}
                     className="min-h-[70px] sm:min-h-[80px] text-sm"
                   />
                 </div>
@@ -730,10 +743,12 @@ export function MysteryDetail() {
                 Description <span className="text-destructive" aria-hidden="true">*</span>
               </Label>
               <Textarea
+                ref={editDescriptionRef}
                 id={editDescriptionId}
                 placeholder="Describe the movie scene or plot you remember..."
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
+                onFocus={() => scrollInputIntoView(editDescriptionRef.current)}
                 className="min-h-[120px] text-sm"
                 maxLength={5000}
               />
@@ -744,10 +759,12 @@ export function MysteryDetail() {
             <div className="space-y-2">
               <Label htmlFor={editCluesId} className="text-xs sm:text-sm">Additional Clues (optional)</Label>
               <Textarea
+                ref={editCluesRef}
                 id={editCluesId}
                 placeholder="Any additional details like actors, era, genre..."
                 value={editClues}
                 onChange={(e) => setEditClues(e.target.value)}
+                onFocus={() => scrollInputIntoView(editCluesRef.current)}
                 className="min-h-[80px] text-sm"
                 maxLength={2000}
               />

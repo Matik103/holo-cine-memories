@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ShareMovieMenu } from "@/components/ShareMovieMenu";
 import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings, Check, List, MessageSquare, Pencil } from "lucide-react";
+import { scrollInputIntoView } from "@/lib/utils";
 
 interface MovieSearch {
   id: string;
@@ -804,6 +805,7 @@ export const Profile = () => {
                           <Textarea
                             value={reviewDraft}
                             onChange={(e) => setReviewDraft(e.target.value)}
+                            onFocus={(e) => scrollInputIntoView(e.target)}
                             placeholder="What did you think? (optional)"
                             className="min-h-[80px] text-sm resize-y"
                             maxLength={2000}

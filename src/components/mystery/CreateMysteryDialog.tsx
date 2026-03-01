@@ -1,4 +1,4 @@
-import { useState, ReactNode, useId } from 'react';
+import { useState, ReactNode, useId, useRef } from 'react';
 import { useCreateMystery } from '@/hooks/useMysteries';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { HelpCircle, Loader2, LogIn, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { scrollInputIntoView } from '@/lib/utils';
 
 interface CreateMysteryDialogProps {
   trigger?: ReactNode;
@@ -45,6 +46,8 @@ export function CreateMysteryDialog({
   const descriptionId = useId();
   const cluesId = useId();
   const errorId = useId();
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const cluesRef = useRef<HTMLTextAreaElement>(null);
 
   const validateDescription = (text: string): string | null => {
     const trimmed = text.trim();
@@ -155,10 +158,12 @@ export function CreateMysteryDialog({
                   <span className="sr-only">(required)</span>
                 </Label>
                 <Textarea
+                  ref={descriptionRef}
                   id={descriptionId}
                   placeholder="e.g., There's this movie where a guy wakes up and realizes he's been living the same day over and over..."
                   value={description}
                   onChange={handleDescriptionChange}
+                  onFocus={() => scrollInputIntoView(descriptionRef.current)}
                   className={`min-h-[100px] sm:min-h-[120px] text-sm ${validationError ? 'border-destructive' : ''}`}
                   aria-describedby={validationError ? errorId : undefined}
                   aria-invalid={!!validationError}
@@ -184,10 +189,12 @@ export function CreateMysteryDialog({
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor={cluesId} className="text-xs sm:text-sm">Additional clues (optional)</Label>
                 <Textarea
+                  ref={cluesRef}
                   id={cluesId}
                   placeholder="e.g., I think it was from the 90s, had a famous actor, was a comedy..."
                   value={clues}
                   onChange={(e) => setClues(e.target.value)}
+                  onFocus={() => scrollInputIntoView(cluesRef.current)}
                   className="min-h-[60px] sm:min-h-[80px] text-sm"
                 />
                 <p className="text-[10px] sm:text-xs text-muted-foreground">

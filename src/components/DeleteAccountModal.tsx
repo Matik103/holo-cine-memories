@@ -6,6 +6,7 @@ import { AlertDialog, AlertDialogContent, AlertDialogDescription, AlertDialogFoo
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Trash2, AlertTriangle } from "lucide-react";
+import { scrollInputIntoView } from "@/lib/utils";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -144,6 +145,7 @@ export const DeleteAccountModal = ({ isOpen, onClose, onSuccess, user }: DeleteA
               id="confirmation"
               value={confirmationText}
               onChange={(e) => setConfirmationText(e.target.value)}
+              onFocus={(e) => scrollInputIntoView(e.target)}
               placeholder={requiredText}
               className="font-mono"
               disabled={isDeleting}

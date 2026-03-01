@@ -2,29 +2,19 @@ import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Sparkles } from "lucide-react";
+import { scrollInputIntoView } from "@/lib/utils";
 
 interface MemorySearchProps {
   onSearch: (query: string) => void;
   isLoading?: boolean;
 }
 
-/** Scroll movie input into view when focused so the keyboard doesn't cover it (mobile, Waze-style). */
-function scrollMovieInputIntoView(el: HTMLElement | null) {
-  if (!el) return;
-  const run = () => {
-    el.scrollIntoView({ block: "center", behavior: "smooth", inline: "nearest" });
-  };
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => setTimeout(run, 150));
-  });
-}
-
 export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
   const [query, setQuery] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleMovieInputFocus = useCallback(() => {
-    scrollMovieInputIntoView(textareaRef.current);
+  const handleInputFocus = useCallback(() => {
+    scrollInputIntoView(textareaRef.current);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,7 +53,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
               ref={textareaRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onFocus={handleMovieInputFocus}
+              onFocus={handleInputFocus}
               placeholder="That movie where a god loses his eyes and a slave helps him fight..."
               className="memory-input min-h-24 text-lg resize-none rounded-xl"
               disabled={isLoading}
