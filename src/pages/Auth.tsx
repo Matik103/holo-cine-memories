@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, Mail, Lock, User } from "lucide-react";
+import { Brain, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { scrollInputIntoView } from "@/lib/utils";
 
 export const Auth = () => {
@@ -349,6 +349,17 @@ export const Auth = () => {
 
         <Card className="w-full max-w-md neural-card">
           <div className="p-8">
+            {/* Back Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/')}
+              className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              {t('common.back')}
+            </Button>
+
             {/* Header */}
             <div className="flex flex-col items-center space-y-4 mb-6">
               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent neural-glow">
@@ -440,6 +451,17 @@ export const Auth = () => {
 
       <Card className="w-full max-w-md neural-card">
         <div className="p-8">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="mb-4 -ml-2 text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            {t('common.back')}
+          </Button>
+
           {/* Header */}
           <div className="flex flex-col items-center space-y-4 mb-6">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent neural-glow">
