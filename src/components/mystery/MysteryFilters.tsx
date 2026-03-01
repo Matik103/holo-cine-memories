@@ -8,6 +8,7 @@ import {
   SelectValue 
 } from '@/components/ui/select';
 import { SortAsc } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface MysteryFiltersProps {
   filter: MysteryFilter;
@@ -17,21 +18,6 @@ interface MysteryFiltersProps {
   isAuthenticated: boolean;
 }
 
-const filterOptions: { value: MysteryFilter; label: string; shortLabel: string; requiresAuth?: boolean }[] = [
-  { value: 'unsolved', label: 'Unsolved', shortLabel: 'Unsolved' },
-  { value: 'solved', label: 'Solved', shortLabel: 'Solved' },
-  { value: 'all', label: 'All', shortLabel: 'All' },
-  { value: 'my_mysteries', label: 'My Mysteries', shortLabel: 'Mine', requiresAuth: true },
-  { value: 'my_solves', label: 'My Solves', shortLabel: 'My Solves', requiresAuth: true }
-];
-
-const sortOptions: { value: MysterySort; label: string }[] = [
-  { value: 'recent', label: 'Recent' },
-  { value: 'popular', label: 'Popular' },
-  { value: 'points', label: 'Points' },
-  { value: 'oldest', label: 'Oldest' }
-];
-
 export function MysteryFilters({ 
   filter, 
   sort, 
@@ -39,17 +25,34 @@ export function MysteryFilters({
   onSortChange,
   isAuthenticated 
 }: MysteryFiltersProps) {
+  const { t } = useTranslation();
+  
+  const filterOptions: { value: MysteryFilter; label: string; shortLabel: string; requiresAuth?: boolean }[] = [
+    { value: 'unsolved', label: t('mystery.unsolved'), shortLabel: t('mystery.unsolved') },
+    { value: 'solved', label: t('mystery.solved'), shortLabel: t('mystery.solved') },
+    { value: 'all', label: t('mystery.all'), shortLabel: t('mystery.all') },
+    { value: 'my_mysteries', label: t('mystery.myMysteries'), shortLabel: t('mystery.myMysteryShort'), requiresAuth: true },
+    { value: 'my_solves', label: t('mystery.mySolves'), shortLabel: t('mystery.mySolves'), requiresAuth: true }
+  ];
+
+  const sortOptions: { value: MysterySort; label: string }[] = [
+    { value: 'recent', label: t('mystery.sort.recent') },
+    { value: 'popular', label: t('mystery.sort.popular') },
+    { value: 'points', label: t('mystery.sort.points') },
+    { value: 'oldest', label: t('mystery.sort.oldest') }
+  ];
+  
   const availableFilters = filterOptions.filter(
     opt => !opt.requiresAuth || isAuthenticated
   );
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3" role="group" aria-label="Mystery filters and sorting">
+    <div className="flex items-center gap-2 sm:gap-3" role="group" aria-label={t('mystery.collectiveMemory')}>
       {/* Filter buttons - horizontally scrollable on mobile */}
       <div 
         className="flex-1 overflow-x-auto scrollbar-hide -mx-1 px-1"
         role="radiogroup" 
-        aria-label="Filter mysteries"
+        aria-label={t('mystery.collectiveMemory')}
       >
         <div className="flex gap-1.5 sm:gap-2 min-w-max pb-1">
           {availableFilters.map((option) => (
@@ -76,9 +79,9 @@ export function MysteryFilters({
         <Select value={sort} onValueChange={(value) => onSortChange(value as MysterySort)}>
           <SelectTrigger 
             className="w-[90px] sm:w-[110px] h-8 text-[11px] sm:text-xs" 
-            aria-label="Sort by"
+            aria-label={t('mystery.sort.recent')}
           >
-            <SelectValue placeholder="Sort" />
+            <SelectValue placeholder={t('mystery.sort.recent')} />
           </SelectTrigger>
           <SelectContent>
             {sortOptions.map((option) => (

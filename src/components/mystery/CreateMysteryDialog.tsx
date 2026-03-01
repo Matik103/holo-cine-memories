@@ -16,6 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { HelpCircle, Loader2, LogIn, AlertCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { scrollInputIntoView } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface CreateMysteryDialogProps {
   trigger?: ReactNode;
@@ -42,6 +43,7 @@ export function CreateMysteryDialog({
   const [validationError, setValidationError] = useState<string | null>(null);
   const { createMystery, isSubmitting, isAuthenticated } = useCreateMystery();
   const { toast } = useToast();
+  const { t } = useTranslation();
   
   const descriptionId = useId();
   const cluesId = useId();
@@ -52,10 +54,10 @@ export function CreateMysteryDialog({
   const validateDescription = (text: string): string | null => {
     const trimmed = text.trim();
     if (trimmed.length < MIN_DESCRIPTION_LENGTH) {
-      return `Description must be at least ${MIN_DESCRIPTION_LENGTH} characters (currently ${trimmed.length})`;
+      return t('mystery.descriptionMinChars', { min: MIN_DESCRIPTION_LENGTH, current: trimmed.length });
     }
     if (trimmed.length > MAX_DESCRIPTION_LENGTH) {
-      return `Description must be less than ${MAX_DESCRIPTION_LENGTH} characters`;
+      return t('mystery.descriptionMaxChars', { max: MAX_DESCRIPTION_LENGTH });
     }
     return null;
   };
@@ -68,7 +70,7 @@ export function CreateMysteryDialog({
     }
 
     if (clues.trim().length > MAX_CLUES_LENGTH) {
-      setValidationError(`Additional clues must be less than ${MAX_CLUES_LENGTH} characters`);
+      setValidationError(t('mystery.cluesMaxChars', { max: MAX_CLUES_LENGTH }));
       return;
     }
 
@@ -83,7 +85,7 @@ export function CreateMysteryDialog({
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: result.error.message,
         variant: 'destructive'
       });
@@ -91,8 +93,8 @@ export function CreateMysteryDialog({
     }
 
     toast({
-      title: 'Mystery Posted!',
-      description: 'Your mystery has been posted. The community will help identify it!'
+      title: t('mystery.mysteryPosted'),
+      description: t('mystery.mysteryPostedDesc')
     });
 
     setOpen(false);
@@ -127,15 +129,15 @@ export function CreateMysteryDialog({
         {trigger || (
           <Button className="neural-button gap-2">
             <HelpCircle className="h-4 w-4" aria-hidden="true" />
-            Post a Mystery
+            {t('mystery.postMystery')}
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader className="space-y-1.5 sm:space-y-2">
-          <DialogTitle className="text-base sm:text-lg">Post a Movie Mystery</DialogTitle>
+          <DialogTitle className="text-base sm:text-lg">{t('mystery.postMovieMystery')}</DialogTitle>
           <DialogDescription className="text-xs sm:text-sm">
-            Describe the movie you're trying to find. Include any details you remember - scenes, actors, plot points, or even feelings the movie gave you.
+            {t('mystery.postMysteryDesc')}
           </DialogDescription>
         </DialogHeader>
 
@@ -143,10 +145,10 @@ export function CreateMysteryDialog({
           <div className="py-6 sm:py-8 text-center">
             <LogIn className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-muted-foreground" aria-hidden="true" />
             <p className="text-sm text-muted-foreground mb-3 sm:mb-4">
-              Sign in to post mysteries and help others find movies
+              {t('mystery.signInToPost')}
             </p>
             <Button onClick={handleSignIn} className="neural-button w-full sm:w-auto">
-              Sign in with Google
+              {t('mystery.signInWithGoogle')}
             </Button>
           </div>
         ) : (
@@ -154,13 +156,13 @@ export function CreateMysteryDialog({
             <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
               <div className="space-y-1.5 sm:space-y-2">
                 <Label htmlFor={descriptionId} className="text-xs sm:text-sm">
-                  What do you remember? <span className="text-destructive" aria-hidden="true">*</span>
+                  {t('mystery.whatDoYouRemember')} <span className="text-destructive" aria-hidden="true">*</span>
                   <span className="sr-only">(required)</span>
                 </Label>
                 <Textarea
                   ref={descriptionRef}
                   id={descriptionId}
-                  placeholder="e.g., There's this movie where a guy wakes up and realizes he's been living the same day over and over..."
+                  placeholder={t('mystery.descriptionPlaceholder')}
                   value={description}
                   onChange={handleDescriptionChange}
                   onFocus={() => scrollInputIntoView(descriptionRef.current)}
@@ -187,11 +189,11 @@ export function CreateMysteryDialog({
               </div>
 
               <div className="space-y-1.5 sm:space-y-2">
-                <Label htmlFor={cluesId} className="text-xs sm:text-sm">Additional clues (optional)</Label>
+                <Label htmlFor={cluesId} className="text-xs sm:text-sm">{t('mystery.additionalCluesOptional')}</Label>
                 <Textarea
                   ref={cluesRef}
                   id={cluesId}
-                  placeholder="e.g., I think it was from the 90s, had a famous actor, was a comedy..."
+                  placeholder={t('mystery.cluesPlaceholder')}
                   value={clues}
                   onChange={(e) => setClues(e.target.value)}
                   onFocus={() => scrollInputIntoView(cluesRef.current)}
@@ -205,15 +207,15 @@ export function CreateMysteryDialog({
               {aiSuggestions?.suggestedTitle && (
                 <div className="p-2.5 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm">
                   <p className="text-muted-foreground">
-                    <span className="font-medium">AI suggestion:</span> {aiSuggestions.suggestedTitle}
+                    <span className="font-medium">{t('mystery.aiSuggestion')}:</span> {aiSuggestions.suggestedTitle}
                     {aiSuggestions.confidence && (
                       <span className="text-[10px] sm:text-xs ml-1 sm:ml-2">
-                        ({Math.round(aiSuggestions.confidence * 100)}% confidence)
+                        ({Math.round(aiSuggestions.confidence * 100)}% {t('mystery.confidence')})
                       </span>
                     )}
                   </p>
                   <p className="text-[10px] sm:text-xs text-muted-foreground mt-1">
-                    This will be shared with the community as a starting point.
+                    {t('mystery.aiSuggestionShared')}
                   </p>
                 </div>
               )}
@@ -226,7 +228,7 @@ export function CreateMysteryDialog({
                 disabled={isSubmitting}
                 className="w-full sm:w-auto"
               >
-                Cancel
+                {t('mystery.cancel')}
               </Button>
               <Button
                 onClick={handleSubmit}
@@ -236,10 +238,10 @@ export function CreateMysteryDialog({
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                    Posting...
+                    {t('mystery.posting')}
                   </>
                 ) : (
-                  'Post Mystery'
+                  t('mystery.postMystery')
                 )}
               </Button>
             </DialogFooter>

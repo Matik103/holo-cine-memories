@@ -1,4 +1,4 @@
-import { useState, useId, useRef } from 'react';
+import { useState, useId, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMystery } from '@/hooks/useMysteries';
 import { mysteryService } from '@/services/mysteryService';
@@ -40,11 +40,15 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { ShareMysteryMenu } from '@/components/mystery';
 import { scrollInputIntoView } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
+import { translationService } from '@/services/translationService';
 
 export function MysteryDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language?.split('-')[0] || 'en';
   const {
     mystery,
     attempts,
@@ -75,6 +79,54 @@ export function MysteryDetail() {
   const [editDescription, setEditDescription] = useState('');
   const [editClues, setEditClues] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  
+  const [translatedDescription, setTranslatedDescription] = useState<string>('');
+  const [translatedClues, setTranslatedClues] = useState<string>('');
+  const [translatedAttempts, setTranslatedAttempts] = useState<Record<string, { explanation?: string }>>({});
+
+  useEffect(() => {
+    const translateContent = async () => {
+      if (!mystery || currentLanguage === 'en') {
+        setTranslatedDescription('');
+        setTranslatedClues('');
+        return;
+      }
+      
+      if (mystery.description) {
+        const translated = await translationService.translateText(mystery.description, currentLanguage);
+        setTranslatedDescription(translated);
+      }
+      
+      if (mystery.additional_clues) {
+        const translated = await translationService.translateText(mystery.additional_clues, currentLanguage);
+        setTranslatedClues(translated);
+      }
+    };
+    
+    translateContent();
+  }, [mystery?.description, mystery?.additional_clues, currentLanguage]);
+
+  useEffect(() => {
+    const translateAttemptExplanations = async () => {
+      if (!attempts.length || currentLanguage === 'en') {
+        setTranslatedAttempts({});
+        return;
+      }
+      
+      const translations: Record<string, { explanation?: string }> = {};
+      
+      for (const attempt of attempts) {
+        if (attempt.explanation) {
+          const translated = await translationService.translateText(attempt.explanation, currentLanguage);
+          translations[attempt.id] = { explanation: translated };
+        }
+      }
+      
+      setTranslatedAttempts(translations);
+    };
+    
+    translateAttemptExplanations();
+  }, [attempts, currentLanguage]);
 
   const titleId = useId();
   const yearId = useId();
@@ -91,8 +143,8 @@ export function MysteryDetail() {
   const handleSubmitAttempt = async () => {
     if (!movieTitle.trim()) {
       toast({
-        title: 'Movie title required',
-        description: 'Please enter the movie title you think matches this mystery.',
+        title: t('mystery.movieTitleRequired'),
+        description: t('mystery.movieTitleRequiredDesc'),
         variant: 'destructive'
       });
       return;
@@ -101,8 +153,8 @@ export function MysteryDetail() {
     const year = movieYear ? parseInt(movieYear, 10) : undefined;
     if (movieYear && (isNaN(year!) || year! < 1888 || year! > new Date().getFullYear() + 5)) {
       toast({
-        title: 'Invalid year',
-        description: 'Please enter a valid movie year.',
+        title: t('mystery.invalidYear'),
+        description: t('mystery.invalidYearDesc'),
         variant: 'destructive'
       });
       return;
@@ -120,7 +172,7 @@ export function MysteryDetail() {
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: result.error.message,
         variant: 'destructive'
       });
@@ -128,8 +180,8 @@ export function MysteryDetail() {
     }
 
     toast({
-      title: 'Solution submitted!',
-      description: 'Your answer has been added. The mystery poster will review it.'
+      title: t('mystery.solutionSubmitted'),
+      description: t('mystery.solutionSubmittedDesc')
     });
 
     setShowSubmitForm(false);
@@ -141,8 +193,8 @@ export function MysteryDetail() {
   const handleVote = async (attemptId: string, voteType: 'up' | 'down') => {
     if (!isAuthenticated) {
       toast({
-        title: 'Sign in required',
-        description: 'Please sign in to vote on solutions.',
+        title: t('mystery.signInToVote'),
+        description: t('mystery.signInToVoteDesc'),
         variant: 'destructive'
       });
       return;
@@ -154,7 +206,7 @@ export function MysteryDetail() {
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: result.error.message,
         variant: 'destructive'
       });
@@ -167,7 +219,7 @@ export function MysteryDetail() {
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: result.error.message,
         variant: 'destructive'
       });
@@ -176,8 +228,8 @@ export function MysteryDetail() {
     }
 
     toast({
-      title: 'Mystery Solved!',
-      description: 'The solution has been accepted and points awarded to the solver.'
+      title: t('mystery.mysterySolved'),
+      description: t('mystery.mysterySolvedDesc')
     });
     setAcceptingAttemptId(null);
   };
@@ -190,7 +242,7 @@ export function MysteryDetail() {
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: result.error.message,
         variant: 'destructive'
       });
@@ -198,8 +250,8 @@ export function MysteryDetail() {
     }
 
     toast({
-      title: 'Mystery Closed',
-      description: 'This mystery has been closed without a solution.'
+      title: t('mystery.mysteryClosed'),
+      description: t('mystery.mysteryClosedDesc')
     });
   };
 
@@ -225,8 +277,8 @@ export function MysteryDetail() {
 
     if (editDescription.trim().length < 20) {
       toast({
-        title: 'Description too short',
-        description: 'Description must be at least 20 characters.',
+        title: t('mystery.descriptionTooShort'),
+        description: t('mystery.descriptionMinChars', { min: 20, current: editDescription.trim().length }),
         variant: 'destructive'
       });
       return;
@@ -241,7 +293,7 @@ export function MysteryDetail() {
 
     if (result.error) {
       toast({
-        title: 'Error',
+        title: t('toast.error'),
         description: result.error.message,
         variant: 'destructive'
       });
@@ -249,8 +301,8 @@ export function MysteryDetail() {
     }
 
     toast({
-      title: 'Mystery updated',
-      description: 'Your changes have been saved.'
+      title: t('mystery.mysteryUpdated'),
+      description: t('mystery.mysteryUpdatedDesc')
     });
 
     setShowEditForm(false);
@@ -263,14 +315,14 @@ export function MysteryDetail() {
         <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
           <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
             <div className="flex items-center gap-2 sm:gap-4">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label="Back to mysteries" className="flex-shrink-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label={t('common.back')} className="flex-shrink-0">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <Skeleton className="h-5 sm:h-6 w-32 sm:w-48" />
             </div>
           </div>
         </header>
-        <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6" role="status" aria-label="Loading mystery">
+        <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-6" role="status" aria-label={t('mystery.loading')}>
           <div className="max-w-3xl mx-auto space-y-4 sm:space-y-6">
             <Skeleton className="h-40 sm:h-48 w-full rounded-xl" />
             <Skeleton className="h-24 sm:h-32 w-full rounded-xl" />
@@ -286,7 +338,7 @@ export function MysteryDetail() {
       <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
         <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
           <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label="Back to mysteries">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label={t('common.back')}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </div>
@@ -295,19 +347,19 @@ export function MysteryDetail() {
           <Card className="max-w-lg mx-auto neural-card p-6 sm:p-8 text-center" role="alert">
             <AlertCircle className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 text-destructive" aria-hidden="true" />
             <h1 className="text-lg sm:text-xl font-semibold mb-2">
-              {error?.code === 'NOT_FOUND' ? 'Mystery Not Found' : 'Error Loading Mystery'}
+              {error?.code === 'NOT_FOUND' ? t('mystery.mysteryNotFound') : t('mystery.errorLoading')}
             </h1>
             <p className="text-sm text-muted-foreground mb-4 sm:mb-6">
-              {error?.message || 'This mystery may have been removed or does not exist.'}
+              {error?.message || t('mystery.mayBeRemoved')}
             </p>
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center">
               <Button variant="outline" onClick={() => navigate('/mysteries')} className="w-full sm:w-auto">
-                Browse Mysteries
+                {t('mystery.browseMysteries')}
               </Button>
               {error?.code !== 'NOT_FOUND' && (
                 <Button onClick={refetch} className="gap-2 w-full sm:w-auto">
                   <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                  Try Again
+                  {t('mystery.tryAgain')}
                 </Button>
               )}
             </div>
@@ -330,13 +382,13 @@ export function MysteryDetail() {
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-              <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label="Back to mysteries" className="flex-shrink-0">
+              <Button variant="ghost" size="icon" onClick={() => navigate('/mysteries')} aria-label={t('common.back')} className="flex-shrink-0">
                 <ArrowLeft className="h-5 w-5" />
               </Button>
               <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-semibold truncate">Movie Mystery</h1>
+                <h1 className="text-base sm:text-lg font-semibold truncate">{t('mystery.movieMystery')}</h1>
                 <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
-                  by {mystery.poster_name} • {timeAgo}
+                  {t('mystery.by')} {mystery.poster_name} • {timeAgo}
                 </p>
               </div>
             </div>
@@ -365,7 +417,7 @@ export function MysteryDetail() {
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-green-500/10 text-green-500">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" aria-hidden="true" />
-                  <span className="font-medium text-sm sm:text-base">Solved!</span>
+                  <span className="font-medium text-sm sm:text-base">{t('mystery.solved')}!</span>
                 </div>
                 {mystery.solution_movie_title && (
                   <span className="text-xs sm:text-sm ml-6 sm:ml-0">
@@ -378,7 +430,7 @@ export function MysteryDetail() {
             {isClosed && (
               <div className="flex items-center gap-2 mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-muted text-muted-foreground">
                 <X className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden="true" />
-                <span className="font-medium text-sm sm:text-base">Closed without solution</span>
+                <span className="font-medium text-sm sm:text-base">{t('mystery.closedWithoutSolution')}</span>
               </div>
             )}
 
@@ -387,33 +439,33 @@ export function MysteryDetail() {
               <div className="xs:hidden mb-3">
                 <Badge variant="outline" className="bg-primary/10 text-primary text-xs">
                   <Trophy className="h-3 w-3 mr-1" aria-hidden="true" />
-                  +{mystery.points_reward} points
+                  +{mystery.points_reward} {t('mystery.points')}
                 </Badge>
               </div>
             )}
 
             {/* Description */}
             <blockquote className="text-sm sm:text-lg mb-3 sm:mb-4 border-l-4 border-primary/50 pl-3 sm:pl-4">
-              {mystery.description}
+              {translatedDescription || mystery.description}
             </blockquote>
 
             {/* Additional clues */}
             {mystery.additional_clues && (
               <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-muted/50">
-                <h2 className="text-xs sm:text-sm font-medium mb-1">Additional Clues</h2>
-                <p className="text-xs sm:text-sm text-muted-foreground">{mystery.additional_clues}</p>
+                <h2 className="text-xs sm:text-sm font-medium mb-1">{t('mystery.additionalClues')}</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">{translatedClues || mystery.additional_clues}</p>
               </div>
             )}
 
             {/* AI suggestion */}
             {mystery.ai_suggestions?.suggestedTitle && (
               <div className="mb-3 sm:mb-4 p-2.5 sm:p-3 rounded-lg bg-blue-500/10">
-                <h2 className="text-xs sm:text-sm font-medium mb-1 text-blue-400">AI Suggestion</h2>
+                <h2 className="text-xs sm:text-sm font-medium mb-1 text-blue-400">{t('mystery.aiSuggestion')}</h2>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {mystery.ai_suggestions.suggestedTitle}
                   {mystery.ai_suggestions.confidence && (
                     <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs">
-                      ({Math.round(mystery.ai_suggestions.confidence * 100)}% confidence)
+                      ({Math.round(mystery.ai_suggestions.confidence * 100)}% {t('mystery.confidence')})
                     </span>
                   )}
                 </p>
@@ -425,11 +477,11 @@ export function MysteryDetail() {
               <div className="flex flex-wrap items-center gap-x-3 sm:gap-x-4 gap-y-1 text-xs sm:text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-                  <span>{mystery.view_count} views</span>
+                  <span>{mystery.view_count} {t('mystery.views')}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-                  <span>{mystery.attempt_count} attempts</span>
+                  <span>{mystery.attempt_count} {t('mystery.attempts')}</span>
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
@@ -456,7 +508,7 @@ export function MysteryDetail() {
                   className="text-muted-foreground text-xs sm:text-sm"
                 >
                   <Pencil className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" aria-hidden="true" />
-                  Edit Mystery
+                  {t('mystery.editMystery')}
                 </Button>
                 <Button
                   variant="outline"
@@ -465,7 +517,7 @@ export function MysteryDetail() {
                   className="text-muted-foreground text-xs sm:text-sm"
                 >
                   <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" aria-hidden="true" />
-                  Close Mystery
+                  {t('mystery.closeMystery')}
                 </Button>
               </div>
             )}
@@ -475,9 +527,9 @@ export function MysteryDetail() {
           {!isAuthenticated && !isSolved && !isClosed && (
             <Card className="neural-card p-4 sm:p-6 text-center">
               <LogIn className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground" aria-hidden="true" />
-              <p className="text-sm text-muted-foreground mb-3 sm:mb-4">Sign in to submit a solution</p>
+              <p className="text-sm text-muted-foreground mb-3 sm:mb-4">{t('mystery.signInToSubmit')}</p>
               <Button onClick={handleSignIn} className="neural-button w-full sm:w-auto">
-                Sign in with Google
+                {t('mystery.signInWithGoogle')}
               </Button>
             </Card>
           )}
@@ -489,7 +541,7 @@ export function MysteryDetail() {
                 className="w-full neural-button gap-2"
               >
                 <Send className="h-4 w-4" aria-hidden="true" />
-                Submit Your Answer
+                {t('mystery.submitYourAnswer')}
               </Button>
             </Card>
           )}
@@ -497,7 +549,7 @@ export function MysteryDetail() {
           {isOwner && !isSolved && !isClosed && (
             <Card className="neural-card p-3 sm:p-4 bg-purple-500/5 border-purple-500/20">
               <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                This is your mystery. Review the solutions below and accept the correct one.
+                {t('mystery.yourMystery')}
               </p>
             </Card>
           )}
@@ -505,23 +557,23 @@ export function MysteryDetail() {
           {hasUserAttempted && !isOwner && !isSolved && !isClosed && (
             <Card className="neural-card p-3 sm:p-4 bg-blue-500/5 border-blue-500/20">
               <p className="text-xs sm:text-sm text-muted-foreground text-center">
-                You've already submitted a solution. Wait for the mystery poster to review it.
+                {t('mystery.alreadySubmitted')}
               </p>
             </Card>
           )}
 
           {showSubmitForm && (
             <Card className="neural-card p-4 sm:p-6">
-              <h2 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">Submit Your Answer</h2>
+              <h2 className="font-semibold mb-3 sm:mb-4 text-sm sm:text-base">{t('mystery.submitYourAnswer')}</h2>
               <div className="space-y-3 sm:space-y-4">
                 <div className="space-y-1.5 sm:space-y-2">
                   <Label htmlFor={titleId} className="text-xs sm:text-sm">
-                    Movie Title <span className="text-destructive" aria-hidden="true">*</span>
+                    {t('mystery.movieTitle')} <span className="text-destructive" aria-hidden="true">*</span>
                   </Label>
                   <Input
                     ref={titleRef}
                     id={titleId}
-                    placeholder="e.g., Groundhog Day"
+                    placeholder={t('mystery.movieTitlePlaceholder')}
                     value={movieTitle}
                     onChange={(e) => setMovieTitle(e.target.value)}
                     onFocus={() => scrollInputIntoView(titleRef.current)}
@@ -530,12 +582,12 @@ export function MysteryDetail() {
                   />
                 </div>
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor={yearId} className="text-xs sm:text-sm">Year (optional)</Label>
+                  <Label htmlFor={yearId} className="text-xs sm:text-sm">{t('mystery.yearOptional')}</Label>
                   <Input
                     ref={yearRef}
                     id={yearId}
                     type="number"
-                    placeholder="e.g., 1993"
+                    placeholder={t('mystery.yearPlaceholder')}
                     value={movieYear}
                     onChange={(e) => setMovieYear(e.target.value)}
                     onFocus={() => scrollInputIntoView(yearRef.current)}
@@ -545,11 +597,11 @@ export function MysteryDetail() {
                   />
                 </div>
                 <div className="space-y-1.5 sm:space-y-2">
-                  <Label htmlFor={explanationId} className="text-xs sm:text-sm">Why do you think this is the movie? (optional)</Label>
+                  <Label htmlFor={explanationId} className="text-xs sm:text-sm">{t('mystery.whyThisMovie')}</Label>
                   <Textarea
                     ref={explanationRef}
                     id={explanationId}
-                    placeholder="Explain why this movie matches the description..."
+                    placeholder={t('mystery.whyThisMoviePlaceholder')}
                     value={explanation}
                     onChange={(e) => setExplanation(e.target.value)}
                     onFocus={() => scrollInputIntoView(explanationRef.current)}
@@ -564,7 +616,7 @@ export function MysteryDetail() {
                     disabled={isSubmitting}
                     className="w-full sm:w-auto"
                   >
-                    Cancel
+                    {t('mystery.cancel')}
                   </Button>
                   <Button
                     onClick={handleSubmitAttempt}
@@ -574,12 +626,12 @@ export function MysteryDetail() {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                        Submitting...
+                        {t('mystery.submitting')}
                       </>
                     ) : (
                       <>
                         <Send className="h-4 w-4 mr-2" aria-hidden="true" />
-                        Submit Answer
+                        {t('mystery.submitAnswer')}
                       </>
                     )}
                   </Button>
@@ -592,19 +644,20 @@ export function MysteryDetail() {
           <div>
             <h2 className="font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
               <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary" aria-hidden="true" />
-              Solutions ({attempts.length})
+              {t('mystery.solutions')} ({attempts.length})
             </h2>
 
             {attempts.length === 0 ? (
               <Card className="neural-card p-4 sm:p-6 text-center text-muted-foreground">
-                <p className="text-sm">No solutions submitted yet. Be the first to help!</p>
+                <p className="text-sm">{t('mystery.noSolutions')}</p>
               </Card>
             ) : (
-              <div className="space-y-3 sm:space-y-4" aria-label="Submitted solutions">
+              <div className="space-y-3 sm:space-y-4" aria-label={t('mystery.solutions')}>
                 {attempts.map((attempt) => {
                   const userVote = userVotes[attempt.id];
                   const isOwnAttempt = attempt.user_id === userId;
                   const isVoting = votingAttemptId === attempt.id;
+                  const translatedExplanation = translatedAttempts[attempt.id]?.explanation;
 
                   return (
                     <Card
@@ -614,7 +667,7 @@ export function MysteryDetail() {
                       {attempt.is_accepted && (
                         <div className="flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3 text-green-500">
                           <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" aria-hidden="true" />
-                          <span className="text-xs sm:text-sm font-medium">Accepted Solution</span>
+                          <span className="text-xs sm:text-sm font-medium">{t('mystery.acceptedSolution')}</span>
                         </div>
                       )}
 
@@ -627,10 +680,10 @@ export function MysteryDetail() {
                             )}
                           </h3>
                           {attempt.explanation && (
-                            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">{attempt.explanation}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 sm:mt-2">{translatedExplanation || attempt.explanation}</p>
                           )}
                           <p className="text-[10px] sm:text-xs text-muted-foreground mt-1.5 sm:mt-2">
-                            by {attempt.solver_name} • {mysteryService.formatTimeAgo(attempt.created_at)}
+                            {t('mystery.by')} {attempt.solver_name} • {mysteryService.formatTimeAgo(attempt.created_at)}
                           </p>
                         </div>
 
@@ -642,7 +695,7 @@ export function MysteryDetail() {
                               onClick={() => handleVote(attempt.id, 'up')}
                               disabled={isOwnAttempt || isVoting}
                               className={`gap-1 h-10 w-14 sm:h-9 sm:w-auto px-2 sm:px-3 ${userVote === 'up' ? 'text-green-500 bg-green-500/10' : ''}`}
-                              aria-label={`Upvote (${attempt.upvotes})`}
+                              aria-label={`${t('mystery.upvote')} (${attempt.upvotes})`}
                               aria-pressed={userVote === 'up'}
                             >
                               {isVoting ? (
@@ -657,7 +710,7 @@ export function MysteryDetail() {
                               onClick={() => handleVote(attempt.id, 'down')}
                               disabled={isOwnAttempt || isVoting}
                               className={`gap-1 h-10 w-14 sm:h-9 sm:w-auto px-2 sm:px-3 ${userVote === 'down' ? 'text-red-500 bg-red-500/10' : ''}`}
-                              aria-label={`Downvote (${attempt.downvotes})`}
+                              aria-label={`${t('mystery.downvote')} (${attempt.downvotes})`}
                               aria-pressed={userVote === 'down'}
                             >
                               <ThumbsDown className="h-4 w-4" />
@@ -678,12 +731,12 @@ export function MysteryDetail() {
                             {acceptingAttemptId === attempt.id ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                                Accepting...
+                                {t('mystery.accepting')}
                               </>
                             ) : (
                               <>
                                 <CheckCircle className="h-4 w-4" aria-hidden="true" />
-                                Accept This Solution
+                                {t('mystery.acceptThisSolution')}
                               </>
                             )}
                           </Button>
@@ -702,14 +755,13 @@ export function MysteryDetail() {
       <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
         <AlertDialogContent className="max-w-[90vw] sm:max-w-lg">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Close this mystery?</AlertDialogTitle>
+            <AlertDialogTitle className="text-base sm:text-lg">{t('mystery.closeConfirmTitle')}</AlertDialogTitle>
             <AlertDialogDescription className="text-xs sm:text-sm">
-              This will close the mystery without marking any solution as correct. 
-              No points will be awarded. This action cannot be undone.
+              {t('mystery.closeConfirmDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-            <AlertDialogCancel disabled={isClosing} className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isClosing} className="w-full sm:w-auto">{t('mystery.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleCloseMystery}
               disabled={isClosing}
@@ -718,10 +770,10 @@ export function MysteryDetail() {
               {isClosing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                  Closing...
+                  {t('mystery.closingMystery')}
                 </>
               ) : (
-                'Close Mystery'
+                t('mystery.closeMystery')
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -732,20 +784,20 @@ export function MysteryDetail() {
       <AlertDialog open={showEditForm} onOpenChange={setShowEditForm}>
         <AlertDialogContent className="max-w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-base sm:text-lg">Edit Mystery</AlertDialogTitle>
+            <AlertDialogTitle className="text-base sm:text-lg">{t('mystery.editMysteryTitle')}</AlertDialogTitle>
             <AlertDialogDescription className="text-xs sm:text-sm">
-              Update your mystery description or add more clues to help others find the movie.
+              {t('mystery.editMysteryDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor={editDescriptionId} className="text-xs sm:text-sm">
-                Description <span className="text-destructive" aria-hidden="true">*</span>
+                {t('mystery.description')} <span className="text-destructive" aria-hidden="true">*</span>
               </Label>
               <Textarea
                 ref={editDescriptionRef}
                 id={editDescriptionId}
-                placeholder="Describe the movie scene or plot you remember..."
+                placeholder={t('mystery.descriptionEditPlaceholder')}
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
                 onFocus={() => scrollInputIntoView(editDescriptionRef.current)}
@@ -757,11 +809,11 @@ export function MysteryDetail() {
               </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor={editCluesId} className="text-xs sm:text-sm">Additional Clues (optional)</Label>
+              <Label htmlFor={editCluesId} className="text-xs sm:text-sm">{t('mystery.additionalCluesOptional')}</Label>
               <Textarea
                 ref={editCluesRef}
                 id={editCluesId}
-                placeholder="Any additional details like actors, era, genre..."
+                placeholder={t('mystery.cluesPlaceholder')}
                 value={editClues}
                 onChange={(e) => setEditClues(e.target.value)}
                 onFocus={() => scrollInputIntoView(editCluesRef.current)}
@@ -774,7 +826,7 @@ export function MysteryDetail() {
             </div>
           </div>
           <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2 sm:gap-0">
-            <AlertDialogCancel disabled={isEditing} className="w-full sm:w-auto">Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={isEditing} className="w-full sm:w-auto">{t('mystery.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleSaveEdit}
               disabled={isEditing || editDescription.trim().length < 20}
@@ -783,12 +835,12 @@ export function MysteryDetail() {
               {isEditing ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" aria-hidden="true" />
-                  Saving...
+                  {t('mystery.saving')}
                 </>
               ) : (
                 <>
                   <Pencil className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Save Changes
+                  {t('mystery.saveChanges')}
                 </>
               )}
             </AlertDialogAction>
