@@ -106,20 +106,7 @@ class VaultService {
       .order(period === 'hour' ? 'recall_count_hour' : period === 'day' ? 'recall_count_day' : 'recall_count_week', { ascending: false })
       .limit(limit);
 
-    if (localTrending && localTrending.length >= limit) {
-      return localTrending.map(t => ({
-        movie_title: t.movie_title,
-        movie_year: t.movie_year,
-        poster_url: t.poster_url,
-        recall_count: period === 'hour' ? t.recall_count_hour : period === 'day' ? t.recall_count_day : t.recall_count_week,
-        is_hidden_gem: t.is_hidden_gem || false,
-        genres: t.genres,
-        tmdb_id: t.tmdb_id || undefined
-      }));
-    }
-
-    const tmdbTrending = await this.getTMDBTrending();
-    const combined = [...(localTrending || []).map(t => ({
+    return (localTrending || []).map(t => ({
       movie_title: t.movie_title,
       movie_year: t.movie_year,
       poster_url: t.poster_url,
@@ -127,34 +114,7 @@ class VaultService {
       is_hidden_gem: t.is_hidden_gem || false,
       genres: t.genres,
       tmdb_id: t.tmdb_id || undefined
-    })), ...tmdbTrending];
-
-    const seen = new Set<string>();
-    return combined.filter(m => {
-      const key = `${m.movie_title}_${m.movie_year}`;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    }).slice(0, limit);
-  }
-
-  private async getTMDBTrending(): Promise<VaultTrending[]> {
-    try {
-      const { data, error } = await supabase.functions.invoke('tmdb-trending');
-      if (error || !data) return [];
-      
-      return (data.results || []).slice(0, 10).map((movie: TMDBTrendingMovie) => ({
-        movie_title: movie.title,
-        movie_year: movie.release_date ? parseInt(movie.release_date.split('-')[0]) : null,
-        poster_url: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
-        recall_count: Math.floor(movie.vote_average * 100),
-        is_hidden_gem: false,
-        genres: movie.genre_ids?.map(id => GENRE_MAP[id]).filter(Boolean) || [],
-        tmdb_id: movie.id
-      }));
-    } catch {
-      return [];
-    }
+    }));
   }
 
   async getHiddenGems(limit = 10): Promise<VaultTrending[]> {
