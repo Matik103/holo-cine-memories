@@ -71,10 +71,13 @@ export function useVaultTrending(period: 'hour' | 'day' | 'week' = 'day') {
 
   useEffect(() => {
     let mounted = true;
+    let isInitialLoad = true;
     
     const fetchTrending = async () => {
       if (!mounted) return;
-      setIsLoading(true);
+      if (isInitialLoad) {
+        setIsLoading(true);
+      }
       try {
         const data = await vaultService.getTrending(period, 10);
         if (mounted) {
@@ -83,8 +86,9 @@ export function useVaultTrending(period: 'hour' | 'day' | 'week' = 'day') {
       } catch (err) {
         console.error('Error fetching trending:', err);
       } finally {
-        if (mounted) {
+        if (mounted && isInitialLoad) {
           setIsLoading(false);
+          isInitialLoad = false;
         }
       }
     };

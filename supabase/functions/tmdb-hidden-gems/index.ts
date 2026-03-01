@@ -13,13 +13,12 @@ serve(async (req) => {
   try {
     const TMDB_API_KEY = Deno.env.get("TMDB_API_KEY")
     
-    // Fetch high-rated movies with lower popularity
-    // vote_average >= 7.5 (quality threshold)
-    // vote_count >= 100 (enough votes to be reliable)
-    // vote_count <= 2000 (not too mainstream)
-    // Sort by vote_average descending to get best rated first
+    if (!TMDB_API_KEY) {
+      throw new Error('TMDB_API_KEY not configured')
+    }
+    
     const params = new URLSearchParams({
-      api_key: TMDB_API_KEY || '',
+      api_key: TMDB_API_KEY,
       language: 'en-US',
       sort_by: 'vote_average.desc',
       'vote_average.gte': '7.5',
@@ -40,7 +39,6 @@ serve(async (req) => {
     
     const data = await response.json()
     
-    // Shuffle results slightly to add variety on each load
     const results = data.results || []
     const shuffled = results
       .sort(() => Math.random() - 0.5)

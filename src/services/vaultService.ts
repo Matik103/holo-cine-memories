@@ -158,31 +158,22 @@ class VaultService {
   }
 
   async getHiddenGems(limit = 10): Promise<VaultTrending[]> {
+    // Try TMDB hidden gems first
+    const tmdbGems = await this.getTMDBHiddenGems();
+    
+    if (tmdbGems.length >= limit) {
+      return tmdbGems.slice(0, limit);
+    }
+
+    // Fallback to local data
     const { data } = await supabase
       .from('vault_trending')
       .select('*')
       .eq('is_hidden_gem', true)
       .order('recall_count_total', { ascending: true })
-      .limit(limit);
+      .limit(limit - tmdbGems.length);
 
-    if (data && data.length > 0) {
-      return data.map(t => ({
-        movie_title: t.movie_title,
-        movie_year: t.movie_year,
-        poster_url: t.poster_url,
-        recall_count: t.recall_count_total || 0,
-        is_hidden_gem: true,
-        genres: t.genres
-      }));
-    }
-
-    const { data: lowSearchMovies } = await supabase
-      .from('vault_trending')
-      .select('*')
-      .order('recall_count_total', { ascending: true })
-      .limit(limit);
-
-    return (lowSearchMovies || []).map(t => ({
+    const localGems = (data || []).map(t => ({
       movie_title: t.movie_title,
       movie_year: t.movie_year,
       poster_url: t.poster_url,
@@ -190,6 +181,35 @@ class VaultService {
       is_hidden_gem: true,
       genres: t.genres
     }));
+
+    // Combine and deduplicate
+    const combined = [...tmdbGems, ...localGems];
+    const seen = new Set<string>();
+    return combined.filter(m => {
+      const key = `${m.movie_title}_${m.movie_year}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }).slice(0, limit);
+  }
+
+  private async getTMDBHiddenGems(): Promise<VaultTrending[]> {
+    try {
+      const { data, error } = await supabase.functions.invoke('tmdb-hidden-gems');
+      if (error || !data?.results) return [];
+      
+      return data.results.map((movie: TMDBTrendingMovie) => ({
+        movie_title: movie.title,
+        movie_year: movie.release_date ? parseInt(movie.release_date.split('-')[0]) : null,
+        poster_url: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : null,
+        recall_count: Math.round(movie.vote_average * 10),
+        is_hidden_gem: true,
+        genres: movie.genre_ids?.map(id => GENRE_MAP[id]).filter(Boolean) || [],
+        tmdb_id: movie.id
+      }));
+    } catch {
+      return [];
+    }
   }
 
   async getUserStats(userId: string): Promise<VaultUserStats | null> {
@@ -529,7 +549,7 @@ class VaultService {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    return (data || []).map(a => ({
+    const activities = (data || []).map(a => ({
       id: a.id,
       activity_type: a.activity_type as VaultActivity['activity_type'],
       movie_title: a.movie_title,
@@ -538,6 +558,49 @@ class VaultService {
       badge_id: a.badge_id,
       created_at: a.created_at
     }));
+
+    // Fetch mystery activities in background
+    this.fetchMysteryActivities(limit).then(mysteryActivities => {
+      if (mysteryActivities.length > 0) {
+        // Merge will happen on next fetch
+      }
+    }).catch(() => {});
+
+    return activities;
+  }
+
+  private async fetchMysteryActivities(limit: number): Promise<VaultActivity[]> {
+    const { data } = await supabase
+      .from('memory_mysteries')
+      .select('id, created_at, display_name, is_solved, solved_at')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    return (data || []).flatMap(m => {
+      const activities: VaultActivity[] = [{
+        id: `mystery_posted_${m.id}`,
+        activity_type: 'mystery_posted',
+        movie_title: null,
+        movie_year: null,
+        display_name: m.display_name,
+        badge_id: null,
+        created_at: m.created_at
+      }];
+      
+      if (m.is_solved && m.solved_at) {
+        activities.push({
+          id: `mystery_solved_${m.id}`,
+          activity_type: 'mystery_solved',
+          movie_title: null,
+          movie_year: null,
+          display_name: m.display_name,
+          badge_id: null,
+          created_at: m.solved_at
+        });
+      }
+      
+      return activities;
+    });
   }
 
   async addActivity(activity: Omit<VaultActivity, 'id' | 'created_at'>): Promise<void> {
