@@ -84,6 +84,34 @@ export const MovieDetail = () => {
     }
   }, [movieTitle]);
 
+  // Re-fetch trailer when language changes
+  useEffect(() => {
+    if (!movieTitle || !movieDetails) return;
+    
+    const fetchTrailerForLanguage = async () => {
+      const titleMatch = movieTitle.match(/^(.+?)\s+(\d{4})$/);
+      const title = titleMatch ? titleMatch[1] : movieTitle;
+      const year = titleMatch ? titleMatch[2] : undefined;
+      
+      console.log('Re-fetching trailer for language:', currentLanguage);
+      
+      try {
+        const trailerResponse = await supabase.functions.invoke('movie-trailer', {
+          body: { movieTitle: title, movieYear: year, language: currentLanguage }
+        });
+        
+        if (trailerResponse.data?.trailer) {
+          setTrailer(trailerResponse.data.trailer);
+          console.log('Trailer updated for language:', currentLanguage, trailerResponse.data.trailer.title);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch trailer for language:', error);
+      }
+    };
+    
+    fetchTrailerForLanguage();
+  }, [currentLanguage, movieDetails?.title]);
+
   useEffect(() => {
     let mounted = true;
     
