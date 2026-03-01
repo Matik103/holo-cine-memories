@@ -181,7 +181,7 @@ export const MovieDetail = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-primary/5">
         <div className="text-center space-y-4">
           <h3 className="text-lg font-semibold">Movie not found</h3>
-          <Button onClick={() => navigate(-1)} variant="outline">
+          <Button onClick={() => navigate('/')} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Go Back
           </Button>
@@ -199,7 +199,7 @@ export const MovieDetail = () => {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/')}
               className="flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />

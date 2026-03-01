@@ -30,7 +30,7 @@ export const Vault = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/')}
             className="gap-1 sm:gap-2 text-primary/80 hover:text-primary px-2 sm:px-4"
           >
             <ArrowLeft className="h-4 w-4" />
