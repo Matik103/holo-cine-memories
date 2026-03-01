@@ -97,21 +97,29 @@ export function CollectiveMemory() {
                 <Vault className="h-5 w-5" />
               </Button>
 
-              {/* Icon-only button on mobile, full button on larger screens */}
-              <CreateMysteryDialog 
-                onSuccess={refetch}
-                trigger={
-                  <>
-                    <Button className="neural-button gap-2 hidden sm:inline-flex">
+              {/* Desktop button */}
+              <div className="hidden sm:block">
+                <CreateMysteryDialog 
+                  onSuccess={refetch}
+                  trigger={
+                    <Button className="neural-button gap-2">
                       <HelpCircle className="h-4 w-4" aria-hidden="true" />
                       Post a Mystery
                     </Button>
-                    <Button className="neural-button sm:hidden" size="icon" aria-label="Post a Mystery">
+                  }
+                />
+              </div>
+              {/* Mobile button */}
+              <div className="sm:hidden">
+                <CreateMysteryDialog 
+                  onSuccess={refetch}
+                  trigger={
+                    <Button className="neural-button" size="icon" aria-label="Post a Mystery">
                       <Plus className="h-5 w-5" />
                     </Button>
-                  </>
-                }
-              />
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>
