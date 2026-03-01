@@ -13,6 +13,7 @@ import { withAmazonPrime, type StreamingOption } from "@/lib/streaming";
 import { validateSearchQuery } from "@/lib/validation";
 import { useToast } from "@/hooks/use-toast";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
+import { vaultService } from "@/services/vaultService";
 import { supabase } from "@/integrations/supabase/client";
 import { Brain, User, Compass, Menu, Settings, Vault } from "lucide-react";
 import { Button } from "./ui/button";
@@ -255,6 +256,28 @@ export const CineMind = () => {
               if (searchError) console.error('Error saving search:', searchError);
               else {
                 localStorage.setItem('refreshProfile', 'true');
+                
+                // Record search in vault
+                try {
+                  await vaultService.recordSearch(
+                    user.id,
+                    movie.title,
+                    movie.year,
+                    movie.genre
+                  );
+                  
+                  // Check for new badges
+                  const newBadges = await vaultService.checkAndUnlockBadges(user.id);
+                  if (newBadges.length > 0) {
+                    toast({
+                      title: "🎉 Badge Unlocked!",
+                      description: `You earned: ${newBadges.map(b => b.name).join(', ')}`,
+                    });
+                  }
+                } catch (vaultError) {
+                  console.error('Vault integration error:', vaultError);
+                }
+                
                 const { error: cineDNAError } = await supabase.functions.invoke('update-cinedna', { body: { userId: user.id } });
                 if (cineDNAError) console.error('Error updating CineDNA:', cineDNAError);
               }

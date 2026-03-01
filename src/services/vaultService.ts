@@ -1,8 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
 
-const TMDB_API_KEY = '2dca580c2a14b55200e784d157207b4d';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
-
 export interface VaultTrending {
   movie_title: string;
   movie_year: number | null;
@@ -141,12 +138,9 @@ class VaultService {
 
   private async getTMDBTrending(): Promise<VaultTrending[]> {
     try {
-      const response = await fetch(
-        `${TMDB_BASE_URL}/trending/movie/day?api_key=${TMDB_API_KEY}`
-      );
-      if (!response.ok) return [];
+      const { data, error } = await supabase.functions.invoke('tmdb-trending');
+      if (error || !data) return [];
       
-      const data = await response.json();
       return (data.results || []).slice(0, 10).map((movie: TMDBTrendingMovie) => ({
         movie_title: movie.title,
         movie_year: movie.release_date ? parseInt(movie.release_date.split('-')[0]) : null,
@@ -166,7 +160,7 @@ class VaultService {
       .from('vault_trending')
       .select('*')
       .eq('is_hidden_gem', true)
-      .order('average_rating', { ascending: false })
+      .order('recall_count_total', { ascending: true })
       .limit(limit);
 
     if (data && data.length > 0) {
@@ -180,20 +174,19 @@ class VaultService {
       }));
     }
 
-    const { data: favorites } = await supabase
-      .from('favorites')
-      .select('movie_title, movie_year, movie_poster_url, rating')
-      .gte('rating', 4)
-      .order('rating', { ascending: false })
+    const { data: anyMovies } = await supabase
+      .from('vault_trending')
+      .select('*')
+      .order('recall_count_total', { ascending: true })
       .limit(limit);
 
-    return (favorites || []).map(f => ({
-      movie_title: f.movie_title,
-      movie_year: f.movie_year,
-      poster_url: f.movie_poster_url,
-      recall_count: Math.floor(Math.random() * 50) + 10,
+    return (anyMovies || []).map(t => ({
+      movie_title: t.movie_title,
+      movie_year: t.movie_year,
+      poster_url: t.poster_url,
+      recall_count: t.recall_count_total || 0,
       is_hidden_gem: true,
-      genres: null
+      genres: t.genres
     }));
   }
 
@@ -433,13 +426,21 @@ class VaultService {
       });
 
     if (!error) {
-      await supabase
+      const { data: stats } = await supabase
         .from('vault_user_stats')
-        .update({
-          predictions_total: supabase.rpc('increment_field', { field: 'predictions_total' }),
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', userId);
+        .select('predictions_total')
+        .eq('user_id', userId)
+        .single();
+        
+      if (stats) {
+        await supabase
+          .from('vault_user_stats')
+          .update({
+            predictions_total: (stats.predictions_total || 0) + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
+      }
     }
 
     return !error;
@@ -491,24 +492,13 @@ class VaultService {
   }
 
   async recordSearch(userId: string, movieTitle: string, movieYear?: number, genres?: string[]): Promise<void> {
-    await supabase.from('vault_trending').upsert({
-      movie_title: movieTitle,
-      movie_year: movieYear,
-      recall_count_hour: 1,
-      recall_count_day: 1,
-      recall_count_week: 1,
-      recall_count_total: 1,
-      genres: genres
-    }, {
-      onConflict: 'movie_title,movie_year'
-    });
-
     const { data: existing } = await supabase
       .from('vault_trending')
-      .select('recall_count_hour, recall_count_day, recall_count_week, recall_count_total')
+      .select('recall_count_hour, recall_count_day, recall_count_week, recall_count_total, is_hidden_gem')
       .eq('movie_title', movieTitle)
-      .eq('movie_year', movieYear)
-      .single();
+      .maybeSingle();
+
+    const isNewHiddenGem = !existing || (existing.recall_count_total < 50 && existing.recall_count_total > 5);
 
     if (existing) {
       await supabase
@@ -518,21 +508,41 @@ class VaultService {
           recall_count_day: (existing.recall_count_day || 0) + 1,
           recall_count_week: (existing.recall_count_week || 0) + 1,
           recall_count_total: (existing.recall_count_total || 0) + 1,
+          is_hidden_gem: isNewHiddenGem,
           updated_at: new Date().toISOString()
         })
-        .eq('movie_title', movieTitle)
-        .eq('movie_year', movieYear);
+        .eq('movie_title', movieTitle);
+    } else {
+      await supabase.from('vault_trending').insert({
+        movie_title: movieTitle,
+        movie_year: movieYear,
+        recall_count_hour: 1,
+        recall_count_day: 1,
+        recall_count_week: 1,
+        recall_count_total: 1,
+        is_hidden_gem: true,
+        genres: genres
+      });
     }
 
-    await supabase
+    const { data: stats } = await supabase
       .from('vault_user_stats')
-      .update({
-        total_searches: supabase.rpc('increment_field', { field: 'total_searches' }),
-        vault_score: supabase.rpc('increment_field', { field: 'vault_score', amount: 5 }),
-        genres_explored: genres || [],
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId);
+      .select('total_searches, vault_score, genres_explored')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (stats) {
+      const newGenres = [...new Set([...(stats.genres_explored || []), ...(genres || [])])];
+      await supabase
+        .from('vault_user_stats')
+        .update({
+          total_searches: (stats.total_searches || 0) + 1,
+          vault_score: (stats.vault_score || 0) + 5,
+          genres_explored: newGenres,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+    }
 
     await supabase.rpc('update_user_streak', { p_user_id: userId });
 
@@ -577,6 +587,34 @@ class VaultService {
       .from('vault_user_stats')
       .update({ display_name: displayName, updated_at: new Date().toISOString() })
       .eq('user_id', userId);
+  }
+
+  async recordHiddenGemRating(userId: string, movieTitle: string): Promise<void> {
+    const { data: movie } = await supabase
+      .from('vault_trending')
+      .select('is_hidden_gem')
+      .eq('movie_title', movieTitle)
+      .single();
+
+    if (movie?.is_hidden_gem) {
+      const { data: stats } = await supabase
+        .from('vault_user_stats')
+        .select('hidden_gems_rated')
+        .eq('user_id', userId)
+        .single();
+
+      if (stats) {
+        await supabase
+          .from('vault_user_stats')
+          .update({
+            hidden_gems_rated: (stats.hidden_gems_rated || 0) + 1,
+            updated_at: new Date().toISOString()
+          })
+          .eq('user_id', userId);
+
+        await this.checkAndUnlockBadges(userId);
+      }
+    }
   }
 
   getRarityColor(rarity: VaultBadge['rarity']): string {

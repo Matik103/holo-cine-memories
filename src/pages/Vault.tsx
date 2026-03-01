@@ -27,31 +27,32 @@ export const Vault = () => {
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-radial from-primary/3 to-transparent rounded-full" />
       </div>
 
-      <div className="max-w-4xl mx-auto px-2 pt-6 sm:pt-4 relative z-10">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 pt-6 sm:pt-4 relative z-10">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
           <Button
             variant="ghost"
+            size="sm"
             onClick={() => navigate(-1)}
-            className="gap-2 text-primary/80 hover:text-primary"
+            className="gap-1 sm:gap-2 text-primary/80 hover:text-primary px-2 sm:px-4"
           >
             <ArrowLeft className="h-4 w-4" />
             <span className="hidden sm:inline">{t('common.back')}</span>
           </Button>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <div className="p-2 rounded-full bg-primary/10">
-                <VaultIcon className="h-5 w-5 text-primary" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <div className="p-1.5 sm:p-2 rounded-full bg-primary/10">
+                <VaultIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
               </div>
-              <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {t('vault.title')}
               </h1>
             </div>
             {stats && (
-              <div className="hidden sm:flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                <span className="text-xs text-primary/70">{t('vault.score')}</span>
-                <span className="font-bold text-primary">{stats.vault_score}</span>
+              <div className="flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
+                <span className="text-[10px] sm:text-xs text-primary/70">{t('vault.score')}</span>
+                <span className="text-xs sm:text-sm font-bold text-primary">{stats.vault_score}</span>
               </div>
             )}
           </div>
@@ -61,11 +62,12 @@ export const Vault = () => {
         <LivePulse />
 
         {/* Trending Section */}
-        <Card className="neural-card p-4 sm:p-6 mb-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2">
-              <span className="text-xl">🔥</span>
-              {t('vault.trending.title')}
+        <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2">
+              <span className="text-lg sm:text-xl">🔥</span>
+              <span className="hidden xs:inline">{t('vault.trending.title')}</span>
+              <span className="xs:hidden">Trending</span>
             </h2>
             <div className="flex gap-1">
               {(['hour', 'day', 'week'] as const).map((period) => (
@@ -74,7 +76,7 @@ export const Vault = () => {
                   variant={trendingPeriod === period ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setTrendingPeriod(period)}
-                  className="text-xs px-2 py-1 h-7"
+                  className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-1 h-6 sm:h-7"
                 >
                   {t(`vault.trending.${period}`)}
                 </Button>
@@ -85,41 +87,45 @@ export const Vault = () => {
         </Card>
 
         {/* Hidden Gems */}
-        <Card className="neural-card p-4 sm:p-6 mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <span className="text-xl">💎</span>
-            {t('vault.hiddenGems.title')}
+        <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-4">
+            <span className="text-lg sm:text-xl">💎</span>
+            <span className="hidden xs:inline">{t('vault.hiddenGems.title')}</span>
+            <span className="xs:hidden">Hidden Gems</span>
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
             {t('vault.hiddenGems.description')}
           </p>
           <HiddenGems />
         </Card>
 
         {/* Prediction Game */}
-        <Card className="neural-card p-4 sm:p-6 mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <span className="text-xl">🎯</span>
-            {t('vault.predictions.title')}
+        <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+            <span className="text-lg sm:text-xl">🎯</span>
+            <span className="hidden xs:inline">{t('vault.predictions.title')}</span>
+            <span className="xs:hidden">Predictions</span>
           </h2>
           <PredictionGame />
         </Card>
 
         {/* Champions */}
-        <Card className="neural-card p-4 sm:p-6 mb-4">
-          <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-            <span className="text-xl">🏆</span>
-            {t('vault.champions.title')}
+        <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
+          <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+            <span className="text-lg sm:text-xl">🏆</span>
+            <span className="hidden xs:inline">{t('vault.champions.title')}</span>
+            <span className="xs:hidden">Champions</span>
           </h2>
           <Champions />
         </Card>
 
         {/* User Stats */}
         {isAuthenticated && (
-          <Card className="neural-card p-4 sm:p-6 mb-4">
-            <h2 className="text-lg font-semibold flex items-center gap-2 mb-4">
-              <span className="text-xl">📊</span>
-              {t('vault.yourStats.title')}
+          <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+              <span className="text-lg sm:text-xl">📊</span>
+              <span className="hidden xs:inline">{t('vault.yourStats.title')}</span>
+              <span className="xs:hidden">Your Stats</span>
             </h2>
             <UserVaultStats stats={stats} isLoading={isLoading} />
           </Card>
@@ -127,11 +133,11 @@ export const Vault = () => {
 
         {/* Sign in prompt for non-authenticated users */}
         {!isAuthenticated && (
-          <Card className="neural-card p-6 mb-4 text-center">
-            <p className="text-muted-foreground mb-4">
+          <Card className="neural-card p-4 sm:p-6 mb-3 sm:mb-4 text-center">
+            <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">
               {t('vault.signInPrompt')}
             </p>
-            <Button onClick={() => navigate('/auth')} className="neural-button">
+            <Button onClick={() => navigate('/auth')} className="neural-button w-full sm:w-auto">
               {t('auth.signIn')}
             </Button>
           </Card>

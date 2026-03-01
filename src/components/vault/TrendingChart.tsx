@@ -16,12 +16,12 @@ export function TrendingChart({ period }: TrendingChartProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2 sm:space-y-3">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <Skeleton className="w-8 h-8 rounded" />
-            <Skeleton className="h-4 flex-1" />
-            <Skeleton className="w-16 h-4" />
+          <div key={i} className="flex items-center gap-2 sm:gap-3">
+            <Skeleton className="w-6 h-6 sm:w-8 sm:h-8 rounded" />
+            <Skeleton className="h-3 sm:h-4 flex-1" />
+            <Skeleton className="w-12 sm:w-16 h-3 sm:h-4" />
           </div>
         ))}
       </div>
@@ -30,9 +30,9 @@ export function TrendingChart({ period }: TrendingChartProps) {
 
   if (trending.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
-        <TrendingUp className="h-8 w-8 mx-auto mb-2 opacity-50" />
-        <p>{t('vault.trending.empty')}</p>
+      <div className="text-center py-6 sm:py-8 text-muted-foreground">
+        <TrendingUp className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
+        <p className="text-sm sm:text-base">{t('vault.trending.empty')}</p>
       </div>
     );
   }
@@ -40,7 +40,7 @@ export function TrendingChart({ period }: TrendingChartProps) {
   const maxCount = Math.max(...trending.map(t => t.recall_count));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 sm:space-y-3">
       {trending.map((movie, index) => {
         const percentage = (movie.recall_count / maxCount) * 100;
         const isTop3 = index < 3;
@@ -48,11 +48,11 @@ export function TrendingChart({ period }: TrendingChartProps) {
         return (
           <div
             key={`${movie.movie_title}_${movie.movie_year}`}
-            className="group flex items-center gap-3 p-2 rounded-lg hover:bg-primary/5 transition-colors cursor-pointer"
+            className="group flex items-center gap-2 sm:gap-3 p-1.5 sm:p-2 rounded-lg hover:bg-primary/5 transition-colors cursor-pointer"
             onClick={() => navigate(`/movie/${encodeURIComponent(movie.movie_title)}`)}
           >
             {/* Rank */}
-            <div className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
+            <div className={`w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full text-[10px] sm:text-xs font-bold ${
               index === 0 ? 'bg-yellow-500/20 text-yellow-400' :
               index === 1 ? 'bg-gray-400/20 text-gray-300' :
               index === 2 ? 'bg-orange-500/20 text-orange-400' :
@@ -66,34 +66,34 @@ export function TrendingChart({ period }: TrendingChartProps) {
               <img
                 src={movie.poster_url}
                 alt={movie.movie_title}
-                className="w-10 h-14 object-cover rounded shadow-md group-hover:scale-105 transition-transform"
+                className="w-8 h-12 sm:w-10 sm:h-14 object-cover rounded shadow-md group-hover:scale-105 transition-transform"
               />
             ) : (
-              <div className="w-10 h-14 bg-primary/10 rounded flex items-center justify-center">
-                <Flame className="h-4 w-4 text-primary/50" />
+              <div className="w-8 h-12 sm:w-10 sm:h-14 bg-primary/10 rounded flex items-center justify-center">
+                <Flame className="h-3 w-3 sm:h-4 sm:w-4 text-primary/50" />
               </div>
             )}
 
             {/* Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="font-medium truncate group-hover:text-primary transition-colors">
+              <div className="flex items-center gap-1 sm:gap-2">
+                <span className="text-xs sm:text-sm font-medium truncate group-hover:text-primary transition-colors">
                   {movie.movie_title}
                 </span>
                 {movie.movie_year && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground whitespace-nowrap">
                     ({movie.movie_year})
                   </span>
                 )}
                 {isTop3 && (
-                  <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 border-primary/30 text-primary">
+                  <Badge variant="outline" className="text-[8px] sm:text-[10px] px-1 py-0 h-3 sm:h-4 border-primary/30 text-primary hidden xs:inline-flex">
                     {t('vault.trending.hot')}
                   </Badge>
                 )}
               </div>
               
               {/* Progress bar */}
-              <div className="mt-1 h-1.5 bg-primary/10 rounded-full overflow-hidden">
+              <div className="mt-1 h-1 sm:h-1.5 bg-primary/10 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     index === 0 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
@@ -107,9 +107,9 @@ export function TrendingChart({ period }: TrendingChartProps) {
 
               {/* Genres */}
               {movie.genres && movie.genres.length > 0 && (
-                <div className="flex gap-1 mt-1">
+                <div className="flex gap-1 mt-0.5 sm:mt-1">
                   {movie.genres.slice(0, 2).map(genre => (
-                    <span key={genre} className="text-[10px] text-muted-foreground">
+                    <span key={genre} className="text-[9px] sm:text-[10px] text-muted-foreground">
                       {genre}
                     </span>
                   ))}
@@ -119,10 +119,10 @@ export function TrendingChart({ period }: TrendingChartProps) {
 
             {/* Count */}
             <div className="text-right">
-              <div className="font-bold text-primary">
+              <div className="text-sm sm:text-base font-bold text-primary">
                 {movie.recall_count.toLocaleString()}
               </div>
-              <div className="text-[10px] text-muted-foreground">
+              <div className="text-[8px] sm:text-[10px] text-muted-foreground">
                 {t('vault.trending.recalls')}
               </div>
             </div>

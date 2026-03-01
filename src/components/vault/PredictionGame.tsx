@@ -52,11 +52,11 @@ export function PredictionGame() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-24 w-full rounded-lg" />
-        <div className="flex gap-2">
+      <div className="space-y-3 sm:space-y-4">
+        <Skeleton className="h-20 sm:h-24 w-full rounded-lg" />
+        <div className="grid grid-cols-2 gap-2">
           {[...Array(4)].map((_, i) => (
-            <Skeleton key={i} className="h-10 flex-1 rounded-lg" />
+            <Skeleton key={i} className="h-12 sm:h-14 rounded-lg" />
           ))}
         </div>
       </div>
@@ -65,47 +65,47 @@ export function PredictionGame() {
 
   if (predictions.length === 0) {
     return (
-      <div className="text-center py-8">
-        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-          <Trophy className="h-8 w-8 text-primary/50" />
+      <div className="text-center py-6 sm:py-8">
+        <div className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+          <Trophy className="h-6 w-6 sm:h-8 sm:w-8 text-primary/50" />
         </div>
-        <p className="text-muted-foreground mb-2">{t('vault.predictions.noPredictions')}</p>
-        <p className="text-sm text-muted-foreground/70">{t('vault.predictions.checkBack')}</p>
+        <p className="text-sm sm:text-base text-muted-foreground mb-1 sm:mb-2">{t('vault.predictions.noPredictions')}</p>
+        <p className="text-xs sm:text-sm text-muted-foreground/70">{t('vault.predictions.checkBack')}</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {predictions.map((prediction) => {
         const hasVoted = !!prediction.user_selection;
         const isSubmitting = submitting === prediction.id;
 
         return (
-          <div key={prediction.id} className="space-y-4">
+          <div key={prediction.id} className="space-y-3 sm:space-y-4">
             {/* Header */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h3 className="font-medium">{prediction.title}</h3>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
+              <div className="flex-1">
+                <h3 className="text-sm sm:text-base font-medium">{prediction.title}</h3>
                 {prediction.description && (
-                  <p className="text-sm text-muted-foreground mt-1">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                     {prediction.description}
                   </p>
                 )}
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Clock className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-2 text-xs sm:text-sm">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                 <span className="text-muted-foreground whitespace-nowrap">
                   {formatTimeRemaining(prediction.ends_at)}
                 </span>
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-[10px] sm:text-xs">
                   +{prediction.points_reward} pts
                 </Badge>
               </div>
             </div>
 
             {/* Options */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               {prediction.options.map((option) => {
                 const isSelected = prediction.user_selection === option.id;
                 
@@ -113,17 +113,17 @@ export function PredictionGame() {
                   <Button
                     key={option.id}
                     variant={isSelected ? 'default' : 'outline'}
-                    className={`h-auto py-3 px-4 flex flex-col items-center gap-1 relative ${
+                    className={`h-auto py-2 sm:py-3 px-3 sm:px-4 flex flex-col items-center gap-1 relative text-xs sm:text-sm ${
                       isSelected ? 'ring-2 ring-primary ring-offset-2 ring-offset-background' : ''
                     } ${hasVoted && !isSelected ? 'opacity-50' : ''}`}
                     disabled={hasVoted || isSubmitting}
                     onClick={() => handleSubmit(prediction.id, option.id)}
                   >
-                    {option.icon && <span className="text-xl">{option.icon}</span>}
-                    <span className="text-sm font-medium">{option.label}</span>
+                    {option.icon && <span className="text-lg sm:text-xl">{option.icon}</span>}
+                    <span className="font-medium">{option.label}</span>
                     {isSelected && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 bg-primary rounded-full flex items-center justify-center">
-                        <Check className="h-3 w-3 text-primary-foreground" />
+                      <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-primary rounded-full flex items-center justify-center">
+                        <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-primary-foreground" />
                       </div>
                     )}
                   </Button>
@@ -133,8 +133,8 @@ export function PredictionGame() {
 
             {/* Status */}
             {hasVoted && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Lock className="h-4 w-4" />
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                <Lock className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span>{t('vault.predictions.voteLocked')}</span>
               </div>
             )}
