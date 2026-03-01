@@ -549,7 +549,7 @@ class VaultService {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    const activities = (data || []).map(a => ({
+    return (data || []).map(a => ({
       id: a.id,
       activity_type: a.activity_type as VaultActivity['activity_type'],
       movie_title: a.movie_title,
@@ -558,49 +558,6 @@ class VaultService {
       badge_id: a.badge_id,
       created_at: a.created_at
     }));
-
-    // Fetch mystery activities in background
-    this.fetchMysteryActivities(limit).then(mysteryActivities => {
-      if (mysteryActivities.length > 0) {
-        // Merge will happen on next fetch
-      }
-    }).catch(() => {});
-
-    return activities;
-  }
-
-  private async fetchMysteryActivities(limit: number): Promise<VaultActivity[]> {
-    const { data } = await supabase
-      .from('memory_mysteries')
-      .select('id, created_at, display_name, is_solved, solved_at')
-      .order('created_at', { ascending: false })
-      .limit(limit);
-
-    return (data || []).flatMap(m => {
-      const activities: VaultActivity[] = [{
-        id: `mystery_posted_${m.id}`,
-        activity_type: 'mystery_posted',
-        movie_title: null,
-        movie_year: null,
-        display_name: m.display_name,
-        badge_id: null,
-        created_at: m.created_at
-      }];
-      
-      if (m.is_solved && m.solved_at) {
-        activities.push({
-          id: `mystery_solved_${m.id}`,
-          activity_type: 'mystery_solved',
-          movie_title: null,
-          movie_year: null,
-          display_name: m.display_name,
-          badge_id: null,
-          created_at: m.solved_at
-        });
-      }
-      
-      return activities;
-    });
   }
 
   async addActivity(activity: Omit<VaultActivity, 'id' | 'created_at'>): Promise<void> {
