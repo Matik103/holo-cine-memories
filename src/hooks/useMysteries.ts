@@ -465,6 +465,7 @@ export function useTopDetectives(limit = 10) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<MysteryServiceError | null>(null);
   const isMounted = useRef(true);
+  const isInitialLoad = useRef(true);
 
   useEffect(() => {
     isMounted.current = true;
@@ -473,10 +474,12 @@ export function useTopDetectives(limit = 10) {
 
   useEffect(() => {
     const fetchDetectives = async () => {
-      if (isMounted.current) {
+      if (!isMounted.current) return;
+      
+      if (isInitialLoad.current) {
         setIsLoading(true);
-        setError(null);
       }
+      setError(null);
 
       try {
         const data = await mysteryService.getTopDetectives(limit);
@@ -490,11 +493,16 @@ export function useTopDetectives(limit = 10) {
       } finally {
         if (isMounted.current) {
           setIsLoading(false);
+          isInitialLoad.current = false;
         }
       }
     };
 
     fetchDetectives();
+    
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchDetectives, 60000);
+    return () => clearInterval(interval);
   }, [limit]);
 
   return { detectives, isLoading, error };
