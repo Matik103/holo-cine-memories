@@ -146,7 +146,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           <span className="mx-2 text-primary/50">·</span>
           <Link to="/terms" className="hover:underline">{t("nav.terms")}</Link>
           <span className="mx-2 text-primary/50">·</span>
-          <Link to="/advertising" className="hover:underline">Advertising</Link>
+          <Link to="/advertising" className="hover:underline">{t("nav.advertising")}</Link>
         </div>
         <LanguageSelector variant="compact" />
       </nav>
@@ -219,9 +219,9 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
           </div>
           
           <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-3">
-            Remember Any Movie.<br />
+            {t("landing.hero.title")}<br />
             <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Anywhere. Anytime.
+              {t("landing.hero.titleHighlight")}
             </span>
           </h2>
           
@@ -267,8 +267,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                               <div className="text-center text-white">
                                 <>
                                   <Eye className="w-12 h-12 mx-auto mb-2 text-primary" />
-                                  <p className="text-lg font-semibold">View Details</p>
-                                  <p className="text-sm opacity-75">Click to explore</p>
+                                  <p className="text-lg font-semibold">{t("landing.card.viewDetails")}</p>
+                                  <p className="text-sm opacity-75">{t("landing.card.clickExplore")}</p>
                                 </>
                               </div>
                             </div>
@@ -290,7 +290,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
             {/* Navigation Arrows */}
             <button
               onClick={prevCard}
-              title="Previous movie card"
+              title={t("landing.card.previous")}
               className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
             >
               <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -299,7 +299,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
             </button>
             <button
               onClick={nextCard}
-              title="Next movie card"
+              title={t("landing.card.next")}
               className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-12 sm:h-12 bg-white/10 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
             >
               <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -314,7 +314,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
               <button
                 key={index}
                 onClick={() => setCurrentCard(index)}
-                title={`Go to movie card ${index + 1}`}
+                title={`${t("landing.card.goTo")} ${index + 1}`}
                 className={`w-2 h-2 sm:w-2 sm:h-2 rounded-full transition-colors ${
                   index === currentCard ? 'bg-primary' : 'bg-white/30'
                 }`}
@@ -327,11 +327,11 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         <div className="text-center space-y-3 sm:space-y-6 px-4 pb-safe-bottom">
           <div className="space-y-1 sm:space-y-2">
             <h3 className="text-base sm:text-xl md:text-2xl font-bold text-white">
-              Your CineMind remembers for you.
+              {t("landing.cta.remembers")}
             </h3>
             <p className="text-xs sm:text-base text-muted-foreground">
-              <span className="sm:hidden">Tap any card to explore full details</span>
-              <span className="hidden sm:inline">Click any card above to explore full movie details with AI insights</span>
+              <span className="sm:hidden">{t("landing.cta.tapCard")}</span>
+              <span className="hidden sm:inline">{t("landing.cta.clickCard")}</span>
             </p>
           </div>
           
