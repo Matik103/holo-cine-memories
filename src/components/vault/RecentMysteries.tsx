@@ -1,16 +1,62 @@
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useMysteries, useUnsolvedCount } from '@/hooks/useMysteries';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HelpCircle, Eye, MessageSquare, Trophy, ArrowRight, Users } from 'lucide-react';
 
+interface SimpleMystery {
+  id: string;
+  description: string;
+  view_count: number;
+  attempt_count: number;
+  points_reward: number;
+}
+
 export function RecentMysteries() {
   const navigate = useNavigate();
-  const unsolvedCount = useUnsolvedCount();
-  const { mysteries, isLoading } = useMysteries('unsolved', 'recent');
+  const [mysteries, setMysteries] = useState<SimpleMystery[]>([]);
+  const [unsolvedCount, setUnsolvedCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const mounted = useRef(true);
 
-  // Only show first 3 mysteries
-  const recentMysteries = mysteries.slice(0, 3);
+  useEffect(() => {
+    mounted.current = true;
+    
+    const fetchMysteries = async () => {
+      try {
+        const [{ data, error }, { count }] = await Promise.all([
+          supabase
+            .from('memory_mysteries')
+            .select('id, description, view_count, attempt_count, points_reward')
+            .eq('status', 'unsolved')
+            .order('created_at', { ascending: false })
+            .limit(3),
+          supabase
+            .from('memory_mysteries')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'unsolved')
+        ]);
+
+        if (mounted.current) {
+          if (!error && data) {
+            setMysteries(data);
+          }
+          setUnsolvedCount(count || 0);
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error('Error fetching mysteries:', err);
+        if (mounted.current) setIsLoading(false);
+      }
+    };
+
+    fetchMysteries();
+    
+    return () => { mounted.current = false; };
+  }, []);
+
+  const recentMysteries = mysteries;
 
   if (isLoading) {
     return (
