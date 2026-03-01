@@ -12,7 +12,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -54,7 +53,7 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
-          {supportedLanguages.slice(0, 12).map((lang) => (
+          {supportedLanguages.map((lang) => (
             <DropdownMenuItem
               key={lang.code}
               onClick={() => handleSelectLanguage(lang.code)}
@@ -65,13 +64,6 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
               {currentLanguage === lang.code && <Check className="h-4 w-4" />}
             </DropdownMenuItem>
           ))}
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                <span className="text-muted-foreground">{t('language.moreLanguages')}</span>
-              </DropdownMenuItem>
-            </DialogTrigger>
-          </Dialog>
         </DropdownMenuContent>
       </DropdownMenu>
     );
