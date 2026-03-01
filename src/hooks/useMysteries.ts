@@ -526,47 +526,66 @@ export function useUnsolvedCount() {
 }
 
 export function useFeaturedMystery() {
+  // All useState hooks first (in consistent order)
   const [mystery, setMystery] = useState<Mystery | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<MysteryServiceError | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  
+  // All useRef hooks
   const isMounted = useRef(true);
+  const hasInitialized = useRef(false);
 
+  // Mounted state effect
   useEffect(() => {
     isMounted.current = true;
     return () => { isMounted.current = false; };
   }, []);
 
-  // Get current user
+  // Auth state effect - get current user
   useEffect(() => {
-    const getUser = async () => {
+    let mounted = true;
+    
+    const initAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (isMounted.current) {
-        setUserId(user?.id || null);
+      if (mounted) {
+        setUserId(user?.id);
+        hasInitialized.current = true;
       }
     };
-    getUser();
+    
+    initAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-      if (isMounted.current) {
-        setUserId(session?.user?.id || null);
+      if (mounted) {
+        setUserId(session?.user?.id);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
+  // Fetch featured mystery effect
   useEffect(() => {
+    // Wait for auth to initialize before fetching
+    if (!hasInitialized.current) return;
+    
+    let mounted = true;
+    
     const fetchFeatured = async () => {
       setIsLoading(true);
       setError(null);
       
       // Pass userId to exclude user's own mysteries from featured
-      const result = await mysteryService.getFeaturedMystery(userId || undefined);
+      const result = await mysteryService.getFeaturedMystery(userId);
       
-      if (isMounted.current) {
+      if (mounted && isMounted.current) {
         if (result.error) {
           setError(result.error);
+          setMystery(null);
         } else {
           setMystery(result.data);
         }
@@ -575,7 +594,9 @@ export function useFeaturedMystery() {
     };
 
     fetchFeatured();
-  }, [userId]); // Re-fetch when userId changes
+    
+    return () => { mounted = false; };
+  }, [userId]);
 
   return { mystery, isLoading, error };
 }
