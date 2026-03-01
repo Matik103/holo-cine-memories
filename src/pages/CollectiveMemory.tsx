@@ -1,4 +1,4 @@
-import { useMysteries, useDetectiveStats, useUnsolvedCount } from '@/hooks/useMysteries';
+import { useMysteries, useDetectiveStats, useUnsolvedCount, useFeaturedMystery } from '@/hooks/useMysteries';
 import { MysteryCard } from '@/components/mystery/MysteryCard';
 import { MysteryFilters } from '@/components/mystery/MysteryFilters';
 import { CreateMysteryDialog } from '@/components/mystery/CreateMysteryDialog';
@@ -20,13 +20,18 @@ import {
   Search,
   ThumbsUp,
   Award,
-  Plus
+  Plus,
+  Zap,
+  Eye,
+  MessageSquare
 } from 'lucide-react';
+import { ShareMysteryMenu } from '@/components/mystery';
 import { useNavigate } from 'react-router-dom';
 
 export function CollectiveMemory() {
   const navigate = useNavigate();
   const unsolvedCount = useUnsolvedCount();
+  const { mystery: featuredMystery, isLoading: featuredLoading } = useFeaturedMystery();
   const { stats, rankInfo, isLoading: statsLoading, isAuthenticated } = useDetectiveStats();
   const {
     mysteries,
@@ -146,6 +151,61 @@ export function CollectiveMemory() {
                 </Card>
               )}
             </div>
+
+            {/* Featured/Hot Mystery */}
+            {featuredMystery && !featuredLoading && (
+              <Card 
+                className="neural-card p-4 sm:p-5 border-orange-500/30 bg-gradient-to-r from-orange-500/10 to-yellow-500/5 cursor-pointer hover:border-orange-500/50 transition-all"
+                onClick={() => navigate(`/mysteries/${featuredMystery.id}`)}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-full bg-orange-500/20 flex-shrink-0">
+                    <Zap className="h-5 w-5 text-orange-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs font-semibold text-orange-400 uppercase tracking-wide">Hot Mystery</span>
+                      <span className="text-[10px] text-muted-foreground">• Needs your help!</span>
+                    </div>
+                    <p className="text-sm sm:text-base line-clamp-2 mb-2">
+                      {featuredMystery.description}
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" />
+                          {featuredMystery.view_count}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MessageSquare className="h-3 w-3" />
+                          {featuredMystery.attempt_count}
+                        </span>
+                        <span className="flex items-center gap-1 text-primary">
+                          <Trophy className="h-3 w-3" />
+                          +{featuredMystery.points_reward}
+                        </span>
+                      </div>
+                      <ShareMysteryMenu
+                        mysteryId={featuredMystery.id}
+                        description={featuredMystery.description}
+                        variant="ghost"
+                        size="sm"
+                        trigger={
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-xs"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            Share
+                          </Button>
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Filters */}
             <MysteryFilters

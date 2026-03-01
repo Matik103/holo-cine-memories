@@ -304,14 +304,10 @@ export const CineMind = () => {
           aiSuggestions: rawMovie?.title ? { suggestedTitle: rawMovie.title, confidence: rawMovie.confidence } : null
         });
         
-        // Handle case where API returns null title or low confidence
-        const hint = rawMovie?.title === null
-          ? "We couldn't match that to a movie. Try another phrase, quote, or detail."
-          : "Try a different phrase or another detail from the movie.";
+        // Show friendly message encouraging community help
         toast({
-          title: "No Match Found",
-          description: hint,
-          variant: "destructive"
+          title: "No exact match found",
+          description: "The community might know this one! Post it as a mystery.",
         });
       }
     } catch (error) {
@@ -323,24 +319,16 @@ export const CineMind = () => {
         analyticsData.search_duration_ms = Date.now() - searchStartTime;
       }
       
-      // Provide more specific error messages
-      let errorMessage = "Something went wrong";
-      if (error instanceof Error) {
-        if (error.message.includes('CORS')) {
-          errorMessage = "Service temporarily unavailable. Please try again in a moment.";
-        } else if (error.message.includes('API')) {
-          errorMessage = "AI service error. Please try again.";
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          errorMessage = "Network error. Please check your connection and try again.";
-        } else {
-          errorMessage = error.message;
-        }
-      }
+      // Always show the "Ask Community" option on any error
+      setFailedSearch({
+        query: query,
+        aiSuggestions: null
+      });
       
+      // Show a friendly message encouraging community help
       toast({
-        title: "Search Failed",
-        description: errorMessage,
-        variant: "destructive"
+        title: "AI couldn't find a match",
+        description: "No worries! The community can help identify your movie.",
       });
     } finally {
       // Save analytics data regardless of success/failure

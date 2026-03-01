@@ -8,6 +8,7 @@ import MobileAppInit from "@/components/MobileAppInit";
 import { AdMobBanner } from "@/components/AdMobBanner";
 import { LanguageAutoDetect } from "@/components/LanguageAutoDetect";
 import { VaultNotifications } from "@/components/vault/VaultNotifications";
+import { MysteryNotifications } from "@/components/mystery";
 import Index from "./pages/Index";
 import { Auth } from "./pages/Auth";
 import { Profile } from "./pages/Profile";
@@ -82,6 +83,7 @@ const App = () => (
         <AdMobBanner position="bottom" autoShow={true} />
           <LanguageAutoDetect />
           <VaultNotifications />
+          <MysteryNotifications />
         </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

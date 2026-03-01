@@ -524,3 +524,37 @@ export function useUnsolvedCount() {
 
   return count;
 }
+
+export function useFeaturedMystery() {
+  const [mystery, setMystery] = useState<Mystery | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<MysteryServiceError | null>(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    return () => { isMounted.current = false; };
+  }, []);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      const result = await mysteryService.getFeaturedMystery();
+      
+      if (isMounted.current) {
+        if (result.error) {
+          setError(result.error);
+        } else {
+          setMystery(result.data);
+        }
+        setIsLoading(false);
+      }
+    };
+
+    fetchFeatured();
+  }, []);
+
+  return { mystery, isLoading, error };
+}

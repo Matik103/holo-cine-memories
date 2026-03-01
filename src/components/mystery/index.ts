@@ -4,3 +4,4 @@ export { CreateMysteryDialog } from './CreateMysteryDialog';
 export { DetectiveRankBadge } from './DetectiveRankBadge';
 export { DetectiveLeaderboard } from './DetectiveLeaderboard';
 export { ShareMysteryMenu } from './ShareMysteryMenu';
+export { MysteryNotifications, useMysteryNotifications } from './MysteryNotifications';

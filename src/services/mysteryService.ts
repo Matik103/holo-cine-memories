@@ -755,6 +755,72 @@ class MysteryService {
     return count || 0;
   }
 
+  async getFeaturedMystery(): Promise<MysteryResult<Mystery>> {
+    try {
+      // Get the "hottest" unsolved mystery based on engagement
+      // Priority: high view count + recent activity + high points
+      const { data, error } = await supabase
+        .from('memory_mysteries')
+        .select('*')
+        .eq('status', 'unsolved')
+        .order('view_count', { ascending: false })
+        .order('attempt_count', { ascending: false })
+        .order('points_reward', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error || !data) {
+        // Fallback: get the most recent unsolved mystery
+        const { data: recentData, error: recentError } = await supabase
+          .from('memory_mysteries')
+          .select('*')
+          .eq('status', 'unsolved')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (recentError || !recentData) {
+          return { data: null, error: { code: 'NOT_FOUND', message: 'No featured mystery available' } };
+        }
+
+        // Get poster name
+        const { data: profile } = await supabase
+          .from('vault_user_stats')
+          .select('display_name')
+          .eq('user_id', recentData.user_id)
+          .single();
+
+        const mystery: Mystery = {
+          ...recentData,
+          status: recentData.status as Mystery['status'],
+          difficulty: recentData.difficulty as Mystery['difficulty'],
+          poster_name: profile?.display_name || 'Anonymous'
+        };
+
+        return { data: mystery, error: null };
+      }
+
+      // Get poster name
+      const { data: profile } = await supabase
+        .from('vault_user_stats')
+        .select('display_name')
+        .eq('user_id', data.user_id)
+        .single();
+
+      const mystery: Mystery = {
+        ...data,
+        status: data.status as Mystery['status'],
+        difficulty: data.difficulty as Mystery['difficulty'],
+        poster_name: profile?.display_name || 'Anonymous'
+      };
+
+      return { data: mystery, error: null };
+    } catch (err) {
+      console.error('Error getting featured mystery:', err);
+      return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'Failed to get featured mystery' } };
+    }
+  }
+
   async updateMystery(
     mysteryId: string,
     userId: string,
