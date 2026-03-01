@@ -35,17 +35,33 @@ const fetchWithRetry = async (url: string, maxRetries = 3): Promise<Response> =>
 // Language-specific trailer keywords
 const TRAILER_KEYWORDS: Record<string, string[]> = {
   en: ['official trailer', 'trailer official', 'movie trailer', 'trailer'],
-  es: ['tráiler oficial', 'trailer oficial', 'tráiler', 'trailer español'],
-  fr: ['bande-annonce officielle', 'bande annonce', 'trailer vf', 'bande-annonce'],
-  de: ['offizieller trailer', 'trailer deutsch', 'filmtrailer', 'trailer'],
-  pt: ['trailer oficial', 'trailer legendado', 'trailer dublado', 'trailer'],
-  zh: ['官方预告片', '预告片', '中文预告', 'trailer'],
-  ja: ['予告編', '公式予告', 'トレーラー', 'trailer'],
-  ko: ['공식 예고편', '예고편', '트레일러', 'trailer'],
-  ar: ['الإعلان الرسمي', 'إعلان الفيلم', 'تريلر', 'trailer'],
-  hi: ['आधिकारिक ट्रेलर', 'ट्रेलर', 'हिंदी ट्रेलर', 'trailer'],
-  id: ['trailer resmi', 'cuplikan film', 'trailer', 'trailer indonesia'],
+  es: ['tráiler oficial', 'trailer oficial', 'tráiler', 'trailer español', 'trailer latino'],
+  fr: ['bande-annonce officielle', 'bande annonce', 'trailer vf', 'bande-annonce vf', 'bande-annonce'],
+  de: ['offizieller trailer', 'trailer deutsch', 'german trailer', 'filmtrailer', 'trailer'],
+  pt: ['trailer oficial', 'trailer legendado', 'trailer dublado', 'trailer português', 'trailer'],
+  zh: ['官方预告片', '预告片', '中文预告', '中文字幕', 'trailer chinese'],
+  ja: ['予告編', '公式予告', '日本語', 'japanese trailer', 'トレーラー', 'trailer'],
+  ko: ['공식 예고편', '예고편', '한국어', 'korean trailer', '트레일러', 'trailer'],
+  ar: ['الإعلان الرسمي', 'إعلان الفيلم', 'مترجم', 'arabic trailer', 'تريلر', 'trailer'],
+  hi: ['आधिकारिक ट्रेलर', 'हिंदी ट्रेलर', 'hindi trailer', 'ट्रेलर', 'trailer'],
+  id: ['trailer resmi', 'trailer indonesia', 'cuplikan film', 'subtitle indonesia', 'trailer'],
   ht: ['bann anons ofisyèl', 'trailer', 'bann anons', 'trailer'],
+};
+
+// Map language codes to YouTube relevanceLanguage and regionCode
+const LANGUAGE_TO_YOUTUBE: Record<string, { relevanceLanguage: string; regionCode: string }> = {
+  en: { relevanceLanguage: 'en', regionCode: 'US' },
+  es: { relevanceLanguage: 'es', regionCode: 'ES' },
+  fr: { relevanceLanguage: 'fr', regionCode: 'FR' },
+  de: { relevanceLanguage: 'de', regionCode: 'DE' },
+  pt: { relevanceLanguage: 'pt', regionCode: 'BR' },
+  zh: { relevanceLanguage: 'zh-Hans', regionCode: 'CN' },
+  ja: { relevanceLanguage: 'ja', regionCode: 'JP' },
+  ko: { relevanceLanguage: 'ko', regionCode: 'KR' },
+  ar: { relevanceLanguage: 'ar', regionCode: 'SA' },
+  hi: { relevanceLanguage: 'hi', regionCode: 'IN' },
+  id: { relevanceLanguage: 'id', regionCode: 'ID' },
+  ht: { relevanceLanguage: 'fr', regionCode: 'HT' }, // Haitian Creole fallback to French
 };
 
 // Industry-standard: Multiple search strategies with language support
@@ -112,8 +128,8 @@ const isOfficialChannel = (channelTitle: string): boolean => {
   );
 };
 
-// Industry-standard: Content quality scoring
-const scoreTrailer = (item: any, movieTitle: string, movieYear?: string): number => {
+// Industry-standard: Content quality scoring with language preference
+const scoreTrailer = (item: any, movieTitle: string, movieYear?: string, language?: string): number => {
   let score = 0;
   const title = item.snippet.title.toLowerCase();
   const channelTitle = item.snippet.channelTitle.toLowerCase();
@@ -134,6 +150,34 @@ const scoreTrailer = (item: any, movieTitle: string, movieYear?: string): number
   // Quality indicators
   if (title.includes('hd') || title.includes('4k')) score += 5;
   if (description.includes('in theaters') || description.includes('coming soon')) score += 10;
+  
+  // Language-specific scoring - boost trailers in target language
+  if (language && language !== 'en') {
+    const langKeywords = TRAILER_KEYWORDS[language] || [];
+    const hasLangKeyword = langKeywords.some(kw => 
+      title.includes(kw.toLowerCase()) || description.includes(kw.toLowerCase())
+    );
+    if (hasLangKeyword) score += 50; // Strong boost for language match
+    
+    // Check for common language indicators in title/description
+    const langIndicators: Record<string, string[]> = {
+      es: ['español', 'spanish', 'latino', 'castellano'],
+      fr: ['français', 'french', 'vf', 'vostfr'],
+      de: ['deutsch', 'german'],
+      pt: ['português', 'portuguese', 'dublado', 'legendado'],
+      zh: ['中文', '中国', 'chinese', '普通话', '国语'],
+      ja: ['日本語', 'japanese', '字幕'],
+      ko: ['한국어', 'korean', '자막'],
+      ar: ['عربي', 'arabic', 'مترجم'],
+      hi: ['हिंदी', 'hindi'],
+      id: ['indonesia', 'indonesian'],
+    };
+    
+    const indicators = langIndicators[language] || [];
+    if (indicators.some(ind => title.includes(ind) || description.includes(ind))) {
+      score += 35;
+    }
+  }
   
   // Negative indicators
   if (title.includes('reaction') || title.includes('review') || title.includes('breakdown')) score -= 20;
@@ -162,6 +206,10 @@ serve(async (req) => {
 
     console.log(`🎬 Searching for trailer: ${movieTitle} (${movieYear || 'any year'}) [Language: ${language || 'en'}]`);
 
+    // Get YouTube language/region settings
+    const ytSettings = LANGUAGE_TO_YOUTUBE[language || 'en'] || LANGUAGE_TO_YOUTUBE.en;
+    console.log(`🌍 Using YouTube settings: relevanceLanguage=${ytSettings.relevanceLanguage}, regionCode=${ytSettings.regionCode}`);
+
     // Generate multiple search strategies with language support
     const searchQueries = generateSearchQueries(movieTitle, movieYear, language);
     console.log(`📝 Generated ${searchQueries.length} search queries`);
@@ -174,7 +222,8 @@ serve(async (req) => {
       console.log(`🔍 Trying query ${i + 1}: "${query}"`);
       
       try {
-        const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${encodeURIComponent(query)}&type=video&videoDuration=short&videoDefinition=high&order=relevance&key=${youtubeApiKey}`;
+        // Include relevanceLanguage and regionCode for language-specific results
+        const youtubeUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${encodeURIComponent(query)}&type=video&videoDuration=short&videoDefinition=high&order=relevance&relevanceLanguage=${ytSettings.relevanceLanguage}&regionCode=${ytSettings.regionCode}&key=${youtubeApiKey}`;
         
         const youtubeResponse = await fetchWithRetry(youtubeUrl);
         const youtubeData = await youtubeResponse.json();
@@ -209,11 +258,11 @@ serve(async (req) => {
       );
     }
 
-    // Score and rank all trailers
+    // Score and rank all trailers with language preference
     const scoredTrailers = allTrailers
       .map(item => ({
         ...item,
-        score: scoreTrailer(item, movieTitle, movieYear)
+        score: scoreTrailer(item, movieTitle, movieYear, language)
       }))
       .sort((a, b) => b.score - a.score);
 
