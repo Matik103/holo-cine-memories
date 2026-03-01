@@ -76,6 +76,7 @@ export const MovieDetail = () => {
   const [activeTab, setActiveTab] = useState<'summary' | 'themes' | 'similar'>('summary');
   const [translatedPlot, setTranslatedPlot] = useState<string>('');
   const [translatedGenre, setTranslatedGenre] = useState<string>('');
+  const [translatedRuntime, setTranslatedRuntime] = useState<string>('');
 
   useEffect(() => {
     if (movieTitle) {
@@ -146,6 +147,49 @@ export const MovieDetail = () => {
     
     return () => { mounted = false; };
   }, [movieDetails?.genre, currentLanguage]);
+
+  useEffect(() => {
+    let mounted = true;
+    
+    const translateRuntime = async () => {
+      if (!movieDetails?.runtime) {
+        setTranslatedRuntime('');
+        return;
+      }
+      
+      if (currentLanguage === 'en') {
+        setTranslatedRuntime(movieDetails.runtime);
+        return;
+      }
+      
+      try {
+        // Extract the number and translate "min"
+        const match = movieDetails.runtime.match(/^(\d+)\s*min/i);
+        if (match) {
+          const minutes = match[1];
+          const translatedMin = await translationService.translateText('min', currentLanguage);
+          if (mounted) {
+            setTranslatedRuntime(`${minutes} ${translatedMin}`);
+          }
+        } else {
+          // Fallback: translate the whole runtime string
+          const translated = await translationService.translateText(movieDetails.runtime, currentLanguage);
+          if (mounted) {
+            setTranslatedRuntime(translated);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to translate runtime:', error);
+        if (mounted) {
+          setTranslatedRuntime(movieDetails.runtime);
+        }
+      }
+    };
+
+    translateRuntime();
+    
+    return () => { mounted = false; };
+  }, [movieDetails?.runtime, currentLanguage]);
 
   useEffect(() => {
     let mounted = true;
@@ -375,7 +419,7 @@ export const MovieDetail = () => {
                 )}
                 <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
                   <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
-                  {movieDetails.runtime?.replace(/\s*min\s*$/i, ` ${t('common.min')}`)}
+                  {translatedRuntime || movieDetails.runtime}
                 </div>
                 {movieDetails.imdbRating && movieDetails.imdbRating !== 'N/A' && (
                   <div className="flex items-center gap-1 text-xs sm:text-sm">
