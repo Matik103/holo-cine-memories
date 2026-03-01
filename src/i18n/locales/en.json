@@ -71,6 +71,16 @@
   "search.example2": "Robot loves human",
   "search.example3": "Time loop same day",
   "search.example4": "Talking toys come alive",
+  "search.analyzingDescription": "Analyzing your description...",
+  "search.processingMemory": "Processing your memory...",
+  "search.explainMeaning": "Explain meaning...",
+  "search.whereToWatch": "Where to watch...",
+  "search.similarMovies": "Similar movies...",
+  
+  "community.cantFindIt": "Can't find it? Ask the community!",
+  "community.movieDetectives": "Our community of movie detectives can help identify movies from even the vaguest memories.",
+  "community.postMystery": "Post Mystery to Community",
+  "community.dismiss": "Dismiss",
   
   "movie.year": "Year",
   "movie.director": "Directed by",

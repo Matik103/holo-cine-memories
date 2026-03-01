@@ -173,7 +173,7 @@ export const CineMind = () => {
     
     const searchStartTime = Date.now();
     setIsLoading(true);
-    setLoadingMessage("Analyzing your description...");
+    setLoadingMessage(t('search.analyzingDescription'));
     setRetryCount(0);
     setFailedSearch(null);
     
@@ -359,7 +359,7 @@ export const CineMind = () => {
     if (!currentMovie) return;
     
     setIsLoading(true);
-    setLoadingMessage("Explain meaning...");
+    setLoadingMessage(t('search.explainMeaning'));
     
     try {
       const explanation = await explainMovie(currentMovie.title);
@@ -420,7 +420,7 @@ export const CineMind = () => {
     if (!currentMovie) return;
     
     setIsLoading(true);
-    setLoadingMessage("Where to watch...");
+    setLoadingMessage(t('search.whereToWatch'));
     
     try {
       let options: StreamingOption[] = [];
@@ -471,7 +471,7 @@ export const CineMind = () => {
     if (!currentMovie) return;
     
     setIsLoading(true);
-    setLoadingMessage("Similar movies...");
+    setLoadingMessage(t('search.similarMovies'));
     
     try {
       // For now, we'll create a simple similar movies list based on genre and year
@@ -655,9 +655,9 @@ export const CineMind = () => {
                       <Users className="w-6 h-6 text-purple-400" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">Can't find it? Ask the community!</h3>
+                      <h3 className="font-semibold text-lg mb-2">{t('community.cantFindIt')}</h3>
                       <p className="text-sm text-muted-foreground mb-4">
-                        Our community of movie detectives can help identify movies from even the vaguest memories.
+                        {t('community.movieDetectives')}
                       </p>
                       <CreateMysteryDialog
                         initialDescription={failedSearch.query}
@@ -670,7 +670,7 @@ export const CineMind = () => {
                         trigger={
                           <Button className="neural-button gap-2 bg-purple-600 hover:bg-purple-700">
                             <HelpCircle className="w-4 h-4" />
-                            Post Mystery to Community
+                            {t('community.postMystery')}
                           </Button>
                         }
                       />
@@ -678,7 +678,7 @@ export const CineMind = () => {
                     <button 
                       onClick={() => setFailedSearch(null)}
                       className="text-muted-foreground hover:text-foreground p-1"
-                      aria-label="Dismiss"
+                      aria-label={t('community.dismiss')}
                     >
                       ×
                     </button>
@@ -750,7 +750,7 @@ export const CineMind = () => {
                   <div className="neural-card p-8 flex flex-col items-center space-y-4">
                     <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
                     <p className="text-muted-foreground">
-                      {loadingMessage || "Processing your memory..."}
+                      {loadingMessage || t('search.processingMemory')}
                     </p>
                     <div className="flex space-x-1">
                       <div className="w-2 h-2 bg-primary rounded-full animate-bounce animation-delay-0" />
