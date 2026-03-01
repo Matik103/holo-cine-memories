@@ -32,19 +32,14 @@ export function LanguageSelectionModal() {
   }, []);
 
   const popularLanguages = supportedLanguages.filter(l => POPULAR_LANGUAGES.includes(l.code));
-  const otherLanguages = supportedLanguages.filter(l => !POPULAR_LANGUAGES.includes(l.code));
 
-  const filteredPopular = popularLanguages.filter(
-    lang =>
-      lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lang.nativeName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredOther = otherLanguages.filter(
-    lang =>
-      lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      lang.nativeName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredLanguages = searchQuery
+    ? supportedLanguages.filter(
+        lang =>
+          lang.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          lang.nativeName.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : popularLanguages;
 
   const handleConfirm = async () => {
     setIsLoading(true);
@@ -107,39 +102,17 @@ export function LanguageSelectionModal() {
         </div>
 
         <ScrollArea className="h-[280px] pr-2">
-          <div className="space-y-4">
-            {filteredPopular.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
-                  POPULAR
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {filteredPopular.map((lang) => (
-                    <LanguageButton key={lang.code} lang={lang} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {filteredOther.length > 0 && (
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2 px-1">
-                  MORE LANGUAGES
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {filteredOther.map((lang) => (
-                    <LanguageButton key={lang.code} lang={lang} />
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {filteredPopular.length === 0 && filteredOther.length === 0 && (
-              <p className="text-center text-muted-foreground py-8">
-                No languages found
-              </p>
-            )}
+          <div className="grid grid-cols-2 gap-2">
+            {filteredLanguages.map((lang) => (
+              <LanguageButton key={lang.code} lang={lang} />
+            ))}
           </div>
+          
+          {filteredLanguages.length === 0 && (
+            <p className="text-center text-muted-foreground py-8">
+              No languages found
+            </p>
+          )}
         </ScrollArea>
 
         <Button
