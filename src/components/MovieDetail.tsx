@@ -75,6 +75,7 @@ export const MovieDetail = () => {
   const [isVideoPlayerOpen, setIsVideoPlayerOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'summary' | 'themes' | 'similar'>('summary');
   const [translatedPlot, setTranslatedPlot] = useState<string>('');
+  const [translatedGenre, setTranslatedGenre] = useState<string>('');
 
   useEffect(() => {
     if (movieTitle) {
@@ -113,6 +114,38 @@ export const MovieDetail = () => {
     
     return () => { mounted = false; };
   }, [movieDetails?.plot, currentLanguage]);
+
+  useEffect(() => {
+    let mounted = true;
+    
+    const translateGenres = async () => {
+      if (!movieDetails?.genre) {
+        setTranslatedGenre('');
+        return;
+      }
+      
+      if (currentLanguage === 'en') {
+        setTranslatedGenre(movieDetails.genre);
+        return;
+      }
+      
+      try {
+        const translated = await translationService.translateText(movieDetails.genre, currentLanguage);
+        if (mounted) {
+          setTranslatedGenre(translated);
+        }
+      } catch (error) {
+        console.warn('Failed to translate genre:', error);
+        if (mounted) {
+          setTranslatedGenre(movieDetails.genre);
+        }
+      }
+    };
+
+    translateGenres();
+    
+    return () => { mounted = false; };
+  }, [movieDetails?.genre, currentLanguage]);
 
   useEffect(() => {
     let mounted = true;
@@ -369,7 +402,7 @@ export const MovieDetail = () => {
                 <div className="flex items-start gap-2">
                   <Eye className="w-3 h-3 sm:w-4 sm:h-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                   <div className="min-w-0">
-                    <span className="font-medium">{t('movie.genre')}:</span> {movieDetails.genre}
+                    <span className="font-medium">{t('movie.genre')}:</span> {translatedGenre || movieDetails.genre}
                   </div>
                 </div>
               </div>
