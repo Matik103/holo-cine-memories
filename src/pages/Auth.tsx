@@ -36,8 +36,8 @@ export const Auth = () => {
   const handleForgotPassword = async () => {
     if (!email) {
       toast({
-        title: "Email Required",
-        description: "Please enter your email address first.",
+        title: t('auth.emailRequired'),
+        description: t('auth.emailRequiredDesc'),
         variant: "destructive",
       });
       return;
@@ -54,13 +54,13 @@ export const Auth = () => {
       }
       
       toast({
-        title: "Password Reset Sent",
-        description: "Check your email for password reset instructions.",
+        title: t('auth.passwordResetSent'),
+        description: t('auth.passwordResetSentDesc'),
       });
     } catch (error: any) {
       toast({
-        title: "Reset Failed",
-        description: error.message || "Failed to send reset email.",
+        title: t('auth.resetFailed'),
+        description: error.message || t('auth.resetFailedDesc'),
         variant: "destructive",
       });
     } finally {
@@ -76,8 +76,8 @@ export const Auth = () => {
     // Validate passwords
     if (newPassword.length < 6) {
       toast({
-        title: "Invalid Password",
-        description: "Password must be at least 6 characters long.",
+        title: t('auth.invalidPassword'),
+        description: t('auth.invalidPasswordDesc'),
         variant: "destructive",
       });
       setLoading(false);
@@ -86,8 +86,8 @@ export const Auth = () => {
 
     if (newPassword !== confirmPassword) {
       toast({
-        title: "Passwords Don't Match",
-        description: "Please make sure both passwords are identical.",
+        title: t('auth.passwordsDontMatch'),
+        description: t('auth.passwordsDontMatchDesc'),
         variant: "destructive",
       });
       setLoading(false);
@@ -105,8 +105,8 @@ export const Auth = () => {
       }
 
       toast({
-        title: "Password Updated!",
-        description: "Your password has been successfully updated.",
+        title: t('auth.passwordUpdated'),
+        description: t('auth.passwordUpdatedDesc'),
       });
 
       // Clear form and redirect to app
@@ -120,8 +120,8 @@ export const Auth = () => {
       
     } catch (error: any) {
       toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update password. Please request a new reset link.",
+        title: t('auth.updateFailed'),
+        description: error.message || t('auth.updateFailedDesc'),
         variant: "destructive",
       });
     } finally {
@@ -189,8 +189,8 @@ export const Auth = () => {
 
       if (data.user) {
         toast({
-          title: "Welcome back!",
-          description: "Successfully signed in to CineMind.",
+          title: t('auth.welcomeBack'),
+          description: t('auth.welcomeBackDesc'),
         });
         
         // Clear form
@@ -201,28 +201,28 @@ export const Auth = () => {
         navigate("/");
       } else {
         toast({
-          title: "Sign In Failed",
-          description: "Unable to sign in. Please check your credentials.",
+          title: t('auth.signInFailed'),
+          description: t('auth.signInFailedDesc'),
           variant: "destructive",
         });
       }
     } catch (error: any) {
       if (error.message.includes("Invalid login credentials")) {
         toast({
-          title: "Invalid Credentials",
-          description: "The email or password you entered is incorrect. Please try again.",
+          title: t('auth.invalidCredentials'),
+          description: t('auth.invalidCredentialsDesc'),
           variant: "destructive",
         });
       } else if (error.message.includes("Email not confirmed")) {
         toast({
-          title: "Email Not Confirmed",
-          description: "Please check your email and click the confirmation link.",
+          title: t('auth.emailNotConfirmed'),
+          description: t('auth.emailNotConfirmedDesc'),
           variant: "destructive",
         });
       } else {
         toast({
-          title: "Sign In Failed",
-          description: error.message || "Invalid email or password.",
+          title: t('auth.signInFailed'),
+          description: error.message || t('auth.signInFailedDesc'),
           variant: "destructive",
         });
       }
@@ -238,8 +238,8 @@ export const Auth = () => {
     // Validate privacy policy agreement
     if (!agreeToPrivacy) {
       toast({
-        title: "Privacy Policy Required",
-        description: "Please agree to our Privacy Policy to continue.",
+        title: t('auth.privacyRequired'),
+        description: t('auth.privacyRequiredDesc'),
         variant: "destructive",
       });
       setLoading(false);
@@ -249,8 +249,8 @@ export const Auth = () => {
     // Validate password length
     if (password.length < 6) {
       toast({
-        title: "Invalid Password",
-        description: "Password must be at least 6 characters long.",
+        title: t('auth.invalidPassword'),
+        description: t('auth.invalidPasswordDesc'),
         variant: "destructive",
       });
       setLoading(false);
@@ -261,8 +261,8 @@ export const Auth = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
+        title: t('auth.invalidEmail'),
+        description: t('auth.invalidEmailDesc'),
         variant: "destructive",
       });
       setLoading(false);
@@ -289,8 +289,8 @@ export const Auth = () => {
             error.message.includes("already been registered") ||
             error.status === 422) {
           toast({
-            title: "Account Already Exists",
-            description: "An account with this email already exists. Please try signing in instead.",
+            title: t('auth.accountExists'),
+            description: t('auth.accountExistsDesc'),
             variant: "destructive",
           });
           // Switch to sign in tab
@@ -306,8 +306,8 @@ export const Auth = () => {
 
       if (data.user) {
         toast({
-          title: "Welcome to CineMind!",
-          description: "Your account has been created successfully. Check your email for confirmation.",
+          title: t('auth.welcomeToCineMind'),
+          description: t('auth.welcomeToCineMindDesc'),
         });
         
         // Clear form
@@ -319,15 +319,15 @@ export const Auth = () => {
         navigate("/");
       } else {
         toast({
-          title: "Sign Up Failed",
-          description: "Unable to create account. Please try again.",
+          title: t('auth.signUpFailed'),
+          description: t('auth.signUpFailedDesc'),
           variant: "destructive",
         });
       }
     } catch (error: any) {
       toast({
-        title: "Sign Up Failed",
-        description: error.message || "Failed to create account. Please check your email and password.",
+        title: t('auth.signUpFailed'),
+        description: error.message || t('auth.signUpFailedDesc'),
         variant: "destructive",
       });
     } finally {
@@ -356,10 +356,10 @@ export const Auth = () => {
               </div>
               <div className="text-center">
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  Reset Your Password
+                  {t('auth.resetPassword')}
                 </h1>
                 <p className="text-sm text-muted-foreground mt-2">
-                  Enter your new password below
+                  {t('auth.resetPasswordDesc')}
                 </p>
               </div>
             </div>
@@ -367,7 +367,7 @@ export const Auth = () => {
             {/* Password Reset Form */}
             <form onSubmit={handlePasswordUpdate} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="new-password">New Password</Label>
+                <Label htmlFor="new-password">{t('auth.newPassword')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -378,7 +378,7 @@ export const Auth = () => {
                     onChange={(e) => setNewPassword(e.target.value)}
                     onFocus={() => scrollInputIntoView(newPasswordRef.current)}
                     className="pl-10"
-                    placeholder="Enter your new password"
+                    placeholder={t('auth.enterNewPassword')}
                     required
                     minLength={6}
                   />
@@ -386,7 +386,7 @@ export const Auth = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm Password</Label>
+                <Label htmlFor="confirm-password">{t('auth.confirmPassword')}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -397,7 +397,7 @@ export const Auth = () => {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     onFocus={() => scrollInputIntoView(confirmPasswordRef.current)}
                     className="pl-10"
-                    placeholder="Confirm your new password"
+                    placeholder={t('auth.confirmNewPassword')}
                     required
                     minLength={6}
                   />
@@ -409,7 +409,7 @@ export const Auth = () => {
                 className="w-full neural-button"
                 disabled={loading}
               >
-                {loading ? "Updating Password..." : "Update Password"}
+                {loading ? t('auth.updatingPassword') : t('auth.updatePassword')}
               </Button>
 
               <div className="text-center">
@@ -418,7 +418,7 @@ export const Auth = () => {
                   onClick={() => setShowPasswordReset(false)}
                   className="text-sm text-muted-foreground hover:text-foreground"
                 >
-                  Back to Sign In
+                  {t('auth.backToSignIn')}
                 </button>
               </div>
             </form>
@@ -457,14 +457,14 @@ export const Auth = () => {
 
           <Tabs defaultValue="signin" className="space-y-4">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="signin">{t('auth.signIn')}</TabsTrigger>
+              <TabsTrigger value="signup">{t('auth.signup')}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin" className="space-y-4">
               <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signin-email">Email</Label>
+                  <Label htmlFor="signin-email">{t('auth.email')}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -475,14 +475,14 @@ export const Auth = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={() => scrollInputIntoView(emailRef.current)}
                       className="pl-10"
-                      placeholder="Enter your email"
+                      placeholder={t('auth.enterEmail')}
                       required
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signin-password">Password</Label>
+                  <Label htmlFor="signin-password">{t('auth.password')}</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -493,7 +493,7 @@ export const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => scrollInputIntoView(passwordRef.current)}
                       className="pl-10"
-                      placeholder="Enter your password"
+                      placeholder={t('auth.enterPassword')}
                       required
                     />
                   </div>
@@ -504,7 +504,7 @@ export const Auth = () => {
                   className="w-full neural-button"
                   disabled={loading}
                 >
-                  {loading ? "Signing In..." : "Sign In"}
+                  {loading ? t('auth.signingIn') : t('auth.signIn')}
                 </Button>
                 
                 <div className="text-center">
@@ -513,7 +513,7 @@ export const Auth = () => {
                     onClick={handleForgotPassword}
                     className="text-sm text-primary hover:underline"
                   >
-                    Forgot your password?
+                    {t('auth.forgotPassword')}
                   </button>
                 </div>
 
@@ -525,7 +525,7 @@ export const Auth = () => {
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                       <span className="bg-background px-2 text-muted-foreground">
-                        Or
+                        {t('auth.or')}
                       </span>
                     </div>
                   </div>
@@ -542,10 +542,10 @@ export const Auth = () => {
                       variant="outline"
                       className="w-full"
                     >
-                      Continue as Guest
+                      {t('auth.continueAsGuest')}
                     </Button>
                     <p className="text-xs text-muted-foreground text-center mt-2">
-                      Access basic features without creating an account
+                      {t('auth.guestDesc')}
                     </p>
                   </div>
                 </div>
@@ -555,7 +555,7 @@ export const Auth = () => {
             <TabsContent value="signup" className="space-y-4">
               <form onSubmit={handleSignUp} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Label htmlFor="signup-name">{t('auth.fullName')}</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -566,14 +566,14 @@ export const Auth = () => {
                       onChange={(e) => setFullName(e.target.value)}
                       onFocus={() => scrollInputIntoView(fullNameRef.current)}
                       className="pl-10"
-                      placeholder="Enter your full name"
+                      placeholder={t('auth.enterFullName')}
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email">{t('auth.email')}</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -584,14 +584,14 @@ export const Auth = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       onFocus={() => scrollInputIntoView(emailRef.current)}
                       className="pl-10"
-                      placeholder="Enter your email"
+                      placeholder={t('auth.enterEmail')}
                       required
                     />
                   </div>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password">{t('auth.password')}</Label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
@@ -602,7 +602,7 @@ export const Auth = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       onFocus={() => scrollInputIntoView(passwordRef.current)}
                       className="pl-10"
-                      placeholder="Create a password (6+ characters)"
+                      placeholder={t('auth.createPassword')}
                       required
                       minLength={6}
                     />
@@ -620,16 +620,16 @@ export const Auth = () => {
                     />
                     <div className="text-sm text-muted-foreground leading-relaxed">
                       <Label htmlFor="privacy-agreement" className="cursor-pointer">
-                        I agree to the{" "}
+                        {t('auth.privacyAgreement')}{" "}
                         <Link 
                           to="/privacy" 
                           className="text-primary hover:underline font-medium"
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          Privacy Policy
+                          {t('auth.privacyPolicy')}
                         </Link>
-                        {" "}and understand that CineMind will collect and process my personal information (name, email, password) to provide personalized movie recommendations and improve the service.
+                        {" "}{t('auth.privacyAgreementText')}
                       </Label>
                     </div>
                   </div>
@@ -640,7 +640,7 @@ export const Auth = () => {
                   className="w-full neural-button"
                   disabled={loading || !agreeToPrivacy}
                 >
-                  {loading ? "Creating Account..." : "Create Account"}
+                  {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
                 </Button>
               </form>
             </TabsContent>
