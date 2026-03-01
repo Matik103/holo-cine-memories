@@ -83,7 +83,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
         {/* Quick Suggestions */}
         <div className="pt-4 border-t border-border">
           <p className="text-xs sm:text-sm text-muted-foreground mb-3 text-center">{t('search.tryExamples')}</p>
-          <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 w-full">
             {[
               { key: 'search.example1', fallback: 'Spinning dreams' },
               { key: 'search.example2', fallback: 'Robot loves human' },
@@ -95,7 +95,7 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setQuery(t(example.key) || example.fallback)}
-                className="text-xs bg-secondary/30 hover:bg-secondary/60 rounded-full p-2 h-auto text-center break-words"
+                className="text-[10px] sm:text-xs bg-secondary/30 hover:bg-secondary/60 rounded-full px-2 py-1.5 h-auto text-center leading-tight overflow-hidden text-ellipsis line-clamp-2 max-w-full"
                 disabled={isLoading}
               >
                 {t(example.key) || example.fallback}
