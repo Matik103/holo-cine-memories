@@ -181,6 +181,11 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
   return (
     <div className="min-h-screen relative overflow-hidden pt-safe-top">
+      {/* Mobile: language selector top-right */}
+      <div className="md:hidden fixed top-4 right-4 z-20">
+        <LanguageSelector variant="compact" />
+      </div>
+
       {/* Desktop: legal links + language selector top-right */}
       <nav className="hidden md:flex fixed top-4 right-4 z-20 items-center gap-4" aria-label="Legal">
         <div className="text-xs text-primary/80 hover:text-primary transition-colors">
