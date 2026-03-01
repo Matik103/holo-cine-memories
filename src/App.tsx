@@ -24,6 +24,8 @@ import { About } from "./pages/About";
 import { Advertising } from "./pages/Advertising";
 import { AdSenseReview } from "./pages/AdSenseReview";
 import { Vault } from "./pages/Vault";
+import { CollectiveMemory } from "./pages/CollectiveMemory";
+import { MysteryDetail } from "./pages/MysteryDetail";
 import NotFound from "./pages/NotFound";
 import { MovieDetail } from "./components/MovieDetail";
 
@@ -70,6 +72,8 @@ const App = () => (
           <Route path="/advertising" element={<Advertising />} />
           <Route path="/review" element={<AdSenseReview />} />
           <Route path="/vault" element={<Vault />} />
+          <Route path="/mysteries" element={<CollectiveMemory />} />
+          <Route path="/mysteries/:id" element={<MysteryDetail />} />
           <Route path="/movie/:movieTitle" element={<MovieDetail />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

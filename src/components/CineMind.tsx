@@ -15,7 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import { vaultService } from "@/services/vaultService";
 import { supabase } from "@/integrations/supabase/client";
-import { Brain, User, Compass, Menu, Settings, Vault } from "lucide-react";
+import { Brain, User, Compass, Menu, Settings, Vault, HelpCircle, Users } from "lucide-react";
+import { CreateMysteryDialog } from "./mystery/CreateMysteryDialog";
 import { Button } from "./ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 
@@ -39,6 +40,7 @@ export const CineMind = () => {
   const [similarMovies, setSimilarMovies] = useState<Movie[]>([]);
   const [previousView, setPreviousView] = useState<ViewState | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [failedSearch, setFailedSearch] = useState<{ query: string; aiSuggestions?: any } | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -171,6 +173,7 @@ export const CineMind = () => {
     setIsLoading(true);
     setLoadingMessage("Analyzing your description...");
     setRetryCount(0);
+    setFailedSearch(null);
     
     // Clear previous state to prevent stale data
     setCurrentMovie(null);
@@ -294,6 +297,12 @@ export const CineMind = () => {
           analyticsData.success = false;
           analyticsData.confidence_score = rawMovie?.confidence || 0;
         }
+        
+        // Store failed search for "Ask Community" option
+        setFailedSearch({
+          query: query,
+          aiSuggestions: rawMovie?.title ? { suggestedTitle: rawMovie.title, confidence: rawMovie.confidence } : null
+        });
         
         // Handle case where API returns null title or low confidence
         const hint = rawMovie?.title === null
@@ -572,6 +581,14 @@ export const CineMind = () => {
           <div className="flex items-center gap-1 sm:gap-2">
             <Button
               variant="ghost"
+              onClick={() => navigate("/mysteries")}
+              className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
+            >
+              <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden sm:inline">Mysteries</span>
+            </Button>
+            <Button
+              variant="ghost"
               onClick={() => navigate("/vault")}
               className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
             >
@@ -638,6 +655,47 @@ export const CineMind = () => {
         {currentView === 'search' && (
           <div className="flex flex-col items-center justify-center space-y-8">
             <MemorySearch onSearch={handleSearch} isLoading={isLoading} />
+            
+            {/* Ask Community Card - shown after failed search */}
+            {failedSearch && !isLoading && (
+              <div className="w-full max-w-2xl mx-auto px-4">
+                <div className="neural-card rounded-2xl p-6 border-purple-500/30 bg-purple-500/5">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-full bg-purple-500/20">
+                      <Users className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg mb-2">Can't find it? Ask the community!</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Our community of movie detectives can help identify movies from even the vaguest memories.
+                      </p>
+                      <CreateMysteryDialog
+                        initialDescription={failedSearch.query}
+                        originalSearchQuery={failedSearch.query}
+                        aiSuggestions={failedSearch.aiSuggestions}
+                        onSuccess={() => {
+                          setFailedSearch(null);
+                          navigate('/mysteries');
+                        }}
+                        trigger={
+                          <Button className="neural-button gap-2 bg-purple-600 hover:bg-purple-700">
+                            <HelpCircle className="w-4 h-4" />
+                            Post Mystery to Community
+                          </Button>
+                        }
+                      />
+                    </div>
+                    <button 
+                      onClick={() => setFailedSearch(null)}
+                      className="text-muted-foreground hover:text-foreground p-1"
+                      aria-label="Dismiss"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
