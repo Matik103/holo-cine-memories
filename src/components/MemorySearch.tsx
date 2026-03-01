@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, Sparkles } from "lucide-react";
 import { scrollInputIntoView } from "@/lib/utils";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface MemorySearchProps {
   onSearch: (query: string) => void;
@@ -12,6 +13,7 @@ interface MemorySearchProps {
 export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
   const [query, setQuery] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { t } = useTranslation();
 
   const handleInputFocus = useCallback(() => {
     scrollInputIntoView(textareaRef.current);
@@ -40,10 +42,10 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
             <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-primary-foreground" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent px-2">
-            What movie do you remember?
+            {t('search.whatMovie')}
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base px-4">
-            Describe any scene, quote, feeling, or half-memory...
+            {t('search.describeAny')}
           </p>
         </div>
 
@@ -54,10 +56,10 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={handleInputFocus}
-              placeholder="That movie where a god loses his eyes and a slave helps him fight..."
+              placeholder={t('search.placeholder')}
               className="memory-input min-h-24 text-lg resize-none rounded-xl"
               disabled={isLoading}
-              aria-label="Describe the movie you're looking for"
+              aria-label={t('search.describeAny')}
               aria-describedby="search-hint"
             />
             <p id="search-hint" className="sr-only">
@@ -68,35 +70,35 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
               type="submit"
               disabled={!query.trim() || isLoading}
               className="neural-button w-full h-12 rounded-xl text-sm sm:text-base"
-              aria-label="Search for movie"
+              aria-label={t('search.recallMovie')}
               aria-busy={isLoading}
             >
               <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2" aria-hidden="true" />
-              <span className="hidden sm:inline">{isLoading ? "Searching Memory..." : "Recall Movie"}</span>
-              <span className="sm:hidden">{isLoading ? "Searching..." : "Search"}</span>
+              <span className="hidden sm:inline">{isLoading ? t('search.searchingMemory') : t('search.recallMovie')}</span>
+              <span className="sm:hidden">{isLoading ? t('search.searching') : t('search.button')}</span>
             </Button>
           </div>
         </form>
 
         {/* Quick Suggestions */}
         <div className="pt-4 border-t border-border">
-          <p className="text-xs sm:text-sm text-muted-foreground mb-3 text-center">Try these examples:</p>
+          <p className="text-xs sm:text-sm text-muted-foreground mb-3 text-center">{t('search.tryExamples')}</p>
           <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2">
             {[
-              "Spinning dreams",
-              "Robot loves human", 
-              "Time loop same day",
-              "Talking toys come alive"
+              { key: 'search.example1', fallback: 'Spinning dreams' },
+              { key: 'search.example2', fallback: 'Robot loves human' },
+              { key: 'search.example3', fallback: 'Time loop same day' },
+              { key: 'search.example4', fallback: 'Talking toys come alive' }
             ].map((example) => (
               <Button
-                key={example}
+                key={example.key}
                 variant="ghost"
                 size="sm"
-                onClick={() => setQuery(example)}
+                onClick={() => setQuery(t(example.key) || example.fallback)}
                 className="text-xs bg-secondary/30 hover:bg-secondary/60 rounded-full p-2 h-auto text-center break-words"
                 disabled={isLoading}
               >
-                {example}
+                {t(example.key) || example.fallback}
               </Button>
             ))}
           </div>
