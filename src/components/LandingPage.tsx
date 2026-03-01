@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
@@ -7,89 +7,131 @@ import { Brain, Search, Lightbulb, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "@/hooks/useTranslation";
 import { LanguageSelector } from "./LanguageSelector";
+import { getCachedLocalizedMovie, getTMDBPosterUrl, type TMDBMovie } from "@/services/tmdbService";
 
 interface MovieData {
+  id: string;
   title: string;
   year: string;
   poster: string;
   description: string;
-  painPoint: string;
-  solution: string;
-  trailer?: string; // Simple string URL like main app
+  painPointKey: string;
+  solutionKey: string;
+  localizedTitle?: string;
+  localizedOverview?: string;
 }
 
 const movies: MovieData[] = [
   {
+    id: "inception",
     title: "Inception",
     year: "2010",
     description: "A dream within a dream within a dream...",
-    painPoint: "Ever forgot a movie like this?",
-    solution: "CineMind remembers every detail, even the most complex plots.",
+    painPointKey: "landing.movies.inception.painPoint",
+    solutionKey: "landing.movies.inception.solution",
     poster: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_SX300.jpg"
   },
   {
+    id: "darkKnight",
     title: "The Dark Knight",
     year: "2008",
     description: "Why so serious?",
-    painPoint: "Want to rewatch this instantly?",
-    solution: "Find where to watch any movie, anywhere, anytime.",
+    painPointKey: "landing.movies.darkKnight.painPoint",
+    solutionKey: "landing.movies.darkKnight.solution",
     poster: "https://m.media-amazon.com/images/M/MV5BMTMxNTMwODM0NF5BMl5BanBnXkFtZTcwODAyMTk2Mw@@._V1_SX300.jpg"
   },
   {
+    id: "interstellar",
     title: "Interstellar",
     year: "2014",
     description: "Love is the one thing that transcends time and space.",
-    painPoint: "Mind-bending sci-fi you can't forget?",
-    solution: "CineMind helps you recall and understand every detail.",
+    painPointKey: "landing.movies.interstellar.painPoint",
+    solutionKey: "landing.movies.interstellar.solution",
     poster: "https://m.media-amazon.com/images/M/MV5BYzdjMDAxZGItMjI2My00ODA1LTlkNzItOWFjMDU5ZDJlYWY3XkEyXkFqcGc@._V1_SX300.jpg"
   },
   {
+    id: "matrix",
     title: "The Matrix",
     year: "1999",
     description: "There is no spoon.",
-    painPoint: "Confused by the meaning?",
-    solution: "Understand every layer of symbolism and philosophy.",
+    painPointKey: "landing.movies.matrix.painPoint",
+    solutionKey: "landing.movies.matrix.solution",
     poster: "https://m.media-amazon.com/images/M/MV5BN2NmN2VhMTQtMDNiOS00NDlhLTliMjgtODE2ZTY0ODQyNDRhXkEyXkFqcGc@._V1_SX300.jpg"
   },
   {
+    id: "titanic",
     title: "Titanic",
     year: "1997",
     description: "I'm the king of the world!",
-    painPoint: "Where can I watch now?",
-    solution: "Get instant streaming availability across all platforms.",
+    painPointKey: "landing.movies.titanic.painPoint",
+    solutionKey: "landing.movies.titanic.solution",
     poster: "https://m.media-amazon.com/images/M/MV5BYzYyN2FiZmUtYWYzMy00MzViLWJkZTMtOGY1ZjgzNWMwN2YxXkEyXkFqcGc@._V1_SX300.jpg"
   },
   {
+    id: "lionKing",
     title: "The Lion King",
     year: "1994",
     description: "Hakuna Matata!",
-    painPoint: "Childhood memories fading?",
-    solution: "Preserve and rediscover your favorite childhood films.",
+    painPointKey: "landing.movies.lionKing.painPoint",
+    solutionKey: "landing.movies.lionKing.solution",
     poster: "https://m.media-amazon.com/images/M/MV5BYTYxNGMyZTYtMjE3MS00MzNjLWFjNmYtMDk3N2FmM2JiM2M1XkEyXkFqcGdeQXVyNjY5NDU4NzI@._V1_SX300.jpg"
   },
   {
+    id: "bladeRunner",
     title: "Blade Runner 2049",
     year: "2017",
     description: "More human than human is our motto.",
-    painPoint: "Lost in philosophical sci-fi?",
-    solution: "Get instant explanations of deep themes and symbolism.",
+    painPointKey: "landing.movies.bladeRunner.painPoint",
+    solutionKey: "landing.movies.bladeRunner.solution",
     poster: "https://m.media-amazon.com/images/M/MV5BNzA1Njg4NzYxOV5BMl5BanBnXkFtZTgwODk5NjU3MzI@._V1_SX300.jpg"
   }
 ];
 
 export const LandingPage = ({ onStart }: { onStart: () => void }) => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, currentLanguage } = useTranslation();
   const [movieData, setMovieData] = useState<MovieData[]>([]);
+  const [localizedData, setLocalizedData] = useState<Map<string, TMDBMovie>>(new Map());
   const [currentCard, setCurrentCard] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load movies instantly without any API calls
-    console.log('🎬 Loading movies instantly...');
     setMovieData([...movies]);
     setIsLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (currentLanguage === 'en') {
+      setLocalizedData(new Map());
+      return;
+    }
+
+    const fetchLocalizedData = async () => {
+      const newLocalizedData = new Map<string, TMDBMovie>();
+      
+      await Promise.all(
+        movies.map(async (movie) => {
+          const localized = await getCachedLocalizedMovie(movie.title, movie.year, currentLanguage);
+          if (localized) {
+            newLocalizedData.set(movie.id, localized);
+          }
+        })
+      );
+      
+      setLocalizedData(newLocalizedData);
+    };
+
+    fetchLocalizedData();
+  }, [currentLanguage]);
+
+  const getLocalizedMovieData = (movie: MovieData) => {
+    const localized = localizedData.get(movie.id);
+    return {
+      title: localized?.title || movie.title,
+      overview: localized?.overview || movie.description,
+      poster: localized?.poster_path ? getTMDBPosterUrl(localized.poster_path) : movie.poster,
+    };
+  };
 
   // Simple poster component with fallback
   const PosterImage = ({ movie, className }: { movie: MovieData; className: string }) => {
@@ -238,6 +280,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
               <div className="relative w-72 h-80 sm:w-96 sm:h-[24rem] md:w-[26rem] md:h-[28rem] perspective-1000">
                 {movieData.map((movie, index) => {
                   const isActive = index === currentCard;
+                  const localized = getLocalizedMovieData(movie);
                   
                   return (
                     <div
@@ -255,7 +298,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                         <CardContent className="p-0 h-full relative">
                           <div className="relative w-full h-full group-hover:scale-105 transition-transform duration-300">
                             <PosterImage
-                              movie={movie}
+                              movie={{ ...movie, poster: localized.poster }}
                               className={`w-full h-full object-cover rounded-lg ${
                                 movie.title === "Inception" ? "object-top" : ""
                               }`}
@@ -274,9 +317,9 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                             </div>
                             
                             <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 right-2 sm:right-4">
-                              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{movie.title}</h3>
+                              <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{localized.title}</h3>
                               <p className="text-xs sm:text-sm text-gray-300 mb-1 sm:mb-2">{movie.year}</p>
-                              <p className="text-xs sm:text-sm text-gray-400 italic line-clamp-2">"{movie.description}"</p>
+                              <p className="text-xs sm:text-sm text-gray-400 italic line-clamp-2">"{localized.overview}"</p>
                             </div>
                           </div>
                         </CardContent>
