@@ -575,7 +575,7 @@ export const CineMind = () => {
               className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
             >
               <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Mysteries</span>
+              <span className="hidden sm:inline">{t('nav.mysteries')}</span>
             </Button>
             <Button
               variant="ghost"
@@ -583,7 +583,7 @@ export const CineMind = () => {
               className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
             >
               <Vault className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Vault</span>
+              <span className="hidden sm:inline">{t('nav.vault')}</span>
             </Button>
             <Button
               variant="ghost"
@@ -591,7 +591,7 @@ export const CineMind = () => {
               className="flex items-center gap-1 sm:gap-2 hover:bg-secondary/60 text-xs sm:text-sm px-2 sm:px-4"
             >
               <Compass className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span className="hidden sm:inline">Discover</span>
+              <span className="hidden sm:inline">{t('nav.discover')}</span>
             </Button>
 
             {user ? (
@@ -605,14 +605,14 @@ export const CineMind = () => {
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => navigate("/profile")}>
                     <User className="w-4 h-4 mr-2" />
-                    Profile & CineDNA
+                    {t('nav.profileCineDNA')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     <Settings className="w-4 h-4 mr-2" />
-                    Settings
+                    {t('nav.settings')}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => supabase.auth.signOut()}>
-                    Sign Out
+                    {t('nav.signOut')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -623,13 +623,13 @@ export const CineMind = () => {
                   variant="outline"
                   className="text-xs sm:text-sm px-2 sm:px-4"
                 >
-                  Sign In
+                  {t('auth.signIn')}
                 </Button>
                 <Button
                   onClick={() => navigate("/auth")}
                   className="neural-button text-xs sm:text-sm px-2 sm:px-4"
                 >
-                  Sign Up
+                  {t('auth.signup')}
                 </Button>
               </div>
             )}

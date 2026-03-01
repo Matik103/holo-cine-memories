@@ -5,9 +5,11 @@
   
   "nav.home": "Home",
   "nav.discover": "Discover",
-  "nav.vault": "The Vault",
+  "nav.vault": "Vault",
+  "nav.mysteries": "Mysteries",
   "nav.search": "Search",
   "nav.profile": "Profile",
+  "nav.profileCineDNA": "Profile & CineDNA",
   "nav.settings": "Settings",
   "nav.about": "About",
   "nav.help": "Help",
@@ -15,6 +17,7 @@
   "nav.terms": "Terms of Service",
   "nav.advertising": "Advertising",
   "nav.back": "Back",
+  "nav.signOut": "Sign Out",
   
   "landing.hero.title": "Remember Any Movie.",
   "landing.hero.titleHighlight": "Anywhere. Anytime.",
