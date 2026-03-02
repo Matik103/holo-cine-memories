@@ -441,6 +441,12 @@
   "vault.notifications.streakMilestone": "Streak Milestone!",
   "vault.notifications.streakMilestoneDesc": "Amazing! You've reached a {{streak}}-day streak!",
   
+  "vault.mysteries.title": "Recent Mysteries",
+  "vault.mysteries.noMysteries": "No mysteries yet",
+  "vault.mysteries.beFirst": "Be the first to post one",
+  "vault.mysteries.unsolvedCount": "{{count}} unsolved mysteries",
+  "vault.mysteries.viewAll": "View All",
+  
   "mystery.collectiveMemory": "Collective Memory",
   "mystery.helpIdentify": "Help identify movies from memories",
   "mystery.postMystery": "Post a Mystery",

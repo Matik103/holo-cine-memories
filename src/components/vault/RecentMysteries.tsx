@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HelpCircle, Eye, MessageSquare, Trophy, ArrowRight, Users } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { translationService } from '@/services/translationService';
 
 interface SimpleMystery {
   id: string;
@@ -15,7 +17,10 @@ interface SimpleMystery {
 
 export function RecentMysteries() {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language;
   const [mysteries, setMysteries] = useState<SimpleMystery[]>([]);
+  const [translatedDescriptions, setTranslatedDescriptions] = useState<Record<string, string>>({});
   const [unsolvedCount, setUnsolvedCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const mounted = useRef(true);
@@ -56,6 +61,38 @@ export function RecentMysteries() {
     return () => { mounted.current = false; };
   }, []);
 
+  // Translate mystery descriptions when mysteries or language changes
+  useEffect(() => {
+    const translateDescriptions = async () => {
+      if (mysteries.length === 0) return;
+      
+      if (currentLanguage === 'en') {
+        const translations: Record<string, string> = {};
+        mysteries.forEach(m => { translations[m.id] = m.description; });
+        setTranslatedDescriptions(translations);
+        return;
+      }
+      
+      const translations: Record<string, string> = {};
+      await Promise.all(
+        mysteries.map(async (mystery) => {
+          try {
+            const translated = await translationService.translate(mystery.description, currentLanguage);
+            translations[mystery.id] = translated;
+          } catch {
+            translations[mystery.id] = mystery.description;
+          }
+        })
+      );
+      
+      if (mounted.current) {
+        setTranslatedDescriptions(translations);
+      }
+    };
+    
+    translateDescriptions();
+  }, [mysteries, currentLanguage]);
+
   const recentMysteries = mysteries;
 
   if (isLoading) {
@@ -72,14 +109,14 @@ export function RecentMysteries() {
     return (
       <div className="text-center py-6">
         <HelpCircle className="h-8 w-8 mx-auto mb-2 text-muted-foreground/50" />
-        <p className="text-sm text-muted-foreground">No mysteries yet</p>
+        <p className="text-sm text-muted-foreground">{t('vault.mysteries.noMysteries')}</p>
         <Button 
           variant="link" 
           size="sm" 
           onClick={() => navigate('/mysteries')}
           className="mt-2"
         >
-          Be the first to post one
+          {t('vault.mysteries.beFirst')}
         </Button>
       </div>
     );
@@ -91,7 +128,7 @@ export function RecentMysteries() {
       <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
         <span className="flex items-center gap-1">
           <Users className="h-3 w-3" />
-          {unsolvedCount} unsolved mysteries
+          {t('vault.mysteries.unsolvedCount', { count: unsolvedCount })}
         </span>
         <Button 
           variant="ghost" 
@@ -99,7 +136,7 @@ export function RecentMysteries() {
           onClick={() => navigate('/mysteries')}
           className="h-6 text-xs gap-1 px-2"
         >
-          View All
+          {t('vault.mysteries.viewAll')}
           <ArrowRight className="h-3 w-3" />
         </Button>
       </div>
@@ -112,7 +149,7 @@ export function RecentMysteries() {
           className="p-3 rounded-lg bg-purple-500/5 border border-purple-500/20 hover:border-purple-500/40 cursor-pointer transition-all group"
         >
           <p className="text-sm line-clamp-2 group-hover:text-purple-300 transition-colors">
-            {mystery.description}
+            {translatedDescriptions[mystery.id] || mystery.description}
           </p>
           <div className="flex items-center justify-between mt-2">
             <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
