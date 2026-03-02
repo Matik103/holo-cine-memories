@@ -23,7 +23,7 @@ const SUPPORTED_LANGUAGES = [
 export { SUPPORTED_LANGUAGES };
 
 const TRANSLATION_CACHE_PREFIX = 'cinemind_i18n_';
-const TRANSLATION_CACHE_VERSION = 'v13';
+const TRANSLATION_CACHE_VERSION = 'v14';
 
 function getCachedTranslations(lang: string): Record<string, string> | null {
   try {

@@ -578,6 +578,16 @@
   "mystery.difficulty.legendary": "Legendary",
   "mystery.solvedCount": "{{count}} solved",
   
+  "mystery.rank.rookie": "Rookie",
+  "mystery.rank.sleuth": "Sleuth",
+  "mystery.rank.detective": "Detective",
+  "mystery.rank.masterDetective": "Master Detective",
+  "mystery.rank.legend": "Legend",
+  "mystery.rank.moreToRank": "{{count}} more to {{rank}}",
+  "mystery.rank.progressToRank": "Progress to {{rank}}: {{percent}}%",
+  "mystery.rank.detectiveRank": "Detective rank: {{rank}}",
+  "mystery.rank.solvesNeededForRank": "{{count}} more solves needed for {{rank}}",
+  
   "time.justNow": "just now",
   "time.unknown": "Unknown",
   "time.minutesAgo": "{{count}}m ago",

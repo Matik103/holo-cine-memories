@@ -1,5 +1,6 @@
 import { mysteryService, DetectiveStats } from '@/services/mysteryService';
 import { Progress } from '@/components/ui/progress';
+import { useTranslation } from 'react-i18next';
 
 interface DetectiveRankBadgeProps {
   rank: DetectiveStats['detective_rank'];
@@ -14,7 +15,28 @@ export function DetectiveRankBadge({
   showProgress = false,
   size = 'md' 
 }: DetectiveRankBadgeProps) {
+  const { t } = useTranslation();
   const rankInfo = mysteryService.getDetectiveRankInfo(rank);
+  
+  // Map rank keys to translation keys
+  const getRankTranslationKey = (rankKey: string): string => {
+    const rankMap: Record<string, string> = {
+      'rookie': 'mystery.rank.rookie',
+      'sleuth': 'mystery.rank.sleuth',
+      'detective': 'mystery.rank.detective',
+      'master_detective': 'mystery.rank.masterDetective',
+      'legend': 'mystery.rank.legend',
+    };
+    return rankMap[rankKey] || rankKey;
+  };
+  
+  // Get translated rank label
+  const translatedRankLabel = t(getRankTranslationKey(rank));
+  
+  // Get translated next rank label
+  const translatedNextRank = rankInfo.nextRank 
+    ? t(getRankTranslationKey(rankInfo.nextRank))
+    : '';
   
   const sizeClasses = {
     sm: 'text-xs gap-1',
@@ -40,20 +62,20 @@ export function DetectiveRankBadge({
     <div 
       className={`flex items-center ${sizeClasses[size]}`}
       role="img"
-      aria-label={`Detective rank: ${rankInfo.label}${showProgress && rankInfo.nextRank ? `. ${solvesRemaining} more solves needed for ${rankInfo.nextRank.replace('_', ' ')}` : ''}`}
+      aria-label={t('mystery.rank.detectiveRank', { rank: translatedRankLabel }) + (showProgress && rankInfo.nextRank ? `. ${t('mystery.rank.solvesNeededForRank', { count: solvesRemaining, rank: translatedNextRank })}` : '')}
     >
       <span className={iconSizes[size]} aria-hidden="true">{rankInfo.icon}</span>
       <div className="flex flex-col">
-        <span className={`font-medium ${rankInfo.color}`}>{rankInfo.label}</span>
+        <span className={`font-medium ${rankInfo.color}`}>{translatedRankLabel}</span>
         {showProgress && rankInfo.nextRank && (
           <div className="mt-1">
             <Progress 
               value={progressToNext} 
               className="h-1.5 w-24" 
-              aria-label={`Progress to ${rankInfo.nextRank.replace('_', ' ')}: ${Math.round(progressToNext)}%`}
+              aria-label={t('mystery.rank.progressToRank', { rank: translatedNextRank, percent: Math.round(progressToNext) })}
             />
             <p className="text-[10px] text-muted-foreground mt-0.5">
-              {solvesRemaining} more to {rankInfo.nextRank.replace('_', ' ')}
+              {t('mystery.rank.moreToRank', { count: solvesRemaining, rank: translatedNextRank })}
             </p>
           </div>
         )}
