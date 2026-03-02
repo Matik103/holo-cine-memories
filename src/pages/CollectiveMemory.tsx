@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useMysteries, useDetectiveStats, useUnsolvedCount, useFeaturedMystery } from '@/hooks/useMysteries';
 import { MysteryCard } from '@/components/mystery/MysteryCard';
 import { MysteryFilters } from '@/components/mystery/MysteryFilters';
@@ -31,10 +32,12 @@ import { ShareMysteryMenu } from '@/components/mystery';
 import { useNavigate } from 'react-router-dom';
 import { useVaultStats } from '@/hooks/useVaultStats';
 import { useTranslation } from 'react-i18next';
+import { translationService } from '@/services/translationService';
 
 export function CollectiveMemory() {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language;
   const unsolvedCount = useUnsolvedCount();
   const { mystery: featuredMystery, isLoading: featuredLoading } = useFeaturedMystery();
   const { stats, rankInfo, isLoading: statsLoading, isAuthenticated } = useDetectiveStats();
@@ -51,6 +54,33 @@ export function CollectiveMemory() {
     changeSort,
     refetch
   } = useMysteries();
+  
+  // State for translated featured mystery description
+  const [translatedFeaturedDesc, setTranslatedFeaturedDesc] = useState<string>('');
+  
+  // Translate featured mystery description when it changes or language changes
+  useEffect(() => {
+    const translateFeaturedDescription = async () => {
+      if (!featuredMystery?.description) {
+        setTranslatedFeaturedDesc('');
+        return;
+      }
+      
+      if (currentLanguage === 'en') {
+        setTranslatedFeaturedDesc(featuredMystery.description);
+        return;
+      }
+      
+      try {
+        const translated = await translationService.translate(featuredMystery.description, currentLanguage);
+        setTranslatedFeaturedDesc(translated);
+      } catch {
+        setTranslatedFeaturedDesc(featuredMystery.description);
+      }
+    };
+    
+    translateFeaturedDescription();
+  }, [featuredMystery?.description, currentLanguage]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-background/95">
@@ -204,7 +234,7 @@ export function CollectiveMemory() {
                       <span className="text-[10px] text-muted-foreground">• {t('mystery.needsHelp')}</span>
                     </div>
                     <p className="text-sm sm:text-base line-clamp-2 mb-2">
-                      {featuredMystery.description}
+                      {translatedFeaturedDesc || featuredMystery.description}
                     </p>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
