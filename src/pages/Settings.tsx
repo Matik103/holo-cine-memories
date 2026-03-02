@@ -116,8 +116,8 @@ export const Settings = () => {
         <Card className="neural-card">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Scale className="w-5 h-5" />
-              <span>Legal</span>
+              <FileText className="w-5 h-5" />
+              <span>{t('settings.legal')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>

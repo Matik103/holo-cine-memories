@@ -937,5 +937,14 @@
   "profile.errorUpdatingCineDNA": "Failed to update CineDNA profile",
   "profile.cineDNAUpdated": "CineDNA Updated!",
   "profile.cineDNARefreshed": "Your movie profile has been refreshed",
-  "profile.errorRefreshingCineDNA": "Failed to refresh CineDNA profile"
+  "profile.errorRefreshingCineDNA": "Failed to refresh CineDNA profile",
+
+  "settings.legal": "Legal",
+  "settings.support": "Support",
+  "settings.language": "Language",
+  "settings.languageDescription": "Choose your preferred language",
+  "settings.account": "Account",
+  "settings.dangerZone": "Danger Zone",
+  "settings.deleteAccount": "Delete Account",
+  "settings.deleteAccountDescription": "Permanently delete your account and all data"
 }
