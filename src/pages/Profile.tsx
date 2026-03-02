@@ -65,6 +65,8 @@ export const Profile = () => {
   const [reviewDraft, setReviewDraft] = useState("");
   const [loading, setLoading] = useState(true);
   const [translatedPlots, setTranslatedPlots] = useState<Record<string, string>>({});
+  const [translatedGenres, setTranslatedGenres] = useState<Record<string, string>>({});
+  const [translatedMoods, setTranslatedMoods] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, i18n } = useTranslation();
@@ -157,6 +159,74 @@ export const Profile = () => {
     
     return () => { mounted = false; };
   }, [movieSearches, currentLanguage]);
+
+  // Translate genres and moods from CineDNA
+  useEffect(() => {
+    let mounted = true;
+    
+    const translateGenresAndMoods = async () => {
+      const cinednaScore = preferences?.cinedna_score;
+      if (!cinednaScore) return;
+      
+      // Get all genres to translate
+      const genres: string[] = [];
+      if (cinednaScore.genre_scores && typeof cinednaScore.genre_scores === 'object') {
+        genres.push(...Object.keys(cinednaScore.genre_scores));
+      } else if (Array.isArray(cinednaScore.favorite_genres)) {
+        genres.push(...cinednaScore.favorite_genres);
+      }
+      
+      // Get all moods to translate
+      const moods: string[] = [];
+      if (cinednaScore.mood_preferences && typeof cinednaScore.mood_preferences === 'object') {
+        moods.push(...Object.keys(cinednaScore.mood_preferences));
+      }
+      
+      if (currentLanguage === 'en') {
+        // No translation needed for English
+        const genreMap: Record<string, string> = {};
+        genres.forEach(g => { genreMap[g] = g; });
+        setTranslatedGenres(genreMap);
+        
+        const moodMap: Record<string, string> = {};
+        moods.forEach(m => { moodMap[m] = m; });
+        setTranslatedMoods(moodMap);
+        return;
+      }
+      
+      // Translate genres
+      const genreTranslations: Record<string, string> = {};
+      await Promise.all(
+        genres.map(async (genre) => {
+          try {
+            const translated = await translationService.translate(genre, currentLanguage);
+            if (mounted) genreTranslations[genre] = translated;
+          } catch {
+            genreTranslations[genre] = genre;
+          }
+        })
+      );
+      if (mounted) setTranslatedGenres(genreTranslations);
+      
+      // Translate moods
+      const moodTranslations: Record<string, string> = {};
+      await Promise.all(
+        moods.map(async (mood) => {
+          try {
+            const translated = await translationService.translate(mood, currentLanguage);
+            if (mounted) moodTranslations[mood] = translated;
+          } catch {
+            moodTranslations[mood] = mood;
+          }
+        })
+      );
+      if (mounted) setTranslatedMoods(moodTranslations);
+    };
+    
+    translateGenresAndMoods();
+    
+    return () => { mounted = false; };
+  }, [preferences, currentLanguage]);
 
   useEffect(() => {
     const getProfile = async () => {
@@ -661,7 +731,7 @@ export const Profile = () => {
                                 variant={isTopGenre ? "secondary" : "outline"} 
                                 className={`${isTopGenre ? 'bg-primary/10 text-primary border-primary/20' : 'bg-secondary/50'}`}
                               >
-                                {genre}
+                                {translatedGenres[genre] || genre}
                               </Badge>
                               {index === 0 && <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">{t('profile.topChoice')}</Badge>}
                             </div>
@@ -703,7 +773,7 @@ export const Profile = () => {
                       .slice(0, 4)
                       .map(([mood, score]) => (
                         <Badge key={mood} variant="outline" className="bg-accent/10 text-accent border-accent/20">
-                          {mood} ({Math.round(Number(score) || 0)}%)
+                          {translatedMoods[mood] || mood} ({Math.round(Number(score) || 0)}%)
                         </Badge>
                       ))}
                   </div>
