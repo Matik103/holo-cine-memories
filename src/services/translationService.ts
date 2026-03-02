@@ -72,7 +72,7 @@ class TranslationService {
   }
 
   async translateText(text: string, targetLang: string, sourceLang: string = 'en'): Promise<string> {
-    if (!text.trim() || targetLang === sourceLang || targetLang === 'en') {
+    if (!text.trim() || targetLang === sourceLang) {
       return text;
     }
 
@@ -87,6 +87,35 @@ class TranslationService {
     }
 
     const translationPromise = this.fetchTranslation(text, targetLang, sourceLang);
+    this.pendingTranslations.set(pendingKey, translationPromise);
+
+    try {
+      const result = await translationPromise;
+      this.setCache(text, targetLang, result);
+      return result;
+    } finally {
+      this.pendingTranslations.delete(pendingKey);
+    }
+  }
+  
+  // Alias for translateText - translates from auto-detected source to target language
+  async translate(text: string, targetLang: string): Promise<string> {
+    if (!text.trim()) {
+      return text;
+    }
+    
+    // Use 'auto' for source language detection
+    const cached = this.getFromCache(text, targetLang);
+    if (cached) {
+      return cached;
+    }
+
+    const pendingKey = `${targetLang}_${text}`;
+    if (this.pendingTranslations.has(pendingKey)) {
+      return this.pendingTranslations.get(pendingKey)!;
+    }
+
+    const translationPromise = this.fetchTranslation(text, targetLang, 'auto');
     this.pendingTranslations.set(pendingKey, translationPromise);
 
     try {
@@ -125,13 +154,13 @@ class TranslationService {
     }
   }
 
-  async translateBatch(texts: string[], targetLang: string, sourceLang: string = 'en'): Promise<string[]> {
-    if (targetLang === sourceLang || targetLang === 'en') {
+  async translateBatch(texts: string[], targetLang: string, sourceLang: string = 'auto'): Promise<string[]> {
+    if (targetLang === sourceLang) {
       return texts;
     }
 
     const results = await Promise.all(
-      texts.map(text => this.translateText(text, targetLang, sourceLang))
+      texts.map(text => this.translate(text, targetLang))
     );
 
     return results;
