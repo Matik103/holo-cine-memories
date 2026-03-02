@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Globe, Check, ChevronDown, Search } from 'lucide-react';
+import { Globe, Check, ChevronDown, Search, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface LanguageSelectorProps {
@@ -26,8 +27,10 @@ interface LanguageSelectorProps {
 
 export function LanguageSelector({ variant = 'dropdown', className }: LanguageSelectorProps) {
   const { t, currentLanguage, currentLanguageInfo, changeLanguage, supportedLanguages, isLoading } = useTranslation();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [changingTo, setChangingTo] = useState<string | null>(null);
 
   const filteredLanguages = supportedLanguages.filter(
     lang =>
@@ -37,20 +40,57 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
   );
 
   const handleSelectLanguage = async (code: string) => {
-    await changeLanguage(code);
-    setDialogOpen(false);
-    setSearchQuery('');
+    if (code === currentLanguage) {
+      setDialogOpen(false);
+      return;
+    }
+    
+    setChangingTo(code);
+    
+    try {
+      const result = await changeLanguage(code);
+      
+      if (result.success) {
+        const langInfo = supportedLanguages.find(l => l.code === code);
+        toast({
+          title: t('language.changed'),
+          description: `${langInfo?.flag} ${langInfo?.nativeName || code}`,
+        });
+        setDialogOpen(false);
+        setSearchQuery('');
+      } else {
+        toast({
+          title: t('language.changeFailed'),
+          description: result.error || t('language.tryAgain'),
+          variant: 'destructive',
+        });
+      }
+    } catch {
+      toast({
+        title: t('language.changeFailed'),
+        description: t('language.tryAgain'),
+        variant: 'destructive',
+      });
+    } finally {
+      setChangingTo(null);
+    }
   };
 
   if (variant === 'compact') {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="icon" className={cn('h-9 w-9 relative', className)} disabled={isLoading}>
-            <Globe className="h-4 w-4" />
-            <span className="absolute -bottom-0.5 -right-0.5 text-xs leading-none">
-              {currentLanguageInfo.flag}
-            </span>
+          <Button variant="ghost" size="icon" className={cn('h-9 w-9 relative', className)} disabled={isLoading || !!changingTo}>
+            {changingTo ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <>
+                <Globe className="h-4 w-4" />
+                <span className="absolute -bottom-0.5 -right-0.5 text-xs leading-none">
+                  {currentLanguageInfo.flag}
+                </span>
+              </>
+            )}
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
@@ -59,10 +99,15 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
               key={lang.code}
               onClick={() => handleSelectLanguage(lang.code)}
               className="flex items-center justify-between gap-2"
+              disabled={!!changingTo}
             >
               <span className="text-base">{lang.flag}</span>
               <span className="flex-1">{lang.nativeName}</span>
-              {currentLanguage === lang.code && <Check className="h-4 w-4" />}
+              {changingTo === lang.code ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : currentLanguage === lang.code ? (
+                <Check className="h-4 w-4" />
+              ) : null}
             </DropdownMenuItem>
           ))}
         </DropdownMenuContent>
@@ -72,10 +117,14 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
 
   if (variant === 'dialog') {
     return (
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={(open) => !changingTo && setDialogOpen(open)}>
         <DialogTrigger asChild>
-          <Button variant="outline" className={cn('gap-2', className)} disabled={isLoading}>
-            <span className="text-base">{currentLanguageInfo.flag}</span>
+          <Button variant="outline" className={cn('gap-2', className)} disabled={isLoading || !!changingTo}>
+            {changingTo ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <span className="text-base">{currentLanguageInfo.flag}</span>
+            )}
             <span>{currentLanguageInfo.nativeName}</span>
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
@@ -91,6 +140,7 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
+              disabled={!!changingTo}
             />
           </div>
           <ScrollArea className="h-[300px] pr-4">
@@ -101,6 +151,7 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
                   variant={currentLanguage === lang.code ? 'secondary' : 'ghost'}
                   className="w-full justify-between h-auto py-3"
                   onClick={() => handleSelectLanguage(lang.code)}
+                  disabled={!!changingTo}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-xl">{lang.flag}</span>
@@ -109,7 +160,11 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
                       <span className="text-xs text-muted-foreground">{lang.name}</span>
                     </div>
                   </div>
-                  {currentLanguage === lang.code && <Check className="h-4 w-4" />}
+                  {changingTo === lang.code ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : currentLanguage === lang.code ? (
+                    <Check className="h-4 w-4" />
+                  ) : null}
                 </Button>
               ))}
             </div>
@@ -122,8 +177,12 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className={cn('gap-2', className)} disabled={isLoading}>
-          <span className="text-base">{currentLanguageInfo.flag}</span>
+        <Button variant="outline" className={cn('gap-2', className)} disabled={isLoading || !!changingTo}>
+          {changingTo ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <span className="text-base">{currentLanguageInfo.flag}</span>
+          )}
           <span className="hidden sm:inline">{currentLanguageInfo.nativeName}</span>
           <ChevronDown className="h-4 w-4 opacity-50" />
         </Button>
@@ -135,13 +194,18 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
               key={lang.code}
               onClick={() => handleSelectLanguage(lang.code)}
               className="flex items-center justify-between cursor-pointer gap-2"
+              disabled={!!changingTo}
             >
               <span className="text-base">{lang.flag}</span>
               <div className="flex flex-col flex-1">
                 <span>{lang.nativeName}</span>
                 <span className="text-xs text-muted-foreground">{lang.name}</span>
               </div>
-              {currentLanguage === lang.code && <Check className="h-4 w-4" />}
+              {changingTo === lang.code ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : currentLanguage === lang.code ? (
+                <Check className="h-4 w-4" />
+              ) : null}
             </DropdownMenuItem>
           ))}
         </ScrollArea>

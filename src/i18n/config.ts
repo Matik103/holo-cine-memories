@@ -23,7 +23,7 @@ const SUPPORTED_LANGUAGES = [
 export { SUPPORTED_LANGUAGES };
 
 const TRANSLATION_CACHE_PREFIX = 'cinemind_i18n_';
-const TRANSLATION_CACHE_VERSION = 'v24';
+const TRANSLATION_CACHE_VERSION = 'v25';
 
 function getCachedTranslations(lang: string): Record<string, string> | null {
   try {
@@ -49,48 +49,83 @@ async function translateResource(targetLang: string): Promise<Record<string, str
   const translated: Record<string, string> = {};
   const entries = Object.entries(en);
   
-  const batchSize = 25;
+  // Smaller batch size and sequential processing to avoid rate limiting
+  const batchSize = 10;
   const batches: [string, string][][] = [];
   
   for (let i = 0; i < entries.length; i += batchSize) {
     batches.push(entries.slice(i, i + batchSize));
   }
   
-  const results = await Promise.all(
-    batches.map(async (batch) => {
+  // Process batches sequentially with delay to avoid rate limiting
+  for (let i = 0; i < batches.length; i++) {
+    const batch = batches[i];
+    
+    // Add delay between batches (except first one)
+    if (i > 0) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    try {
       const texts = batch.map(([, value]) => value);
       const translatedTexts = await translationService.translateBatch(texts, targetLang);
-      return batch.map(([key], index) => [key, translatedTexts[index]] as [string, string]);
-    })
-  );
-  
-  results.flat().forEach(([key, value]) => {
-    translated[key] = value;
-  });
+      batch.forEach(([key], index) => {
+        translated[key] = translatedTexts[index] || en[key as keyof typeof en];
+      });
+    } catch {
+      // On error, use original English text for this batch
+      batch.forEach(([key, value]) => {
+        translated[key] = value;
+      });
+    }
+  }
   
   return translated;
 }
 
-export async function loadLanguage(lang: string): Promise<void> {
-  if (lang === 'en' || translatedResources[lang]) {
-    return;
+export async function loadLanguage(lang: string): Promise<{ success: boolean; error?: string }> {
+  if (lang === 'en') {
+    return { success: true };
+  }
+  
+  if (translatedResources[lang]) {
+    return { success: true };
   }
 
   const cached = getCachedTranslations(lang);
   if (cached) {
     translatedResources[lang] = { translation: cached };
     i18n.addResourceBundle(lang, 'translation', cached, true, true);
-    return;
+    return { success: true };
   }
 
-  try {
-    const translated = await translateResource(lang);
-    translatedResources[lang] = { translation: translated };
-    i18n.addResourceBundle(lang, 'translation', translated, true, true);
-    setCachedTranslations(lang, translated);
-  } catch {
-    // Language loading failed, fallback to English
+  // Retry up to 2 times
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      if (attempt > 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+      const translated = await translateResource(lang);
+      
+      // Verify we got meaningful translations (at least 50% of keys)
+      const translatedCount = Object.values(translated).filter(v => v && v.trim()).length;
+      if (translatedCount < Object.keys(en).length * 0.5) {
+        throw new Error('Incomplete translation');
+      }
+      
+      translatedResources[lang] = { translation: translated };
+      i18n.addResourceBundle(lang, 'translation', translated, true, true);
+      setCachedTranslations(lang, translated);
+      return { success: true };
+    } catch {
+      if (attempt === 1) {
+        return { success: false, error: 'Translation service unavailable' };
+      }
+    }
   }
+  
+  return { success: false, error: 'Translation failed' };
 }
 
 function getBrowserLanguage(): string {

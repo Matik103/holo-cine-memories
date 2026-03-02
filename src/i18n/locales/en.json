@@ -400,6 +400,9 @@
   "language.searchPlaceholder": "Search languages...",
   "language.moreLanguages": "More languages...",
   "language.changeInSettings": "Change in Settings",
+  "language.changed": "Language Changed",
+  "language.changeFailed": "Language Change Failed",
+  "language.tryAgain": "Please try again in a moment.",
   
   "vault.title": "The Vault",
   "vault.score": "Vault Score",
