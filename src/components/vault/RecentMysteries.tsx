@@ -66,13 +66,7 @@ export function RecentMysteries() {
     const translateDescriptions = async () => {
       if (mysteries.length === 0) return;
       
-      if (currentLanguage === 'en') {
-        const translations: Record<string, string> = {};
-        mysteries.forEach(m => { translations[m.id] = m.description; });
-        setTranslatedDescriptions(translations);
-        return;
-      }
-      
+      // Always translate to user's language using auto-detection for source
       const translations: Record<string, string> = {};
       await Promise.all(
         mysteries.map(async (mystery) => {

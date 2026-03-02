@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ShareMovieMenu } from "@/components/ShareMovieMenu";
 import { ArrowLeft, Sparkles, Clock, Heart, Play, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { translationService } from "@/services/translationService";
 
 interface Recommendation {
   title: string;
@@ -48,6 +49,12 @@ const DECADE_OPTIONS = [
   { value: "2020s", label: "2020s" },
 ];
 
+interface TranslatedRec {
+  reason: string;
+  mood_match: string;
+  runtime: string;
+}
+
 export const Discover = () => {
   const [user, setUser] = useState<any>(null);
   const [mood, setMood] = useState("curious");
@@ -56,12 +63,14 @@ export const Discover = () => {
   const [decadeFilter, setDecadeFilter] = useState("any");
   const [loading, setLoading] = useState(false);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [translatedRecs, setTranslatedRecs] = useState<Record<number, TranslatedRec>>({});
   const [visibleCount, setVisibleCount] = useState(INITIAL_RECS_VISIBLE);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language?.split('-')[0] || 'en';
 
   useEffect(() => {
     const checkUser = async () => {
@@ -229,6 +238,46 @@ export const Discover = () => {
       setLoading(false);
     }
   };
+
+  // Translate recommendation content when recommendations or language changes
+  useEffect(() => {
+    const translateRecommendations = async () => {
+      if (recommendations.length === 0) {
+        setTranslatedRecs({});
+        return;
+      }
+      
+      const translations: Record<number, TranslatedRec> = {};
+      
+      await Promise.all(
+        recommendations.map(async (rec, index) => {
+          try {
+            const [translatedReason, translatedMoodMatch, translatedRuntime] = await Promise.all([
+              translationService.translate(rec.reason, currentLanguage),
+              translationService.translate(rec.mood_match, currentLanguage),
+              translationService.translate(rec.runtime, currentLanguage),
+            ]);
+            
+            translations[index] = {
+              reason: translatedReason,
+              mood_match: translatedMoodMatch,
+              runtime: translatedRuntime,
+            };
+          } catch {
+            translations[index] = {
+              reason: rec.reason,
+              mood_match: rec.mood_match,
+              runtime: rec.runtime,
+            };
+          }
+        })
+      );
+      
+      setTranslatedRecs(translations);
+    };
+    
+    translateRecommendations();
+  }, [recommendations, currentLanguage]);
 
   const moodOptions = [
     { value: "curious", labelKey: "discover.mood.curious", color: "bg-blue-500" },
@@ -406,7 +455,7 @@ export const Discover = () => {
                         <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
                           <Badge variant="secondary" className="text-xs">
                             <Clock className="w-3 h-3 mr-1" />
-                            {rec.runtime}
+                            {translatedRecs[index]?.runtime || rec.runtime}
                           </Badge>
                         </div>
                       </div>
@@ -414,12 +463,12 @@ export const Discover = () => {
                       <div className="space-y-2 sm:space-y-3 text-center sm:text-left">
                         <div>
                           <h4 className="font-semibold text-primary text-xs sm:text-sm md:text-base">{t('discover.whyPerfect')}</h4>
-                          <p className="text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed">{rec.reason}</p>
+                          <p className="text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed">{translatedRecs[index]?.reason || rec.reason}</p>
                         </div>
                         
                         <div>
                           <h4 className="font-semibold text-accent text-xs sm:text-sm md:text-base">{t('discover.moodMatch')}</h4>
-                          <p className="text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed">{rec.mood_match}</p>
+                          <p className="text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed">{translatedRecs[index]?.mood_match || rec.mood_match}</p>
                         </div>
                       </div>
 

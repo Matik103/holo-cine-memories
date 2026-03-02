@@ -86,19 +86,20 @@ export function MysteryDetail() {
 
   useEffect(() => {
     const translateContent = async () => {
-      if (!mystery || currentLanguage === 'en') {
+      if (!mystery) {
         setTranslatedDescription('');
         setTranslatedClues('');
         return;
       }
       
+      // Always translate to user's language using auto-detection for source
       if (mystery.description) {
-        const translated = await translationService.translateText(mystery.description, currentLanguage);
+        const translated = await translationService.translate(mystery.description, currentLanguage);
         setTranslatedDescription(translated);
       }
       
       if (mystery.additional_clues) {
-        const translated = await translationService.translateText(mystery.additional_clues, currentLanguage);
+        const translated = await translationService.translate(mystery.additional_clues, currentLanguage);
         setTranslatedClues(translated);
       }
     };
@@ -108,16 +109,17 @@ export function MysteryDetail() {
 
   useEffect(() => {
     const translateAttemptExplanations = async () => {
-      if (!attempts.length || currentLanguage === 'en') {
+      if (!attempts.length) {
         setTranslatedAttempts({});
         return;
       }
       
       const translations: Record<string, { explanation?: string }> = {};
       
+      // Always translate to user's language using auto-detection for source
       for (const attempt of attempts) {
         if (attempt.explanation) {
-          const translated = await translationService.translateText(attempt.explanation, currentLanguage);
+          const translated = await translationService.translate(attempt.explanation, currentLanguage);
           translations[attempt.id] = { explanation: translated };
         }
       }

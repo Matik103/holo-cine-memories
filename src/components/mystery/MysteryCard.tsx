@@ -54,19 +54,14 @@ export function MysteryCard({ mystery, compact = false }: MysteryCardProps) {
 
   useEffect(() => {
     const translateContent = async () => {
-      if (currentLanguage === 'en') {
-        setTranslatedDescription('');
-        setTranslatedClues('');
-        return;
-      }
-      
+      // Always translate to user's language using auto-detection for source
       if (mystery.description) {
-        const translated = await translationService.translateText(mystery.description, currentLanguage);
+        const translated = await translationService.translate(mystery.description, currentLanguage);
         setTranslatedDescription(translated);
       }
       
       if (mystery.additional_clues) {
-        const translated = await translationService.translateText(mystery.additional_clues, currentLanguage);
+        const translated = await translationService.translate(mystery.additional_clues, currentLanguage);
         setTranslatedClues(translated);
       }
     };

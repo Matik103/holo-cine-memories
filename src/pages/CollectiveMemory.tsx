@@ -66,11 +66,7 @@ export function CollectiveMemory() {
         return;
       }
       
-      if (currentLanguage === 'en') {
-        setTranslatedFeaturedDesc(featuredMystery.description);
-        return;
-      }
-      
+      // Always translate to user's language using auto-detection for source
       try {
         const translated = await translationService.translate(featuredMystery.description, currentLanguage);
         setTranslatedFeaturedDesc(translated);
