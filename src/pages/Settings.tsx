@@ -105,7 +105,7 @@ export const Settings = () => {
           <CardContent>
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Select your preferred language
+                {t('settings.selectLanguage')}
               </p>
               <LanguageSelector variant="dialog" />
             </div>
@@ -141,7 +141,7 @@ export const Settings = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <HelpCircle className="w-5 h-5" />
-              <span>Support</span>
+              <span>{t('settings.support')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -165,15 +165,15 @@ export const Settings = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Info className="w-5 h-5" />
-              <span>Data Sources</span>
+              <span>{t('settings.dataSources')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Movie data provided by the <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">OMDb API</a> (https://www.omdbapi.com).
+              {t('settings.dataSourcesDescription')} <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">OMDb API</a> (https://www.omdbapi.com).
             </p>
             <p className="text-xs text-muted-foreground italic">
-              This product uses the OMDb API but is not endorsed or certified by OMDb. Movie posters and metadata are used in accordance with OMDb API terms of use.
+              {t('settings.dataSourcesDisclaimer')}
             </p>
           </CardContent>
         </Card>
@@ -183,16 +183,16 @@ export const Settings = () => {
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Database className="w-5 h-5" />
-              <span>Data & Privacy</span>
+              <span>{t('settings.dataPrivacy')}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Data Collection</p>
+                  <p className="text-sm font-medium">{t('settings.dataCollection')}</p>
                   <p className="text-xs text-muted-foreground">
-                    We collect minimal data to provide personalized recommendations
+                    {t('settings.dataCollectionDescription')}
                   </p>
                 </div>
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -200,9 +200,9 @@ export const Settings = () => {
               
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Data Storage</p>
+                  <p className="text-sm font-medium">{t('settings.dataStorage')}</p>
                   <p className="text-xs text-muted-foreground">
-                    Your data is stored securely and encrypted
+                    {t('settings.dataStorageDescription')}
                   </p>
                 </div>
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
@@ -210,9 +210,9 @@ export const Settings = () => {
               
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Third-Party Sharing</p>
+                  <p className="text-sm font-medium">{t('settings.thirdPartySharing')}</p>
                   <p className="text-xs text-muted-foreground">
-                    We don't sell or share your personal data
+                    {t('settings.thirdPartySharingDescription')}
                   </p>
                 </div>
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>

@@ -939,12 +939,23 @@
   "profile.cineDNARefreshed": "Your movie profile has been refreshed",
   "profile.errorRefreshingCineDNA": "Failed to refresh CineDNA profile",
 
+  "settings.title": "Settings",
   "settings.legal": "Legal",
   "settings.support": "Support",
   "settings.language": "Language",
-  "settings.languageDescription": "Choose your preferred language",
+  "settings.selectLanguage": "Select your preferred language",
   "settings.account": "Account",
-  "settings.dangerZone": "Danger Zone",
+  "settings.email": "Email",
   "settings.deleteAccount": "Delete Account",
-  "settings.deleteAccountDescription": "Permanently delete your account and all data"
+  "settings.deleteAccountWarning": "Permanently delete your account and all associated data. This action cannot be undone.",
+  "settings.dataSources": "Data Sources",
+  "settings.dataSourcesDescription": "Movie data provided by the",
+  "settings.dataSourcesDisclaimer": "This product uses the OMDb API but is not endorsed or certified by OMDb. Movie posters and metadata are used in accordance with OMDb API terms of use.",
+  "settings.dataPrivacy": "Data & Privacy",
+  "settings.dataCollection": "Data Collection",
+  "settings.dataCollectionDescription": "We collect minimal data to provide personalized recommendations",
+  "settings.dataStorage": "Data Storage",
+  "settings.dataStorageDescription": "Your data is stored securely and encrypted",
+  "settings.thirdPartySharing": "Third-Party Sharing",
+  "settings.thirdPartySharingDescription": "We don't sell or share your personal data"
 }
