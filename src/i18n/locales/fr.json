@@ -392,7 +392,7 @@
   "vault.livePulse.waiting": "À l'écoute de l'activité...",
   "vault.activity.search": "{{name}} vient de rappeler {{movie}}",
   "vault.activity.favorite": "{{name}} a ajouté {{movie}} à la liste de surveillance",
-  "vault.activity.rating": "{{name}} noté {{film}}",
+  "vault.activity.rating": "{{name}} noté {{movie}}",
   "vault.activity.badge": "{{name}} a gagné un nouveau badge !",
   "vault.activity.mystery_posted": "{{name}} a publié un nouveau mystère",
   "vault.activity.mystery_solved": "{{name}} a résolu un mystère !",
