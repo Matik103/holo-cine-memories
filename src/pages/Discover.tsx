@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ShareMovieMenu } from "@/components/ShareMovieMenu";
 import { ArrowLeft, Sparkles, Clock, Heart, Play, ExternalLink } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Recommendation {
   title: string;
@@ -50,7 +51,7 @@ const DECADE_OPTIONS = [
 export const Discover = () => {
   const [user, setUser] = useState<any>(null);
   const [mood, setMood] = useState("curious");
-  const [timePreference, setTimePreference] = useState("90-120 minutes");
+  const [timePreference, setTimePreference] = useState("90-120");
   const [genreFilter, setGenreFilter] = useState("any");
   const [decadeFilter, setDecadeFilter] = useState("any");
   const [loading, setLoading] = useState(false);
@@ -60,6 +61,7 @@ export const Discover = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const checkUser = async () => {
@@ -95,8 +97,8 @@ export const Discover = () => {
   const addToFavorites = async (rec: Recommendation) => {
     if (!user) {
       toast({
-        title: "Sign in Required",
-        description: "Please sign in to add movies to your favorites.",
+        title: t('discover.signInRequired'),
+        description: t('discover.signInToAddFavorites'),
       });
       return;
     }
@@ -123,14 +125,14 @@ export const Discover = () => {
       setFavoriteIds(prev => new Set([...prev, movieKey]));
       
       toast({
-        title: "Added to Favorites!",
-        description: `${rec.title} has been added to your favorites.`,
+        title: t('discover.addedToFavorites'),
+        description: t('discover.addedToFavoritesDesc', { title: rec.title }),
       });
     } catch (error) {
       console.error('Error adding to favorites:', error);
       toast({
-        title: "Error",
-        description: "Failed to add movie to favorites. Please try again.",
+        title: t('common.error'),
+        description: t('discover.errorAddFavorite'),
         variant: "destructive",
       });
     }
@@ -161,14 +163,14 @@ export const Discover = () => {
       });
       
       toast({
-        title: "Removed from Favorites",
-        description: `${rec.title} has been removed from your favorites.`,
+        title: t('discover.removedFromFavorites'),
+        description: t('discover.removedFromFavoritesDesc', { title: rec.title }),
       });
     } catch (error) {
       console.error('Error removing from favorites:', error);
       toast({
-        title: "Error",
-        description: "Failed to remove movie from favorites. Please try again.",
+        title: t('common.error'),
+        description: t('discover.errorRemoveFavorite'),
         variant: "destructive",
       });
     }
@@ -186,11 +188,20 @@ export const Discover = () => {
 
   const handleGetRecommendations = async () => {
     setLoading(true);
+    
+    // Map time preference values to API-expected format
+    const timePreferenceMap: Record<string, string> = {
+      'under90': 'Under 90 minutes',
+      '90-120': '90-120 minutes',
+      '2-3hours': '2-3 hours',
+      'allDay': 'I have all day'
+    };
+    
     try {
       const { data, error } = await supabase.functions.invoke('movie-recommend', {
         body: { 
           mood, 
-          timePreference,
+          timePreference: timePreferenceMap[timePreference] || timePreference,
           genre: genreFilter !== "any" ? genreFilter : undefined,
           decade: decadeFilter !== "any" ? decadeFilter : undefined,
           userId: user?.id 
@@ -203,15 +214,15 @@ export const Discover = () => {
         setRecommendations(data.recommendations);
         setVisibleCount(INITIAL_RECS_VISIBLE);
         toast({
-          title: "Recommendations Ready!",
-          description: `Found ${data.recommendations.length} perfect movies for your mood.`
+          title: t('discover.recommendationsReady'),
+          description: t('discover.foundMovies', { count: data.recommendations.length }),
         });
       }
     } catch (error) {
       console.error('Error getting recommendations:', error);
       toast({
-        title: "Error",
-        description: "Failed to get recommendations. Please try again.",
+        title: t('common.error'),
+        description: t('discover.errorGetRecommendations'),
         variant: "destructive",
       });
     } finally {
@@ -220,21 +231,21 @@ export const Discover = () => {
   };
 
   const moodOptions = [
-    { value: "curious", label: "Curious & Thoughtful", color: "bg-blue-500" },
-    { value: "adventurous", label: "Adventurous & Excited", color: "bg-orange-500" },
-    { value: "emotional", label: "Emotional & Deep", color: "bg-purple-500" },
-    { value: "chill", label: "Chill & Relaxed", color: "bg-green-500" },
-    { value: "mind-blown", label: "Mind-blown & Amazed", color: "bg-pink-500" },
-    { value: "nostalgic", label: "Nostalgic & Warm", color: "bg-amber-500" },
-    { value: "scary", label: "Thrilled & Scared", color: "bg-red-500" },
-    { value: "romantic", label: "Romantic & Sweet", color: "bg-rose-500" }
+    { value: "curious", labelKey: "discover.mood.curious", color: "bg-blue-500" },
+    { value: "adventurous", labelKey: "discover.mood.adventurous", color: "bg-orange-500" },
+    { value: "emotional", labelKey: "discover.mood.emotional", color: "bg-purple-500" },
+    { value: "chill", labelKey: "discover.mood.chill", color: "bg-green-500" },
+    { value: "mind-blown", labelKey: "discover.mood.mindBlown", color: "bg-pink-500" },
+    { value: "nostalgic", labelKey: "discover.mood.nostalgic", color: "bg-amber-500" },
+    { value: "scary", labelKey: "discover.mood.scary", color: "bg-red-500" },
+    { value: "romantic", labelKey: "discover.mood.romantic", color: "bg-rose-500" }
   ];
 
   const timeOptions = [
-    "Under 90 minutes",
-    "90-120 minutes", 
-    "2-3 hours",
-    "I have all day"
+    { value: "under90", labelKey: "discover.time.under90" },
+    { value: "90-120", labelKey: "discover.time.90to120" },
+    { value: "2-3hours", labelKey: "discover.time.2to3hours" },
+    { value: "allDay", labelKey: "discover.time.allDay" }
   ];
 
   return (
@@ -255,14 +266,14 @@ export const Discover = () => {
             className="flex items-center gap-2 self-start touch-manipulation"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm sm:text-base">Back to Search</span>
+            <span className="text-sm sm:text-base">{t('discover.backToSearch')}</span>
           </Button>
           <div className="flex-1 text-center sm:text-left">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Discover Movies
+              {t('discover.title')}
             </h1>
             <p className="text-muted-foreground text-xs sm:text-sm md:text-base">
-              Let AI find the perfect movie for your current mood
+              {t('discover.subtitle')}
             </p>
           </div>
         </div>
@@ -271,7 +282,7 @@ export const Discover = () => {
         <Card className="neural-card p-3 sm:p-6 md:p-8 mb-6">
           <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-primary" />
-            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">What's your mood?</h2>
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">{t('discover.whatsYourMood')}</h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
@@ -288,7 +299,7 @@ export const Discover = () => {
               >
                 <div className="flex items-center gap-1 sm:gap-2 md:gap-3">
                   <div className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full ${option.color}`} />
-                  <span className="text-xs sm:text-sm font-medium truncate">{option.label}</span>
+                  <span className="text-xs sm:text-sm font-medium truncate">{t(option.labelKey)}</span>
                 </div>
               </Button>
             ))}
@@ -297,7 +308,7 @@ export const Discover = () => {
           <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center gap-2 sm:gap-3">
               <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-              <h3 className="font-semibold text-sm sm:text-base">How much time do you have?</h3>
+              <h3 className="font-semibold text-sm sm:text-base">{t('discover.howMuchTime')}</h3>
             </div>
             <Select value={timePreference} onValueChange={setTimePreference}>
               <SelectTrigger className="w-full h-10 sm:h-12 touch-manipulation">
@@ -305,8 +316,8 @@ export const Discover = () => {
               </SelectTrigger>
               <SelectContent>
                 {timeOptions.map((option) => (
-                  <SelectItem key={option} value={option} className="text-sm">
-                    {option}
+                  <SelectItem key={option.value} value={option.value} className="text-sm">
+                    {t(option.labelKey)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -315,30 +326,30 @@ export const Discover = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
-              <h3 className="font-semibold text-sm sm:text-base">Genre (optional)</h3>
+              <h3 className="font-semibold text-sm sm:text-base">{t('discover.genreOptional')}</h3>
               <Select value={genreFilter} onValueChange={setGenreFilter}>
-                <SelectTrigger className="w-full h-10 sm:h-12 touch-manipulation" aria-label="Filter by genre">
+                <SelectTrigger className="w-full h-10 sm:h-12 touch-manipulation" aria-label={t('discover.filterByGenre')}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {GENRE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value} className="text-sm">
-                      {option.label}
+                      {t(`discover.genre.${option.value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <h3 className="font-semibold text-sm sm:text-base">Decade (optional)</h3>
+              <h3 className="font-semibold text-sm sm:text-base">{t('discover.decadeOptional')}</h3>
               <Select value={decadeFilter} onValueChange={setDecadeFilter}>
-                <SelectTrigger className="w-full h-10 sm:h-12 touch-manipulation" aria-label="Filter by decade">
+                <SelectTrigger className="w-full h-10 sm:h-12 touch-manipulation" aria-label={t('discover.filterByDecade')}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {DECADE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value} className="text-sm">
-                      {option.label}
+                      {t(`discover.decade.${option.value}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -352,8 +363,8 @@ export const Discover = () => {
             className="w-full mt-4 sm:mt-6 neural-button h-10 sm:h-12 text-sm sm:text-base touch-manipulation"
           >
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            <span className="hidden sm:inline">{loading ? "Finding Perfect Movies..." : "Discover Movies for Me"}</span>
-            <span className="sm:hidden">{loading ? "Finding Movies..." : "Discover Movies"}</span>
+            <span className="hidden sm:inline">{loading ? t('discover.findingPerfectMovies') : t('discover.discoverForMe')}</span>
+            <span className="sm:hidden">{loading ? t('discover.findingMovies') : t('discover.discoverMovies')}</span>
           </Button>
         </Card>
 
@@ -361,7 +372,7 @@ export const Discover = () => {
         {recommendations.length > 0 && (
           <div className="space-y-4 sm:space-y-6">
             <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Perfect Movies for Your Mood
+              {t('discover.perfectMoviesForMood')}
             </h2>
 
             {recommendations.slice(0, visibleCount).map((rec, index) => {
@@ -402,12 +413,12 @@ export const Discover = () => {
 
                       <div className="space-y-2 sm:space-y-3 text-center sm:text-left">
                         <div>
-                          <h4 className="font-semibold text-primary text-xs sm:text-sm md:text-base">Why it's perfect for you:</h4>
+                          <h4 className="font-semibold text-primary text-xs sm:text-sm md:text-base">{t('discover.whyPerfect')}</h4>
                           <p className="text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed">{rec.reason}</p>
                         </div>
                         
                         <div>
-                          <h4 className="font-semibold text-accent text-xs sm:text-sm md:text-base">Mood Match:</h4>
+                          <h4 className="font-semibold text-accent text-xs sm:text-sm md:text-base">{t('discover.moodMatch')}</h4>
                           <p className="text-muted-foreground text-xs sm:text-sm md:text-base leading-relaxed">{rec.mood_match}</p>
                         </div>
                       </div>
@@ -423,10 +434,10 @@ export const Discover = () => {
                         >
                           <Heart className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${isFavorite ? "fill-current" : ""}`} />
                           <span className="hidden sm:inline">
-                            {isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+                            {isFavorite ? t('discover.removeFromFavorites') : t('discover.addToFavorites')}
                           </span>
                           <span className="sm:hidden">
-                            {isFavorite ? "Remove" : "Favorite"}
+                            {isFavorite ? t('discover.remove') : t('discover.favorite')}
                           </span>
                         </Button>
                         
@@ -436,8 +447,8 @@ export const Discover = () => {
                           className="text-xs sm:text-sm touch-manipulation"
                         >
                           <Play className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                          <span className="hidden sm:inline">Find Where to Watch</span>
-                          <span className="sm:hidden">Watch</span>
+                          <span className="hidden sm:inline">{t('discover.findWhereToWatch')}</span>
+                          <span className="sm:hidden">{t('discover.watch')}</span>
                         </Button>
                         <ShareMovieMenu
                           title={rec.title}
@@ -458,9 +469,9 @@ export const Discover = () => {
                   variant="outline"
                   size="sm"
                   onClick={() => setVisibleCount((c) => Math.min(c + SHOW_MORE_STEP, recommendations.length))}
-                  aria-label="Show more recommendations"
+                  aria-label={t('discover.showMoreRecommendations')}
                 >
-                  Show more ({recommendations.length - visibleCount} more)
+                  {t('discover.showMore', { count: recommendations.length - visibleCount })}
                 </Button>
               </div>
             )}
@@ -471,10 +482,9 @@ export const Discover = () => {
         {recommendations.length === 0 && !loading && (
           <Card className="neural-card p-6 sm:p-8 md:p-12 text-center">
             <Sparkles className="w-12 h-12 sm:w-16 sm:h-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg sm:text-xl font-semibold mb-2">Ready to Discover?</h3>
+            <h3 className="text-lg sm:text-xl font-semibold mb-2">{t('discover.readyToDiscover')}</h3>
             <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">
-              Select your mood and time preference above to get AI-powered movie recommendations
-              tailored just for you.
+              {t('discover.emptyStateDescription')}
             </p>
             {!user && (
               <p className="text-xs sm:text-sm text-muted-foreground">
@@ -483,8 +493,8 @@ export const Discover = () => {
                   onClick={() => navigate("/auth")}
                   className="p-0 h-auto text-primary touch-manipulation"
                 >
-                  Sign in
-                </Button> to get personalized recommendations based on your movie history!
+                  {t('auth.signIn')}
+                </Button> {t('discover.signInForPersonalized')}
               </p>
             )}
           </Card>
