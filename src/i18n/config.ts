@@ -1,9 +1,20 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import { translationService } from '@/services/translationService';
 
+// Import all locale files statically for instant language switching
 import en from './locales/en.json';
+import es from './locales/es.json';
+import fr from './locales/fr.json';
+import pt from './locales/pt.json';
+import de from './locales/de.json';
+import zh from './locales/zh.json';
+import ja from './locales/ja.json';
+import ko from './locales/ko.json';
+import ar from './locales/ar.json';
+import hi from './locales/hi.json';
+import ht from './locales/ht.json';
+import id from './locales/id.json';
 
 const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English', nativeName: 'English', flag: '🇺🇸' },
@@ -22,111 +33,21 @@ const SUPPORTED_LANGUAGES = [
 
 export { SUPPORTED_LANGUAGES };
 
-const TRANSLATION_CACHE_PREFIX = 'cinemind_i18n_';
-const TRANSLATION_CACHE_VERSION = 'v25';
-
-function getCachedTranslations(lang: string): Record<string, string> | null {
-  try {
-    const cached = localStorage.getItem(`${TRANSLATION_CACHE_PREFIX}${lang}_${TRANSLATION_CACHE_VERSION}`);
-    if (cached) {
-      return JSON.parse(cached);
-    }
-  } catch {}
-  return null;
-}
-
-function setCachedTranslations(lang: string, translations: Record<string, string>): void {
-  try {
-    localStorage.setItem(`${TRANSLATION_CACHE_PREFIX}${lang}_${TRANSLATION_CACHE_VERSION}`, JSON.stringify(translations));
-  } catch {}
-}
-
-const translatedResources: Record<string, Record<string, Record<string, string>>> = {
+// All translations are bundled statically - no runtime translation needed
+const resources = {
   en: { translation: en },
+  es: { translation: es },
+  fr: { translation: fr },
+  pt: { translation: pt },
+  de: { translation: de },
+  zh: { translation: zh },
+  ja: { translation: ja },
+  ko: { translation: ko },
+  ar: { translation: ar },
+  hi: { translation: hi },
+  ht: { translation: ht },
+  id: { translation: id },
 };
-
-async function translateResource(targetLang: string): Promise<Record<string, string>> {
-  const translated: Record<string, string> = {};
-  const entries = Object.entries(en);
-  
-  // Smaller batch size and sequential processing to avoid rate limiting
-  const batchSize = 10;
-  const batches: [string, string][][] = [];
-  
-  for (let i = 0; i < entries.length; i += batchSize) {
-    batches.push(entries.slice(i, i + batchSize));
-  }
-  
-  // Process batches sequentially with delay to avoid rate limiting
-  for (let i = 0; i < batches.length; i++) {
-    const batch = batches[i];
-    
-    // Add delay between batches (except first one)
-    if (i > 0) {
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-    
-    try {
-      const texts = batch.map(([, value]) => value);
-      const translatedTexts = await translationService.translateBatch(texts, targetLang);
-      batch.forEach(([key], index) => {
-        translated[key] = translatedTexts[index] || en[key as keyof typeof en];
-      });
-    } catch {
-      // On error, use original English text for this batch
-      batch.forEach(([key, value]) => {
-        translated[key] = value;
-      });
-    }
-  }
-  
-  return translated;
-}
-
-export async function loadLanguage(lang: string): Promise<{ success: boolean; error?: string }> {
-  if (lang === 'en') {
-    return { success: true };
-  }
-  
-  if (translatedResources[lang]) {
-    return { success: true };
-  }
-
-  const cached = getCachedTranslations(lang);
-  if (cached) {
-    translatedResources[lang] = { translation: cached };
-    i18n.addResourceBundle(lang, 'translation', cached, true, true);
-    return { success: true };
-  }
-
-  // Retry up to 2 times
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      if (attempt > 0) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
-      const translated = await translateResource(lang);
-      
-      // Verify we got meaningful translations (at least 50% of keys)
-      const translatedCount = Object.values(translated).filter(v => v && v.trim()).length;
-      if (translatedCount < Object.keys(en).length * 0.5) {
-        throw new Error('Incomplete translation');
-      }
-      
-      translatedResources[lang] = { translation: translated };
-      i18n.addResourceBundle(lang, 'translation', translated, true, true);
-      setCachedTranslations(lang, translated);
-      return { success: true };
-    } catch {
-      if (attempt === 1) {
-        return { success: false, error: 'Translation service unavailable' };
-      }
-    }
-  }
-  
-  return { success: false, error: 'Translation failed' };
-}
 
 function getBrowserLanguage(): string {
   const browserLang = navigator.language || (navigator as any).userLanguage || 'en';
@@ -154,7 +75,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    resources: translatedResources,
+    resources,
     lng: initialLanguage,
     fallbackLng: 'en',
     debug: false,
@@ -182,10 +103,6 @@ i18n
 i18n.on('languageChanged', (lng) => {
   const langCode = lng.split('-')[0].toLowerCase();
   
-  if (langCode !== 'en') {
-    loadLanguage(langCode);
-  }
-  
   document.documentElement.lang = langCode;
   
   if (['ar', 'he', 'fa', 'ur'].includes(langCode)) {
@@ -198,10 +115,6 @@ i18n.on('languageChanged', (lng) => {
     localStorage.setItem('cinemind_language', langCode);
   } catch {}
 });
-
-if (initialLanguage !== 'en') {
-  loadLanguage(initialLanguage);
-}
 
 export function getDetectedLanguageInfo() {
   const browserLang = getBrowserLanguage();

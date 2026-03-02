@@ -1,62 +1,28 @@
 import { useTranslation as useI18nTranslation } from 'react-i18next';
-import { useCallback, useEffect, useState } from 'react';
-import { loadLanguage, SUPPORTED_LANGUAGES } from '@/i18n';
+import { useCallback } from 'react';
+import { SUPPORTED_LANGUAGES } from '@/i18n';
 
 export function useTranslation() {
   const { t, i18n } = useI18nTranslation();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const currentLanguage = i18n.language?.split('-')[0] || 'en';
   const currentLanguageInfo = SUPPORTED_LANGUAGES.find(l => l.code === currentLanguage) 
     || SUPPORTED_LANGUAGES.find(l => currentLanguage.startsWith(l.code))
     || SUPPORTED_LANGUAGES[0];
 
-  useEffect(() => {
-    if (currentLanguage !== 'en' && !i18n.hasResourceBundle(currentLanguage, 'translation')) {
-      setIsLoading(true);
-      setError(null);
-      loadLanguage(currentLanguage)
-        .then(result => {
-          if (!result.success && result.error) {
-            setError(result.error);
-          }
-        })
-        .finally(() => setIsLoading(false));
-    }
-  }, [currentLanguage, i18n]);
-
-  const changeLanguage = useCallback(async (lang: string): Promise<{ success: boolean; error?: string }> => {
-    setIsLoading(true);
-    setError(null);
-    
+  // Language change is now instant - all translations are bundled
+  const changeLanguage = useCallback((lang: string): { success: boolean } => {
     try {
-      if (lang !== 'en') {
-        const result = await loadLanguage(lang);
-        if (!result.success) {
-          setError(result.error || 'Failed to load language');
-          setIsLoading(false);
-          return result;
-        }
-      }
-      await i18n.changeLanguage(lang);
-      setIsLoading(false);
+      i18n.changeLanguage(lang);
       return { success: true };
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Failed to change language';
-      setError(errorMsg);
-      setIsLoading(false);
-      return { success: false, error: errorMsg };
+    } catch {
+      return { success: false };
     }
   }, [i18n]);
 
   const getLanguageName = useCallback((code: string) => {
     const lang = SUPPORTED_LANGUAGES.find(l => l.code === code);
     return lang?.nativeName || lang?.name || code;
-  }, []);
-
-  const clearError = useCallback(() => {
-    setError(null);
   }, []);
 
   return {
@@ -66,9 +32,9 @@ export function useTranslation() {
     currentLanguageInfo,
     changeLanguage,
     getLanguageName,
-    isLoading,
-    error,
-    clearError,
+    isLoading: false, // Never loading - all translations are bundled
+    error: null,
+    clearError: () => {},
     supportedLanguages: SUPPORTED_LANGUAGES,
   };
 }
