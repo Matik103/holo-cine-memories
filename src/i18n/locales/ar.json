@@ -263,7 +263,7 @@
   "auth.resetFailedDesc": "فشل إرسال البريد الإلكتروني لإعادة التعيين.",
   "auth.invalidPassword": "Invalid Password",
   "auth.invalidPasswordDesc": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
-  "auth.passwordsDontMatch": "Passwords Don't Match",
+  "auth.passwordsDontMatch": "كلمات المرور غير متطابقة",
   "auth.passwordsDontMatchDesc": "يرجى التأكد من تطابق كلمتي المرور.",
   "auth.passwordUpdated": "تم تحديث كلمة المرور!",
   "auth.passwordUpdatedDesc": "لقد تم تحديث كلمة المرور الخاصة بك بنجاح.",

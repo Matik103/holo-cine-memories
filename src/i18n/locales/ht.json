@@ -392,7 +392,7 @@
   "vault.livePulse.waiting": "Tande aktivite...",
   "vault.activity.search": "{{name}} jis sonje {{movie}}",
   "vault.activity.favorite": "{{name}} te ajoute {{movie}} nan lis siveyans",
-  "vault.activity.rating": "{{name}} rated {{movie}}",
+  "vault.activity.rating": "{{name}} te evalye {{movie}}",
   "vault.activity.badge": "{{name}} te genyen yon nouvo badj!",
   "vault.activity.mystery_posted": "{{name}} poste yon nouvo mistè",
   "vault.activity.mystery_solved": "{{name}} rezoud yon mistè!",
