@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ShareMovieMenu } from "@/components/ShareMovieMenu";
 import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings, Check, List, MessageSquare, Pencil } from "lucide-react";
 import { scrollInputIntoView } from "@/lib/utils";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "react-i18next";
 import { translationService } from "@/services/translationService";
 
 interface MovieSearch {
@@ -67,7 +67,8 @@ export const Profile = () => {
   const [translatedPlots, setTranslatedPlots] = useState<Record<string, string>>({});
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { currentLanguage } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language?.split('-')[0] || 'en';
 
   const filteredFavorites =
     watchlistFilter === "all"
@@ -113,8 +114,8 @@ export const Profile = () => {
     } catch (error) {
       console.error('Error loading profile:', error);
       toast({
-        title: "Error",
-        description: "Failed to load profile data",
+        title: t('common.error'),
+        description: t('profile.errorLoadingData'),
         variant: "destructive",
       });
     } finally {
@@ -220,8 +221,8 @@ export const Profile = () => {
       } catch (error) {
         console.error('Error loading profile:', error);
         toast({
-          title: "Error",
-          description: "Failed to load profile data",
+          title: t('common.error'),
+          description: t('profile.errorLoadingData'),
           variant: "destructive",
         });
       } finally {
@@ -230,7 +231,7 @@ export const Profile = () => {
     };
 
     getProfile();
-  }, [navigate, toast]);
+  }, [navigate, toast, t]);
 
   // Listen for focus events to refresh data when user comes back to the profile
   useEffect(() => {
@@ -273,7 +274,7 @@ export const Profile = () => {
         setHasMoreSearches(false);
       }
     } catch (e) {
-      toast({ title: "Error", description: "Failed to load more", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('profile.errorLoadingMore'), variant: "destructive" });
     } finally {
       setLoadingMoreSearches(false);
     }
@@ -296,7 +297,7 @@ export const Profile = () => {
         setHasMoreFavorites(false);
       }
     } catch (e) {
-      toast({ title: "Error", description: "Failed to load more", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('profile.errorLoadingMore'), variant: "destructive" });
     } finally {
       setLoadingMoreFavorites(false);
     }
@@ -309,9 +310,9 @@ export const Profile = () => {
       const { error } = await supabase.from("favorites").update({ is_watched: isWatched }).eq("id", id).eq("user_id", user.id);
       if (error) throw error;
       setFavorites((prev) => prev.map((f) => (f.id === id ? { ...f, is_watched: isWatched } : f)));
-      toast({ title: isWatched ? "Marked as watched" : "Marked as want to watch" });
+      toast({ title: isWatched ? t('profile.markedAsWatched') : t('profile.markedAsWantToWatch') });
     } catch (e) {
-      toast({ title: "Error", description: "Could not update", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('profile.errorCouldNotUpdate'), variant: "destructive" });
     } finally {
       setUpdatingFavoriteId(null);
     }
@@ -324,9 +325,9 @@ export const Profile = () => {
       const { error } = await supabase.from("favorites").update({ rating }).eq("id", id).eq("user_id", user.id);
       if (error) throw error;
       setFavorites((prev) => prev.map((f) => (f.id === id ? { ...f, rating } : f)));
-      toast({ title: "Rating saved" });
+      toast({ title: t('profile.ratingSaved') });
     } catch (e) {
-      toast({ title: "Error", description: "Could not save rating", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('profile.errorCouldNotSaveRating'), variant: "destructive" });
     } finally {
       setUpdatingFavoriteId(null);
     }
@@ -349,9 +350,9 @@ export const Profile = () => {
       );
       setEditingReviewId(null);
       setReviewDraft("");
-      toast({ title: "Review saved" });
+      toast({ title: t('profile.reviewSaved') });
     } catch (e) {
-      toast({ title: "Error", description: "Could not save review", variant: "destructive" });
+      toast({ title: t('common.error'), description: t('profile.errorCouldNotSaveReview'), variant: "destructive" });
     } finally {
       setUpdatingFavoriteId(null);
     }
@@ -379,8 +380,8 @@ export const Profile = () => {
       if (error) {
         console.error('Error updating CineDNA:', error);
         toast({
-          title: "Error",
-          description: "Failed to update CineDNA profile",
+          title: t('common.error'),
+          description: t('profile.errorUpdatingCineDNA'),
           variant: "destructive",
         });
         return;
@@ -396,15 +397,15 @@ export const Profile = () => {
       if (preferencesData) {
         setPreferences(preferencesData);
         toast({
-          title: "CineDNA Updated!",
-          description: "Your movie profile has been refreshed",
+          title: t('profile.cineDNAUpdated'),
+          description: t('profile.cineDNARefreshed'),
         });
       }
     } catch (error) {
       console.error('Error refreshing CineDNA:', error);
       toast({
-        title: "Error",
-        description: "Failed to refresh CineDNA profile",
+        title: t('common.error'),
+        description: t('profile.errorRefreshingCineDNA'),
         variant: "destructive",
       });
     }
@@ -475,7 +476,7 @@ export const Profile = () => {
             className="flex items-center gap-2 self-start"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm sm:text-base">Back to CineMind</span>
+            <span className="text-sm sm:text-base">{t('profile.backToCineMind')}</span>
           </Button>
           
           <div className="flex items-center gap-1 sm:gap-2">
@@ -485,7 +486,7 @@ export const Profile = () => {
               className="flex items-center gap-2 text-sm sm:text-base"
             >
               <Settings className="w-4 h-4" />
-              <span className="hidden sm:inline">Settings</span>
+              <span className="hidden sm:inline">{t('nav.settings')}</span>
             </Button>
             <Button 
               variant="outline" 
@@ -493,8 +494,8 @@ export const Profile = () => {
               className="flex items-center gap-2 text-sm sm:text-base"
             >
               <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Sign Out</span>
-              <span className="sm:hidden">Logout</span>
+              <span className="hidden sm:inline">{t('nav.signOut')}</span>
+              <span className="sm:hidden">{t('profile.logout')}</span>
             </Button>
           </div>
         </div>
@@ -507,10 +508,10 @@ export const Profile = () => {
             </div>
             <div className="flex-1 text-center sm:text-left">
               <h1 className="text-xl sm:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent break-words">
-                {profile?.display_name || user?.email || "Movie Explorer"}
+                {profile?.display_name || user?.email || t('profile.movieExplorer')}
               </h1>
               <p className="text-muted-foreground mt-2 text-sm sm:text-base">
-                Member since {new Date(user?.created_at).toLocaleDateString()}
+                {t('profile.memberSince')} {new Date(user?.created_at).toLocaleDateString(currentLanguage)}
               </p>
             </div>
           </div>
@@ -521,7 +522,7 @@ export const Profile = () => {
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <div className="flex items-center gap-3">
               <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              <h2 className="text-xl sm:text-2xl font-bold">Your CineDNA Profile</h2>
+              <h2 className="text-xl sm:text-2xl font-bold">{t('profile.yourCineDNAProfile')}</h2>
             </div>
             <Button 
               variant="outline" 
@@ -530,16 +531,16 @@ export const Profile = () => {
               className="flex items-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
-              <span className="hidden sm:inline">Refresh</span>
+              <span className="hidden sm:inline">{t('common.refresh')}</span>
             </Button>
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <h3 className="text-base sm:text-lg font-semibold mb-4">Movie Memory Progress</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-4">{t('profile.movieMemoryProgress')}</h3>
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base">Memory Bank Completion</span>
+                  <span className="text-sm sm:text-base">{t('profile.memoryBankCompletion')}</span>
                   <span className="font-bold text-primary text-sm sm:text-base">{calculateCineDNAProgress()}%</span>
                 </div>
                 <div className="w-full bg-secondary rounded-full h-2 sm:h-3 overflow-hidden">
@@ -553,14 +554,14 @@ export const Profile = () => {
                 <div className="grid grid-cols-2 gap-3 sm:gap-4 mt-4">
                   <div className="text-center p-2 sm:p-3 rounded-lg bg-primary/5 border border-primary/10">
                     <div className="text-xl sm:text-2xl font-bold text-primary">{movieSearches.length}</div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">Movies Recalled</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">{t('profile.moviesRecalled')}</div>
                     {movieSearches.length > 0 && (
                       <div className="text-xs text-primary mt-1">
                         +{movieSearches.filter(s => {
                           const dayAgo = new Date();
                           dayAgo.setDate(dayAgo.getDate() - 1);
                           return new Date(s.created_at) > dayAgo;
-                        }).length} today
+                        }).length} {t('profile.today')}
                       </div>
                     )}
                   </div>
@@ -580,10 +581,10 @@ export const Profile = () => {
                         return 0;
                       })()}
                     </div>
-                    <div className="text-xs sm:text-sm text-muted-foreground">Genres Explored</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">{t('profile.genresExplored')}</div>
                     {preferences?.cinedna_score?.decade_preferences && (
                       <div className="text-xs text-accent mt-1">
-                        {Object.keys(preferences.cinedna_score.decade_preferences).length} decades explored
+                        {Object.keys(preferences.cinedna_score.decade_preferences).length} {t('profile.decadesExplored')}
                       </div>
                     )}
                   </div>
@@ -592,12 +593,12 @@ export const Profile = () => {
                 {/* Progress Level Indicator */}
                 <div className="mt-4 p-2 sm:p-3 rounded-lg bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <span className="text-xs sm:text-sm font-medium">CineDNA Level</span>
+                    <span className="text-xs sm:text-sm font-medium">{t('profile.cineDNALevel')}</span>
                     <Badge variant="secondary" className="bg-gradient-to-r from-primary to-accent text-primary-foreground self-start sm:self-auto">
-                      {calculateCineDNAProgress() < 20 ? 'Novice' : 
-                       calculateCineDNAProgress() < 40 ? 'Explorer' :
-                       calculateCineDNAProgress() < 60 ? 'Enthusiast' :
-                       calculateCineDNAProgress() < 80 ? 'Connoisseur' : 'Master'}
+                      {calculateCineDNAProgress() < 20 ? t('profile.level.novice') : 
+                       calculateCineDNAProgress() < 40 ? t('profile.level.explorer') :
+                       calculateCineDNAProgress() < 60 ? t('profile.level.enthusiast') :
+                       calculateCineDNAProgress() < 80 ? t('profile.level.connoisseur') : t('profile.level.master')}
                     </Badge>
                   </div>
                 </div>
@@ -606,12 +607,12 @@ export const Profile = () => {
 
             <div>
               <h3 className="text-base sm:text-lg font-semibold mb-4 flex flex-col sm:flex-row sm:items-center gap-2">
-                <span>Preferred Genres</span>
+                <span>{t('profile.preferredGenres')}</span>
                 {(() => {
                   const cinednaScore = preferences?.cinedna_score;
                   const genreCount = cinednaScore?.favorite_genres?.length || preferences?.favorite_genres?.length || 0;
                   return genreCount > 0 && (
-                    <Badge variant="outline" className="text-xs self-start sm:self-auto">{genreCount} discovered</Badge>
+                    <Badge variant="outline" className="text-xs self-start sm:self-auto">{genreCount} {t('profile.discovered')}</Badge>
                   );
                 })()}
               </h3>
@@ -641,7 +642,7 @@ export const Profile = () => {
                       <div className="text-center py-6 px-4 rounded-lg bg-secondary/20 border-2 border-dashed border-secondary">
                         <Film className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                         <p className="text-muted-foreground italic text-sm">
-                          Keep searching movies to build your genre preferences!
+                          {t('profile.keepSearchingGenres')}
                         </p>
                       </div>
                     );
@@ -662,7 +663,7 @@ export const Profile = () => {
                               >
                                 {genre}
                               </Badge>
-                              {index === 0 && <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">Top Choice</Badge>}
+                              {index === 0 && <Badge variant="secondary" className="text-xs bg-primary/20 text-primary">{t('profile.topChoice')}</Badge>}
                             </div>
                             <div className="flex items-center gap-2">
                               <div className="w-16 h-1.5 bg-secondary rounded-full overflow-hidden">
@@ -680,7 +681,7 @@ export const Profile = () => {
                       {genresWithScores.length > 8 && (
                         <div className="text-center pt-2">
                           <Badge variant="outline" className="text-xs text-muted-foreground">
-                            +{genresWithScores.length - 8} more genres discovered
+                            +{genresWithScores.length - 8} {t('profile.moreGenresDiscovered')}
                           </Badge>
                         </div>
                       )}
@@ -694,7 +695,7 @@ export const Profile = () => {
                 <div className="mt-6 pt-4 border-t border-secondary">
                   <h4 className="font-semibold mb-3 flex items-center gap-2">
                     <Brain className="w-4 h-4" />
-                    Mood Patterns
+                    {t('profile.moodPatterns')}
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {Object.entries(preferences.cinedna_score.mood_preferences)
@@ -718,27 +719,27 @@ export const Profile = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 sm:mb-6">
               <div className="flex items-center gap-3">
                 <Heart className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Watchlist</h2>
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">{t('profile.watchlist')}</h2>
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
                   {favorites.length}
                 </Badge>
               </div>
-              <div className="flex rounded-lg bg-secondary/50 p-1 gap-0.5" role="tablist" aria-label="Filter watchlist">
+              <div className="flex rounded-lg bg-secondary/50 p-1 gap-0.5" role="tablist" aria-label={t('profile.filterWatchlist')}>
                 {([
-                  { value: "all" as const, label: "All", count: favorites.length },
-                  { value: "want-to-watch" as const, label: "Want to watch", count: wantCount },
-                  { value: "watched" as const, label: "Watched", count: watchedCount },
-                ]).map(({ value, label, count }) => (
+                  { value: "all" as const, labelKey: "profile.filter.all", count: favorites.length },
+                  { value: "want-to-watch" as const, labelKey: "profile.filter.wantToWatch", count: wantCount },
+                  { value: "watched" as const, labelKey: "profile.filter.watched", count: watchedCount },
+                ]).map(({ value, labelKey, count }) => (
                   <button
                     key={value}
                     role="tab"
-                    aria-selected={watchlistFilter === value ? "true" : "false"}
+                    aria-selected={watchlistFilter === value}
                     onClick={() => setWatchlistFilter(value)}
                     className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors touch-manipulation ${
                       watchlistFilter === value ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {label} ({count})
+                    {t(labelKey)} ({count})
                   </button>
                 ))}
               </div>
@@ -771,9 +772,9 @@ export const Profile = () => {
                           <span className="text-muted-foreground ml-1 sm:ml-2 text-xs sm:text-sm">({favorite.movie_year})</span>
                         )}
                       </h4>
-                      <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
-                        <div className="flex items-center gap-1" title="Your rating">
-                          <span className="text-xs text-muted-foreground sr-only sm:not-sr-only">Rate:</span>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
+                        <div className="flex items-center gap-1" title={t('profile.yourRating')}>
+                          <span className="text-xs text-muted-foreground sr-only sm:not-sr-only">{t('profile.rate')}:</span>
                           {[1, 2, 3, 4, 5].map((star) => (
                             <button
                               key={star}
@@ -781,7 +782,7 @@ export const Profile = () => {
                               onClick={() => updateFavoriteRating(favorite.id, star)}
                               disabled={updatingFavoriteId === favorite.id}
                               className="p-0.5 rounded touch-manipulation disabled:opacity-50"
-                              aria-label={`Rate ${star} out of 5`}
+                              aria-label={t('profile.rateOutOf5', { star })}
                             >
                               <Heart
                                 className={`w-3 h-3 sm:w-3 sm:h-3 ${
@@ -793,11 +794,11 @@ export const Profile = () => {
                         </div>
                         {favorite.is_watched && (
                           <Badge variant="outline" className="text-xs">
-                            Watched
+                            {t('profile.filter.watched')}
                           </Badge>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          Added {new Date(favorite.created_at).toLocaleDateString()}
+                          {t('profile.added')} {new Date(favorite.created_at).toLocaleDateString(currentLanguage)}
                         </p>
                       </div>
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -807,17 +808,17 @@ export const Profile = () => {
                           onClick={() => updateFavoriteWatched(favorite.id, !favorite.is_watched)}
                           disabled={updatingFavoriteId === favorite.id}
                           className="text-xs h-8"
-                          aria-label={favorite.is_watched ? "Mark as want to watch" : "Mark as watched"}
+                          aria-label={favorite.is_watched ? t('profile.markAsWantToWatch') : t('profile.markAsWatched')}
                         >
                           {favorite.is_watched ? (
                             <>
                               <List className="w-3 h-3 mr-1" />
-                              Want to watch
+                              {t('profile.wantToWatch')}
                             </>
                           ) : (
                             <>
                               <Check className="w-3 h-3 mr-1" />
-                              Mark watched
+                              {t('profile.markWatched')}
                             </>
                           )}
                         </Button>
@@ -826,10 +827,10 @@ export const Profile = () => {
                           size="sm"
                           onClick={() => startEditingReview(favorite)}
                           className="text-xs h-8"
-                          aria-label={favorite.review ? "Edit review" : "Write review"}
+                          aria-label={favorite.review ? t('profile.editReview') : t('profile.writeReview')}
                         >
                           {favorite.review ? <Pencil className="w-3 h-3 mr-1" /> : <MessageSquare className="w-3 h-3 mr-1" />}
-                          {favorite.review ? "Edit review" : "Write review"}
+                          {favorite.review ? t('profile.editReview') : t('profile.writeReview')}
                         </Button>
                         <ShareMovieMenu
                           title={favorite.movie_title}
@@ -845,10 +846,10 @@ export const Profile = () => {
                             value={reviewDraft}
                             onChange={(e) => setReviewDraft(e.target.value)}
                             onFocus={(e) => scrollInputIntoView(e.target)}
-                            placeholder="What did you think? (optional)"
+                            placeholder={t('profile.reviewPlaceholder')}
                             className="min-h-[80px] text-sm resize-y"
                             maxLength={2000}
-                            aria-label="Your review"
+                            aria-label={t('profile.yourReview')}
                           />
                           <div className="flex gap-2">
                             <Button
@@ -856,7 +857,7 @@ export const Profile = () => {
                               onClick={() => updateFavoriteReview(favorite.id, reviewDraft)}
                               disabled={updatingFavoriteId === favorite.id}
                             >
-                              Save review
+                              {t('profile.saveReview')}
                             </Button>
                             <Button
                               variant="outline"
@@ -866,7 +867,7 @@ export const Profile = () => {
                                 setReviewDraft("");
                               }}
                             >
-                              Cancel
+                              {t('common.cancel')}
                             </Button>
                           </div>
                         </div>
@@ -875,7 +876,7 @@ export const Profile = () => {
                           <p className="text-sm text-muted-foreground italic">&ldquo;{(favorite.review ?? "").trim()}&rdquo;</p>
                           {favorite.review_updated_at && (
                             <p className="text-xs text-muted-foreground mt-1">
-                              Updated {new Date(favorite.review_updated_at).toLocaleDateString()}
+                              {t('profile.updated')} {new Date(favorite.review_updated_at).toLocaleDateString(currentLanguage)}
                             </p>
                           )}
                         </div>
@@ -887,7 +888,7 @@ export const Profile = () => {
             </div>
             {filteredFavorites.length === 0 && (
               <p className="text-center text-muted-foreground text-sm py-4">
-                {watchlistFilter === "watched" ? "No watched movies yet. Mark some as watched above." : "No want-to-watch items. Add movies from Discover or search."}
+                {watchlistFilter === "watched" ? t('profile.noWatchedMovies') : t('profile.noWantToWatchItems')}
               </p>
             )}
             {hasMoreFavorites && (
@@ -897,9 +898,9 @@ export const Profile = () => {
                   size="sm"
                   onClick={loadMoreFavorites}
                   disabled={loadingMoreFavorites}
-                  aria-label="Load more favorites"
+                  aria-label={t('profile.loadMoreFavorites')}
                 >
-                  {loadingMoreFavorites ? "Loading..." : "Load more"}
+                  {loadingMoreFavorites ? t('common.loading') : t('profile.loadMore')}
                 </Button>
               </div>
             )}
@@ -911,10 +912,10 @@ export const Profile = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
             <div className="flex items-center gap-3">
               <Film className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">Recent Movie Memories</h2>
+              <h2 className="text-lg sm:text-xl lg:text-2xl font-bold">{t('profile.recentMovieMemories')}</h2>
               {movieSearches.length > 0 && (
                 <Badge variant="secondary" className="bg-primary/10 text-primary">
-                  {movieSearches.length} memories
+                  {movieSearches.length} {t('profile.memories')}
                 </Badge>
               )}
             </div>
@@ -925,7 +926,7 @@ export const Profile = () => {
                 onClick={() => navigate("/")}
                 className="text-xs sm:text-sm self-start sm:self-auto"
               >
-                Add More
+                {t('profile.addMore')}
               </Button>
             )}
           </div>
@@ -947,15 +948,15 @@ export const Profile = () => {
                 const olderSearches = movieSearches.filter(s => new Date(s.created_at) < weekAgo);
                 
                 const sections = [
-                  { title: "Today", searches: todaySearches, color: "text-primary" },
-                  { title: "This Week", searches: weekSearches, color: "text-accent" },
-                  { title: "Earlier", searches: olderSearches, color: "text-muted-foreground" }
+                  { titleKey: "profile.today", searches: todaySearches, color: "text-primary" },
+                  { titleKey: "profile.thisWeek", searches: weekSearches, color: "text-accent" },
+                  { titleKey: "profile.earlier", searches: olderSearches, color: "text-muted-foreground" }
                 ].filter(section => section.searches.length > 0);
                 
-                return sections.map(({ title, searches, color }) => (
-                  <div key={title} className="space-y-3">
+                return sections.map(({ titleKey, searches, color }) => (
+                  <div key={titleKey} className="space-y-3">
                     <h3 className={`text-sm sm:text-base font-semibold ${color} flex items-center gap-2`}>
-                      {title}
+                      {t(titleKey)}
                       <Badge variant="outline" className="text-xs">{searches.length}</Badge>
                     </h3>
                     <div className="grid gap-3 pl-2 sm:pl-4 border-l-2 border-secondary">
@@ -1001,7 +1002,7 @@ export const Profile = () => {
                                   )}
                                 </h4>
                                 <div className="text-xs text-muted-foreground flex-shrink-0 sm:ml-2">
-                                  {new Date(search.created_at).toLocaleDateString()}
+                                  {new Date(search.created_at).toLocaleDateString(currentLanguage)}
                                 </div>
                               </div>
                               <p className="text-xs sm:text-sm text-muted-foreground italic mt-1 line-clamp-1 sm:line-clamp-none">
@@ -1028,9 +1029,9 @@ export const Profile = () => {
                   size="sm"
                   onClick={loadMoreSearches}
                   disabled={loadingMoreSearches}
-                  aria-label="Load more movie memories"
+                  aria-label={t('profile.loadMoreMemories')}
                 >
-                  {loadingMoreSearches ? "Loading..." : "Load more"}
+                  {loadingMoreSearches ? t('common.loading') : t('profile.loadMore')}
                 </Button>
               </div>
             )}
@@ -1040,16 +1041,16 @@ export const Profile = () => {
               <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-primary/20 to-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Film className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
               </div>
-              <h3 className="text-base sm:text-lg font-semibold mb-2">No Movie Memories Yet</h3>
+              <h3 className="text-base sm:text-lg font-semibold mb-2">{t('profile.noMovieMemoriesYet')}</h3>
               <p className="text-sm sm:text-base text-muted-foreground mb-6 max-w-md mx-auto leading-relaxed">
-                Start searching for movies to build your personal movie memory bank and unlock your CineDNA profile!
+                {t('profile.startSearchingMovies')}
               </p>
               <Button 
                 onClick={() => navigate("/")}
                 className="neural-button px-4 sm:px-6 text-sm sm:text-base"
               >
                 <Film className="w-4 h-4 mr-2" />
-                Start Exploring Movies
+                {t('profile.startExploringMovies')}
               </Button>
             </div>
           )}
