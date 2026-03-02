@@ -1,4 +1,5 @@
 import { useState, ReactNode, useId, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCreateMystery } from '@/hooks/useMysteries';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +15,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { HelpCircle, Loader2, LogIn, AlertCircle } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 import { scrollInputIntoView } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -37,6 +37,7 @@ export function CreateMysteryDialog({
   aiSuggestions,
   onSuccess
 }: CreateMysteryDialogProps) {
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [description, setDescription] = useState(initialDescription);
   const [clues, setClues] = useState('');
@@ -103,13 +104,9 @@ export function CreateMysteryDialog({
     onSuccess?.();
   };
 
-  const handleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.href
-      }
-    });
+  const handleSignIn = () => {
+    setOpen(false);
+    navigate('/auth', { state: { returnTo: window.location.pathname } });
   };
 
   const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -148,7 +145,8 @@ export function CreateMysteryDialog({
               {t('mystery.signInToPost')}
             </p>
             <Button onClick={handleSignIn} className="neural-button w-full sm:w-auto">
-              {t('mystery.signInWithGoogle')}
+              <LogIn className="h-4 w-4 mr-2" aria-hidden="true" />
+              {t('auth.signIn')}
             </Button>
           </div>
         ) : (

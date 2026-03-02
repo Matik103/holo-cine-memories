@@ -255,13 +255,9 @@ export function MysteryDetail() {
     });
   };
 
-  const handleSignIn = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: window.location.href
-      }
-    });
+  const handleSignIn = () => {
+    // Navigate to auth page with return URL
+    navigate('/auth', { state: { returnTo: window.location.pathname } });
   };
 
   const handleOpenEdit = () => {
@@ -556,7 +552,8 @@ export function MysteryDetail() {
               <LogIn className="h-7 w-7 sm:h-8 sm:w-8 mx-auto mb-2 sm:mb-3 text-muted-foreground" aria-hidden="true" />
               <p className="text-sm text-muted-foreground mb-3 sm:mb-4">{t('mystery.signInToSubmit')}</p>
               <Button onClick={handleSignIn} className="neural-button w-full sm:w-auto">
-                {t('mystery.signInWithGoogle')}
+                <LogIn className="h-4 w-4 mr-2" aria-hidden="true" />
+                {t('auth.signIn')}
               </Button>
             </Card>
           )}
