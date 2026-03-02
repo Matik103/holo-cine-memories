@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,10 +10,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import {
   getMysteryShareUrl,
-  getMysteryShareText,
-  getMysteryShareTextFull,
-  getMysteryRedditTitle,
-  getMysteryEmailBody,
   getTwitterShareUrl,
   getWhatsAppShareUrl,
   getFacebookShareUrl,
@@ -29,6 +25,7 @@ import {
   Send,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { translationService } from "@/services/translationService";
 
 interface ShareMysteryMenuProps {
   mysteryId: string;
@@ -53,13 +50,50 @@ export function ShareMysteryMenu({
   triggerClassName,
 }: ShareMysteryMenuProps) {
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language;
   const url = getMysteryShareUrl(mysteryId);
-  const shortText = getMysteryShareText(description); // For Twitter (character limit)
-  const fullText = getMysteryShareTextFull(description); // For WhatsApp, Telegram, Copy
-  const redditTitle = getMysteryRedditTitle(description);
-  const emailBody = getMysteryEmailBody(description, url);
   const shareTitle = `🎬 ${t('share.movieMystery')}`;
+  
+  // State for translated description
+  const [translatedDescription, setTranslatedDescription] = useState<string>(description);
+  
+  // Translate description when language changes
+  useEffect(() => {
+    const translateDescription = async () => {
+      if (currentLanguage === 'en') {
+        setTranslatedDescription(description);
+        return;
+      }
+      try {
+        const translated = await translationService.translate(description, currentLanguage);
+        setTranslatedDescription(translated);
+      } catch {
+        setTranslatedDescription(description);
+      }
+    };
+    translateDescription();
+  }, [description, currentLanguage]);
+  
+  // Generate translated share texts
+  const getShortDesc = (maxLen: number) => {
+    const desc = translatedDescription.length > maxLen 
+      ? translatedDescription.slice(0, maxLen) + '...' 
+      : translatedDescription;
+    return desc;
+  };
+  
+  // Short text for Twitter (character limit)
+  const shortText = `🎬 ${t('share.movieMystery')}\n\n${getShortDesc(120)}\n\n${t('share.canYouHelp')} 🔍`;
+  
+  // Full text for WhatsApp, Telegram, Copy
+  const fullText = `🎬 *${t('share.movieMystery')}* 🎬\n\n${getShortDesc(250)}\n\n${t('share.canYouHelpSolve')}\n\n🔍 ${t('share.answerOnCineMind')}`;
+  
+  // Reddit title
+  const redditTitle = `${t('share.helpPrefix')} ${getShortDesc(80)}`;
+  
+  // Email body
+  const emailBody = `${t('share.emailGreeting')}\n\n${t('share.emailIntro')}\n\n${getShortDesc(300)}\n\n${t('share.canYouHelp')}\n\n${url}\n\n- ${t('share.sentFromCineMind')}`;
 
   const handleNativeShare = async () => {
     try {

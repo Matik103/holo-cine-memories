@@ -149,7 +149,13 @@
   "share.readyForTikTokDesc": "Caption copied! Perfect for your video.",
   "share.movieMystery": "Movie Mystery",
   "share.canYouHelp": "Can you help?",
+  "share.canYouHelpSolve": "Can you help solve this?",
+  "share.answerOnCineMind": "Answer on CineMind",
   "share.commentBelow": "Comment below!",
+  "share.helpPrefix": "[Help]",
+  "share.emailGreeting": "Hey!",
+  "share.emailIntro": "I came across this movie mystery and thought you might know the answer:",
+  "share.sentFromCineMind": "Sent from CineMind",
   
   "discover.title": "Discover Movies",
   "discover.subtitle": "Let AI find the perfect movie for your current mood",
