@@ -59,6 +59,13 @@ const SHARE_TEMPLATES = {
   emailGreeting: 'Hey!',
   emailIntro: 'I came across this movie mystery and thought you might know the answer:',
   sentFromCineMind: 'Sent from CineMind',
+  commentBelow: 'Comment below!',
+  // Hashtag words (will be converted to hashtags after translation)
+  tagMovieMystery: 'MovieMystery',
+  tagMovies: 'Movies',
+  tagFilm: 'Film',
+  tagHelpMeFind: 'HelpMeFind',
+  tagFilmTok: 'FilmTok',
 };
 
 interface ShareMysteryMenuProps {
@@ -130,6 +137,11 @@ export function ShareMysteryMenu({
     return translations as typeof SHARE_TEMPLATES;
   };
   
+  // Convert translated word to hashtag (remove spaces, special chars)
+  const toHashtag = (text: string): string => {
+    return '#' + text.replace(/\s+/g, '').replace(/[^a-zA-Z0-9\u00C0-\u024F\u1E00-\u1EFF\u0400-\u04FF\u0600-\u06FF\u0900-\u097F\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]/g, '');
+  };
+  
   // Generate share content for a specific target language
   const generateShareContent = async (targetLang: string) => {
     setIsTranslating(true);
@@ -147,6 +159,22 @@ export function ShareMysteryMenu({
           : translatedDesc;
       };
       
+      // Generate translated hashtags
+      const hashtags = {
+        movieMystery: toHashtag(templates.tagMovieMystery),
+        movies: toHashtag(templates.tagMovies),
+        film: toHashtag(templates.tagFilm),
+        helpMeFind: toHashtag(templates.tagHelpMeFind),
+        filmTok: toHashtag(templates.tagFilmTok),
+        cineMind: '#CineMind', // Keep brand name
+      };
+      
+      // Instagram hashtags string
+      const instagramHashtags = `${hashtags.movieMystery} ${hashtags.cineMind} ${hashtags.movies} ${hashtags.film} ${hashtags.helpMeFind}`;
+      
+      // TikTok hashtags string
+      const tiktokHashtags = `${hashtags.movieMystery} ${hashtags.cineMind} ${hashtags.movies} ${hashtags.filmTok} ${hashtags.helpMeFind}`;
+      
       return {
         description: translatedDesc,
         shortDesc120: getShortDesc(120),
@@ -155,6 +183,9 @@ export function ShareMysteryMenu({
         shortDesc300: getShortDesc(300),
         shortDesc80: getShortDesc(80),
         templates,
+        hashtags,
+        instagramHashtags,
+        tiktokHashtags,
       };
     } finally {
       setIsTranslating(false);
@@ -210,7 +241,7 @@ ${content.templates.canYouHelp} 🔍
 
 👉 ${url}
 
-#MovieMystery #CineMind #Movies #Film #HelpMeFind`;
+${content.instagramHashtags}`;
       await navigator.clipboard.writeText(instagramText);
       toast({
         title: t('share.readyForInstagram'),
@@ -228,16 +259,15 @@ ${content.templates.canYouHelp} 🔍
   const handleTikTokShare = async (targetLang: string) => {
     try {
       const content = await generateShareContent(targetLang);
-      const commentBelow = targetLang === 'en' ? 'Comment below!' : await translateToLanguage('Comment below!', targetLang);
       const tiktokText = `🎬 ${content.templates.movieMystery} 🎬
 
 ${content.shortDesc120}
 
-${content.templates.canYouHelp} ${commentBelow} 👇
+${content.templates.canYouHelp} ${content.templates.commentBelow} 👇
 
 👉 ${url}
 
-#MovieMystery #CineMind #Movies #FilmTok #HelpMeFind`;
+${content.tiktokHashtags}`;
       await navigator.clipboard.writeText(tiktokText);
       toast({
         title: t('share.readyForTikTok'),
