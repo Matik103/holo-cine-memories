@@ -56,7 +56,7 @@ export function LanguageSelector({ variant = 'dropdown', className }: LanguageSe
             </span>
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="max-h-[300px] overflow-y-auto">
+        <DropdownMenuContent align="end" sideOffset={8} className="max-h-[300px] overflow-y-auto mt-2">
           {supportedLanguages.map((lang) => (
             <DropdownMenuItem
               key={lang.code}

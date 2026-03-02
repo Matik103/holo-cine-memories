@@ -210,8 +210,8 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
 
   return (
     <div className="min-h-screen relative overflow-hidden pt-safe-top">
-      {/* Mobile: language selector top-right */}
-      <div className="md:hidden fixed top-4 right-4 z-20">
+      {/* Mobile: language selector top-right - positioned below safe area/notch */}
+      <div className="md:hidden fixed top-14 right-4 z-20">
         <LanguageSelector variant="compact" />
       </div>
 
