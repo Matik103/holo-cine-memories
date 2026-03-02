@@ -654,14 +654,21 @@ export const CineMind = () => {
             {/* Ask Community Card - shown after failed search */}
             {failedSearch && !isLoading && (
               <div className="w-full max-w-2xl mx-auto px-4">
-                <div className="neural-card rounded-2xl p-6 border-purple-500/30 bg-purple-500/5">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-full bg-purple-500/20">
-                      <Users className="w-6 h-6 text-purple-400" />
+                <div className="neural-card rounded-2xl p-4 sm:p-6 border-purple-500/30 bg-purple-500/5 relative">
+                  <button 
+                    onClick={() => setFailedSearch(null)}
+                    className="absolute top-3 right-3 text-muted-foreground hover:text-foreground p-1 text-xl leading-none"
+                    aria-label={t('community.dismiss')}
+                  >
+                    ×
+                  </button>
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 rounded-full bg-purple-500/20 flex-shrink-0">
+                      <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-2">{t('community.cantFindIt')}</h3>
-                      <p className="text-sm text-muted-foreground mb-4">
+                    <div className="flex-1 min-w-0 pr-6">
+                      <h3 className="font-semibold text-base sm:text-lg mb-1 sm:mb-2">{t('community.cantFindIt')}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                         {t('community.movieDetectives')}
                       </p>
                       <CreateMysteryDialog
@@ -673,20 +680,13 @@ export const CineMind = () => {
                           navigate('/mysteries');
                         }}
                         trigger={
-                          <Button className="neural-button gap-2 bg-purple-600 hover:bg-purple-700">
-                            <HelpCircle className="w-4 h-4" />
-                            {t('community.postMystery')}
+                          <Button className="neural-button gap-2 bg-purple-600 hover:bg-purple-700 text-sm sm:text-base px-3 sm:px-4 py-2 h-auto whitespace-nowrap">
+                            <HelpCircle className="w-4 h-4 flex-shrink-0" />
+                            <span>{t('community.postMystery')}</span>
                           </Button>
                         }
                       />
                     </div>
-                    <button 
-                      onClick={() => setFailedSearch(null)}
-                      className="text-muted-foreground hover:text-foreground p-1"
-                      aria-label={t('community.dismiss')}
-                    >
-                      ×
-                    </button>
                   </div>
                 </div>
               </div>
