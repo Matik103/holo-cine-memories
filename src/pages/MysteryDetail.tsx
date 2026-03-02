@@ -86,6 +86,8 @@ export function MysteryDetail() {
   const [translatedAttempts, setTranslatedAttempts] = useState<Record<string, { explanation?: string }>>({});
 
   useEffect(() => {
+    let mounted = true;
+    
     const translateContent = async () => {
       if (!mystery) {
         setTranslatedDescription('');
@@ -93,22 +95,38 @@ export function MysteryDetail() {
         return;
       }
       
-      // Always translate to user's language using auto-detection for source
-      if (mystery.description) {
-        const translated = await translationService.translate(mystery.description, currentLanguage);
-        setTranslatedDescription(translated);
-      }
+      // Set original text first for immediate display
+      setTranslatedDescription(mystery.description || '');
+      setTranslatedClues(mystery.additional_clues || '');
       
-      if (mystery.additional_clues) {
-        const translated = await translationService.translate(mystery.additional_clues, currentLanguage);
-        setTranslatedClues(translated);
+      // Then translate
+      try {
+        if (mystery.description) {
+          const translated = await translationService.translate(mystery.description, currentLanguage);
+          if (mounted && translated) {
+            setTranslatedDescription(translated);
+          }
+        }
+        
+        if (mystery.additional_clues) {
+          const translated = await translationService.translate(mystery.additional_clues, currentLanguage);
+          if (mounted && translated) {
+            setTranslatedClues(translated);
+          }
+        }
+      } catch {
+        // Keep original text on error
       }
     };
     
     translateContent();
-  }, [mystery?.description, mystery?.additional_clues, currentLanguage]);
+    
+    return () => { mounted = false; };
+  }, [mystery?.id, mystery?.description, mystery?.additional_clues, currentLanguage]);
 
   useEffect(() => {
+    let mounted = true;
+    
     const translateAttemptExplanations = async () => {
       if (!attempts.length) {
         setTranslatedAttempts({});
@@ -117,18 +135,29 @@ export function MysteryDetail() {
       
       const translations: Record<string, { explanation?: string }> = {};
       
-      // Always translate to user's language using auto-detection for source
-      for (const attempt of attempts) {
+      // Translate with staggered requests to avoid rate limiting
+      for (let i = 0; i < attempts.length; i++) {
+        const attempt = attempts[i];
         if (attempt.explanation) {
-          const translated = await translationService.translate(attempt.explanation, currentLanguage);
-          translations[attempt.id] = { explanation: translated };
+          try {
+            if (i > 0) {
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            const translated = await translationService.translate(attempt.explanation, currentLanguage);
+            if (mounted && translated) {
+              translations[attempt.id] = { explanation: translated };
+              setTranslatedAttempts({ ...translations });
+            }
+          } catch {
+            translations[attempt.id] = { explanation: attempt.explanation };
+          }
         }
       }
-      
-      setTranslatedAttempts(translations);
     };
     
     translateAttemptExplanations();
+    
+    return () => { mounted = false; };
   }, [attempts, currentLanguage]);
 
   const titleId = useId();

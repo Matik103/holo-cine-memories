@@ -1,5 +1,7 @@
 const CACHE_PREFIX = 'cinemind_translation_';
 const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 500;
 
 interface CachedTranslation {
   text: string;
@@ -13,6 +15,7 @@ interface TranslationCache {
 class TranslationService {
   private memoryCache: TranslationCache = {};
   private pendingTranslations: Map<string, Promise<string>> = new Map();
+  private failedTranslations: Set<string> = new Set();
 
   private getCacheKey(text: string, targetLang: string): string {
     return `${CACHE_PREFIX}${targetLang}_${this.hashText(text)}`;
@@ -128,28 +131,65 @@ class TranslationService {
   }
 
   private async fetchTranslation(text: string, targetLang: string, sourceLang: string): Promise<string> {
-    try {
-      const response = await fetch(
-        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`
-      );
-
-      if (!response.ok) {
-        return text;
-      }
-
-      const data = await response.json();
-      
-      if (data && data[0]) {
-        const translatedParts = data[0]
-          .filter((part: unknown[]) => part && part[0])
-          .map((part: unknown[]) => part[0]);
-        return translatedParts.join('');
-      }
-
-      return text;
-    } catch {
+    const failKey = `${targetLang}_${this.hashText(text)}`;
+    
+    // Skip if this translation has failed recently
+    if (this.failedTranslations.has(failKey)) {
       return text;
     }
+    
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+        
+        const response = await fetch(
+          `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sourceLang}&tl=${targetLang}&dt=t&q=${encodeURIComponent(text)}`,
+          { signal: controller.signal }
+        );
+        
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          if (attempt < MAX_RETRIES) {
+            await this.delay(RETRY_DELAY_MS * (attempt + 1));
+            continue;
+          }
+          this.failedTranslations.add(failKey);
+          // Clear failed status after 5 minutes
+          setTimeout(() => this.failedTranslations.delete(failKey), 5 * 60 * 1000);
+          return text;
+        }
+
+        const data = await response.json();
+        
+        if (data && data[0]) {
+          const translatedParts = data[0]
+            .filter((part: unknown[]) => part && part[0])
+            .map((part: unknown[]) => part[0]);
+          const result = translatedParts.join('');
+          if (result && result.trim()) {
+            return result;
+          }
+        }
+
+        return text;
+      } catch {
+        if (attempt < MAX_RETRIES) {
+          await this.delay(RETRY_DELAY_MS * (attempt + 1));
+          continue;
+        }
+        this.failedTranslations.add(failKey);
+        setTimeout(() => this.failedTranslations.delete(failKey), 5 * 60 * 1000);
+        return text;
+      }
+    }
+    
+    return text;
+  }
+  
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   async translateBatch(texts: string[], targetLang: string, sourceLang: string = 'auto'): Promise<string[]> {

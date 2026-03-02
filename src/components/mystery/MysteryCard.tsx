@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Eye, MessageSquare, Clock, Trophy, CheckCircle, Share2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { KeyboardEvent, MouseEvent, useState, useEffect } from 'react';
+import { KeyboardEvent, MouseEvent, useState, useEffect, useRef } from 'react';
 import { ShareMysteryMenu } from './ShareMysteryMenu';
 import { useTranslation } from 'react-i18next';
 import { translationService } from '@/services/translationService';
@@ -21,8 +21,9 @@ export function MysteryCard({ mystery, compact = false }: MysteryCardProps) {
   const currentLanguage = i18n.language?.split('-')[0] || 'en';
   const difficultyInfo = mysteryService.getDifficultyInfo(mystery.difficulty);
   
-  const [translatedDescription, setTranslatedDescription] = useState<string>('');
-  const [translatedClues, setTranslatedClues] = useState<string>('');
+  const [translatedDescription, setTranslatedDescription] = useState<string>(mystery.description);
+  const [translatedClues, setTranslatedClues] = useState<string>(mystery.additional_clues || '');
+  const translationAttempted = useRef<string>('');
 
   const getTranslatedTimeAgo = (dateString: string): string => {
     const date = new Date(dateString);
@@ -53,21 +54,47 @@ export function MysteryCard({ mystery, compact = false }: MysteryCardProps) {
   const difficultyLabel = getTranslatedDifficulty(mystery.difficulty);
 
   useEffect(() => {
+    let mounted = true;
+    const translationKey = `${mystery.id}_${currentLanguage}`;
+    
+    // Skip if we already attempted translation for this mystery+language combo
+    if (translationAttempted.current === translationKey) {
+      return;
+    }
+    
     const translateContent = async () => {
-      // Always translate to user's language using auto-detection for source
-      if (mystery.description) {
-        const translated = await translationService.translate(mystery.description, currentLanguage);
-        setTranslatedDescription(translated);
-      }
+      translationAttempted.current = translationKey;
       
-      if (mystery.additional_clues) {
-        const translated = await translationService.translate(mystery.additional_clues, currentLanguage);
-        setTranslatedClues(translated);
+      try {
+        // Translate description
+        if (mystery.description) {
+          const translatedDesc = await translationService.translate(mystery.description, currentLanguage);
+          if (mounted && translatedDesc) {
+            setTranslatedDescription(translatedDesc);
+          }
+        }
+        
+        // Translate clues
+        if (mystery.additional_clues) {
+          const translatedCluesText = await translationService.translate(mystery.additional_clues, currentLanguage);
+          if (mounted && translatedCluesText) {
+            setTranslatedClues(translatedCluesText);
+          }
+        }
+      } catch {
+        // Keep original text on error - already set as default
       }
     };
     
-    translateContent();
-  }, [mystery.description, mystery.additional_clues, currentLanguage]);
+    // Add a small delay to stagger translations and avoid rate limiting
+    const delay = Math.random() * 200;
+    const timeoutId = setTimeout(translateContent, delay);
+    
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [mystery.id, mystery.description, mystery.additional_clues, currentLanguage]);
 
   const handleClick = () => {
     navigate(`/mysteries/${mystery.id}`);

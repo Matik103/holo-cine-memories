@@ -62,24 +62,34 @@ export function RecentMysteries() {
 
   // Translate mystery descriptions when mysteries or language changes
   useEffect(() => {
+    if (mysteries.length === 0) return;
+    
+    // Set initial descriptions immediately
+    const initialTranslations: Record<string, string> = {};
+    mysteries.forEach(m => {
+      initialTranslations[m.id] = m.description;
+    });
+    setTranslatedDescriptions(initialTranslations);
+    
     const translateDescriptions = async () => {
-      if (mysteries.length === 0) return;
+      const translations: Record<string, string> = { ...initialTranslations };
       
-      // Always translate to user's language using auto-detection for source
-      const translations: Record<string, string> = {};
-      await Promise.all(
-        mysteries.map(async (mystery) => {
-          try {
-            const translated = await translationService.translate(mystery.description, currentLanguage);
-            translations[mystery.id] = translated;
-          } catch {
-            translations[mystery.id] = mystery.description;
+      // Translate each mystery with a small stagger to avoid rate limiting
+      for (let i = 0; i < mysteries.length; i++) {
+        const mystery = mysteries[i];
+        try {
+          // Small delay between translations
+          if (i > 0) {
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
-        })
-      );
-      
-      if (mounted.current) {
-        setTranslatedDescriptions(translations);
+          const translated = await translationService.translate(mystery.description, currentLanguage);
+          if (mounted.current && translated) {
+            translations[mystery.id] = translated;
+            setTranslatedDescriptions({ ...translations });
+          }
+        } catch {
+          translations[mystery.id] = mystery.description;
+        }
       }
     };
     
