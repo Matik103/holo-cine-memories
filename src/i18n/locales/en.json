@@ -446,6 +446,8 @@
   "vault.mysteries.beFirst": "Be the first to post one",
   "vault.mysteries.unsolvedCount": "{{count}} unsolved mysteries",
   "vault.mysteries.viewAll": "View All",
+  "vault.mysteries.explore": "Explore",
+  "vault.mysteries.description": "Help identify movies from memories and earn detective points",
   
   "mystery.collectiveMemory": "Collective Memory",
   "mystery.helpIdentify": "Help identify movies from memories",

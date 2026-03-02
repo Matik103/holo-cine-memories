@@ -54,7 +54,7 @@ export const Vault = () => {
             className="gap-1 sm:gap-2 text-purple-400 hover:text-purple-300 px-2 sm:px-4"
           >
             <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Mysteries</span>
+            <span className="hidden sm:inline">{t('nav.mysteries')}</span>
           </Button>
         </div>
 
@@ -66,8 +66,7 @@ export const Vault = () => {
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2">
               <span className="text-lg sm:text-xl">🔥</span>
-              <span className="hidden xs:inline">{t('vault.trending.title')}</span>
-              <span className="xs:hidden">Trending</span>
+              {t('vault.trending.title')}
             </h2>
             <div className="flex gap-1">
               {(['hour', 'day', 'week'] as const).map((period) => (
@@ -90,8 +89,7 @@ export const Vault = () => {
         <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
           <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-2 sm:mb-4">
             <span className="text-lg sm:text-xl">💎</span>
-            <span className="hidden xs:inline">{t('vault.hiddenGems.title')}</span>
-            <span className="xs:hidden">Hidden Gems</span>
+            {t('vault.hiddenGems.title')}
           </h2>
           <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
             {t('vault.hiddenGems.description')}
@@ -104,8 +102,7 @@ export const Vault = () => {
           <div className="flex items-center justify-between mb-3 sm:mb-4">
             <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2">
               <Users className="h-5 w-5 text-purple-400" />
-              <span className="hidden xs:inline">Collective Memory</span>
-              <span className="xs:hidden">Mysteries</span>
+              {t('mystery.collectiveMemory')}
             </h2>
             <Button
               variant="ghost"
@@ -113,12 +110,12 @@ export const Vault = () => {
               onClick={() => navigate('/mysteries')}
               className="text-xs gap-1 text-purple-400 hover:text-purple-300"
             >
-              Explore
+              {t('vault.mysteries.explore')}
               <ArrowRight className="h-3 w-3" />
             </Button>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
-            Help identify movies from memories and earn detective points
+            {t('vault.mysteries.description')}
           </p>
           <RecentMysteries />
         </Card>
@@ -127,8 +124,7 @@ export const Vault = () => {
         <Card className="neural-card p-3 sm:p-6 mb-3 sm:mb-4">
           <h2 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4">
             <span className="text-lg sm:text-xl">🔍</span>
-            <span className="hidden xs:inline">Top Detectives</span>
-            <span className="xs:hidden">Detectives</span>
+            {t('mystery.topDetectives')}
           </h2>
           <DetectiveLeaderboard />
         </Card>
