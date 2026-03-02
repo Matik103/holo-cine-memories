@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { HelpCircle, Loader2, LogIn, AlertCircle } from 'lucide-react';
 import { scrollInputIntoView } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { sanitizeInput, checkRateLimit } from '@/lib/sanitize';
 
 interface CreateMysteryDialogProps {
   trigger?: ReactNode;
@@ -64,13 +65,27 @@ export function CreateMysteryDialog({
   };
 
   const handleSubmit = async () => {
-    const error = validateDescription(description);
+    // Rate limiting
+    if (!checkRateLimit('create-mystery', 5, 300000)) {
+      toast({
+        title: t('toast.error'),
+        description: t('mystery.tooManySubmissions'),
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Sanitize inputs
+    const sanitizedDescription = sanitizeInput(description);
+    const sanitizedClues = sanitizeInput(clues);
+
+    const error = validateDescription(sanitizedDescription);
     if (error) {
       setValidationError(error);
       return;
     }
 
-    if (clues.trim().length > MAX_CLUES_LENGTH) {
+    if (sanitizedClues.length > MAX_CLUES_LENGTH) {
       setValidationError(t('mystery.cluesMaxChars', { max: MAX_CLUES_LENGTH }));
       return;
     }
@@ -78,8 +93,8 @@ export function CreateMysteryDialog({
     setValidationError(null);
 
     const result = await createMystery(
-      description,
-      clues || undefined,
+      sanitizedDescription,
+      sanitizedClues || undefined,
       originalSearchQuery,
       aiSuggestions
     );

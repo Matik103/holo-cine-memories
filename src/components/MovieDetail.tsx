@@ -106,7 +106,6 @@ export const MovieDetail = () => {
           setTranslatedPlot(translated);
         }
       } catch (error) {
-        console.warn('Failed to translate plot:', error);
         if (mounted) {
           setTranslatedPlot(movieDetails.plot);
         }
@@ -138,7 +137,6 @@ export const MovieDetail = () => {
           setTranslatedGenre(translated);
         }
       } catch (error) {
-        console.warn('Failed to translate genre:', error);
         if (mounted) {
           setTranslatedGenre(movieDetails.genre);
         }
@@ -181,7 +179,6 @@ export const MovieDetail = () => {
           }
         }
       } catch (error) {
-        console.warn('Failed to translate runtime:', error);
         if (mounted) {
           setTranslatedRuntime(movieDetails.runtime);
         }
@@ -225,7 +222,6 @@ export const MovieDetail = () => {
           });
         }
       } catch (error) {
-        console.warn('Failed to translate insights:', error);
         if (mounted) {
           setTranslatedInsights(insights);
         }
@@ -251,8 +247,6 @@ export const MovieDetail = () => {
       const title = titleMatch ? titleMatch[1] : movieTitle;
       const year = titleMatch ? titleMatch[2] : undefined;
 
-      console.log('Fetching data for:', title, year);
-
       // PRIORITY 1: Fetch movie details first - this is the critical path
       const detailsResponse = await supabase.functions.invoke('movie-details', {
         body: { movieTitle: title, movieYear: year }
@@ -277,7 +271,7 @@ export const MovieDetail = () => {
             setTrailer(trailerResponse.data.trailer);
           }
         } catch (error) {
-          console.warn('Error loading trailer:', error);
+          // Error loading trailer - silently continue
         } finally {
           setTrailerLoading(false);
         }
@@ -298,7 +292,6 @@ export const MovieDetail = () => {
           }
           setStreamingOptions(withAmazonPrime(options));
         } catch (error) {
-          console.warn('Error loading streaming:', error);
           setStreamingOptions(withAmazonPrime([]));
         } finally {
           setStreamingLoading(false);
@@ -318,7 +311,7 @@ export const MovieDetail = () => {
             setInsights(insightsResponse.data.insights);
           }
         } catch (error) {
-          console.warn('Error loading insights:', error);
+          // Error loading insights - silently continue
         } finally {
           setInsightsLoading(false);
         }
@@ -328,7 +321,6 @@ export const MovieDetail = () => {
       Promise.all([fetchTrailer(), fetchStreaming(), fetchInsights()]);
 
     } catch (error) {
-      console.error('Error fetching movie data:', error);
       toast({
         title: t('toast.error'),
         description: t('toast.errorLoadingDetails'),

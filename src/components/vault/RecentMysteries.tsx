@@ -51,7 +51,6 @@ export function RecentMysteries() {
           setIsLoading(false);
         }
       } catch (err) {
-        console.error('Error fetching mysteries:', err);
         if (mounted.current) setIsLoading(false);
       }
     };

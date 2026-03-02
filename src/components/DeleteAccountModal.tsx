@@ -55,7 +55,6 @@ export const DeleteAccountModal = ({ isOpen, onClose, onSuccess, user }: DeleteA
         .eq('user_id', user.id);
 
       if (profileError || preferencesError || searchesError || favoritesError || analyticsError) {
-        console.error('Error deleting user data:', { profileError, preferencesError, searchesError, favoritesError, analyticsError });
         toast({
           title: "Error",
           description: "Failed to delete some account data. Please try again.",
@@ -70,10 +69,8 @@ export const DeleteAccountModal = ({ isOpen, onClose, onSuccess, user }: DeleteA
       });
       
       if (functionError) {
-        console.error('Error calling delete function:', functionError);
         // If function fails, we'll still proceed with data deletion and sign out
         // The user will be effectively disabled even if auth deletion fails
-        console.log('Proceeding with data deletion only - auth deletion will be handled separately');
       }
 
       // Sign out the user
@@ -87,7 +84,6 @@ export const DeleteAccountModal = ({ isOpen, onClose, onSuccess, user }: DeleteA
       onSuccess();
       
     } catch (error) {
-      console.error('Error deleting account:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",

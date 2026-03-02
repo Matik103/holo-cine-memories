@@ -134,7 +134,6 @@ class TranslationService {
       );
 
       if (!response.ok) {
-        console.warn('Translation API error:', response.status);
         return text;
       }
 
@@ -148,8 +147,7 @@ class TranslationService {
       }
 
       return text;
-    } catch (error) {
-      console.warn('Translation failed:', error);
+    } catch {
       return text;
     }
   }

@@ -10,6 +10,5 @@ initSupabase()
     createRoot(document.getElementById("root")!).render(<App />);
   })
   .catch((e) => {
-    console.error("Supabase init failed:", e);
     document.getElementById("root")!.innerHTML = `<div style="padding:2rem;font-family:sans-serif;text-align:center;">Failed to load config. Check console.</div>`;
   });

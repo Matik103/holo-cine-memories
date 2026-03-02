@@ -36,7 +36,6 @@ export function useVaultStats() {
       setError(null);
     } catch (err) {
       setError('Failed to load vault stats');
-      console.error('Error fetching vault stats:', err);
     } finally {
       setIsLoading(false);
     }
@@ -125,11 +124,8 @@ export function useVaultHiddenGems() {
           setIsLoading(false);
         }
       } catch (err) {
-        console.error('Error fetching hidden gems:', err);
-        // Retry on failure (handles race condition with auth)
         if (retryCount < maxRetries && mounted) {
           retryCount++;
-          console.log(`Retrying hidden gems fetch (attempt ${retryCount + 1})...`);
           setTimeout(fetchGems, 1000 * retryCount);
         } else if (mounted) {
           setIsLoading(false);
@@ -168,7 +164,6 @@ export function useVaultPredictions() {
       const data = await vaultService.getActivePredictions(user?.id);
       setPredictions(data);
     } catch (err) {
-      console.error('Error fetching predictions:', err);
     } finally {
       setIsLoading(false);
     }
@@ -203,7 +198,6 @@ export function useVaultChampions() {
         const data = await vaultService.getChampions(5);
         setChampions(data);
       } catch (err) {
-        console.error('Error fetching champions:', err);
       } finally {
         setIsLoading(false);
       }
@@ -266,7 +260,6 @@ export function useVaultBadges() {
         const data = await vaultService.getAllBadges();
         setBadges(data);
       } catch (err) {
-        console.error('Error fetching badges:', err);
       } finally {
         setIsLoading(false);
       }

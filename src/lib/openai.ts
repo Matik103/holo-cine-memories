@@ -26,22 +26,17 @@ export interface Movie {
 let openai: any = null;
 
 export const initializeOpenAI = (apiKey: string) => {
-  // We'll use Supabase edge functions instead of direct OpenAI calls
-  console.log('OpenAI API key configured for edge functions');
 };
 
 export const identifyMovie = async (query: string): Promise<Movie | null> => {
   return fetchWithRetry(
     async () => {
-      console.log('Calling movie-identify function with query:', query);
       const { data, error } = await supabase.functions.invoke('movie-identify', {
         body: { query }
       });
       if (error) {
-        console.error('Supabase function error:', error);
         throw error;
       }
-      console.log('Movie-identify response:', data);
       return data;
     },
     { retries: 1, delay: 400 }
@@ -62,7 +57,6 @@ export const explainMovie = async (movieTitle: string) => {
     });
     return await withTimeout(p, FAST_TIMEOUT_MS);
   } catch (error) {
-    console.error('Error explaining movie:', error);
     return fallbackExplanation;
   }
 };
@@ -79,7 +73,6 @@ export const getStreamingOptions = async (movieTitle: string) => {
     });
     return await withTimeout(p, FAST_TIMEOUT_MS);
   } catch (error) {
-    console.error('Error getting streaming options:', error);
     return fallbackStreamingOptions(movieTitle);
   }
 };
@@ -95,7 +88,6 @@ export const findSimilarMovies = async (movie: Movie): Promise<Movie[]> => {
     const result = await withTimeout(p, FAST_TIMEOUT_MS);
     return result ?? getFallbackSimilarMovies(movie);
   } catch (error) {
-    console.error('Error finding similar movies:', error);
     return getFallbackSimilarMovies(movie);
   }
 };

@@ -11,6 +11,7 @@ import { User, Brain, Film, Heart, ArrowLeft, LogOut, RefreshCw, Settings, Check
 import { scrollInputIntoView } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { translationService } from "@/services/translationService";
+import { sanitizeInput } from "@/lib/sanitize";
 
 interface MovieSearch {
   id: string;
@@ -113,8 +114,7 @@ export const Profile = () => {
         setHasMoreFavorites(favoritesRes.data.length === PAGE_SIZE);
       }
 
-    } catch (error) {
-      console.error('Error loading profile:', error);
+    } catch {
       toast({
         title: t('common.error'),
         description: t('profile.errorLoadingData'),
@@ -288,8 +288,7 @@ export const Profile = () => {
           setHasMoreFavorites(favoritesData.length === PAGE_SIZE);
         }
 
-      } catch (error) {
-        console.error('Error loading profile:', error);
+      } catch {
         toast({
           title: t('common.error'),
           description: t('profile.errorLoadingData'),
@@ -306,7 +305,6 @@ export const Profile = () => {
   // Listen for focus events to refresh data when user comes back to the profile
   useEffect(() => {
     const handleFocus = () => {
-      console.log('Profile page focused, refreshing data...');
       refreshProfile();
     };
     
@@ -406,16 +404,20 @@ export const Profile = () => {
   const updateFavoriteReview = async (id: string, review: string) => {
     if (!user) return;
     setUpdatingFavoriteId(id);
+    
+    // Sanitize the review input
+    const sanitizedReview = sanitizeInput(review);
+    
     try {
       const { error } = await supabase
         .from("favorites")
-        .update({ review: review.trim() || null, review_updated_at: new Date().toISOString() })
+        .update({ review: sanitizedReview || null, review_updated_at: new Date().toISOString() })
         .eq("id", id)
         .eq("user_id", user.id);
       if (error) throw error;
       setFavorites((prev) =>
         prev.map((f) =>
-          f.id === id ? { ...f, review: review.trim() || null, review_updated_at: new Date().toISOString() } : f
+          f.id === id ? { ...f, review: sanitizedReview || null, review_updated_at: new Date().toISOString() } : f
         )
       );
       setEditingReviewId(null);
@@ -448,7 +450,6 @@ export const Profile = () => {
       });
 
       if (error) {
-        console.error('Error updating CineDNA:', error);
         toast({
           title: t('common.error'),
           description: t('profile.errorUpdatingCineDNA'),
@@ -471,8 +472,7 @@ export const Profile = () => {
           description: t('profile.cineDNARefreshed'),
         });
       }
-    } catch (error) {
-      console.error('Error refreshing CineDNA:', error);
+    } catch {
       toast({
         title: t('common.error'),
         description: t('profile.errorRefreshingCineDNA'),

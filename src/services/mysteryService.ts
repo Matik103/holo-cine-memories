@@ -136,7 +136,6 @@ class MysteryService {
       const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching mysteries:', error);
         return { data: null, error: { code: 'FETCH_ERROR', message: error.message } };
       }
 
@@ -201,15 +200,14 @@ class MysteryService {
         if (error.code === 'PGRST116') {
           return { data: null, error: { code: 'NOT_FOUND', message: 'Mystery not found' } };
         }
-        console.error('Error fetching mystery:', error);
         return { data: null, error: { code: 'FETCH_ERROR', message: error.message } };
       }
 
       // Atomically increment view count using database function
       try {
         await supabase.rpc('increment_mystery_views', { p_mystery_id: mysteryId });
-      } catch (err) {
-        console.error('Failed to increment view count:', err);
+      } catch {
+        // View count increment failed silently
       }
 
       // Get poster name
@@ -243,8 +241,7 @@ class MysteryService {
       };
 
       return { data: mystery, error: null };
-    } catch (err) {
-      console.error('Unexpected error fetching mystery:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }
@@ -297,15 +294,14 @@ class MysteryService {
         .single();
 
       if (error) {
-        console.error('Error creating mystery:', error);
         return { data: null, error: { code: 'CREATE_ERROR', message: error.message } };
       }
 
       // Increment mysteries_posted using database function
       try {
         await supabase.rpc('increment_mysteries_posted', { p_user_id: userId });
-      } catch (err) {
-        console.error('Failed to increment mysteries_posted:', err);
+      } catch {
+        // mysteries_posted increment failed silently
       }
 
       // Add to activity feed
@@ -337,8 +333,7 @@ class MysteryService {
       };
 
       return { data: mystery, error: null };
-    } catch (err) {
-      console.error('Unexpected error creating mystery:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }
@@ -356,7 +351,6 @@ class MysteryService {
         .order('upvotes', { ascending: false });
 
       if (error) {
-        console.error('Error fetching attempts:', error);
         return { data: null, error: { code: 'FETCH_ERROR', message: error.message } };
       }
 
@@ -387,8 +381,7 @@ class MysteryService {
       }));
 
       return { data: attempts, error: null };
-    } catch (err) {
-      console.error('Unexpected error fetching attempts:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }
@@ -460,15 +453,14 @@ class MysteryService {
         if (error.code === '23505') { // Unique violation
           return { data: null, error: { code: 'ALREADY_ATTEMPTED', message: 'You have already submitted a solution for this mystery' } };
         }
-        console.error('Error submitting attempt:', error);
         return { data: null, error: { code: 'SUBMIT_ERROR', message: error.message } };
       }
 
       // Atomically increment attempt count
       try {
         await supabase.rpc('increment_mystery_attempts', { p_mystery_id: mysteryId });
-      } catch (err) {
-        console.error('Failed to increment attempt count:', err);
+      } catch {
+        // Attempt count increment failed silently
       }
 
       const attempt: MysteryAttempt = {
@@ -480,8 +472,7 @@ class MysteryService {
       };
 
       return { data: attempt, error: null };
-    } catch (err) {
-      console.error('Unexpected error submitting attempt:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }
@@ -585,8 +576,7 @@ class MysteryService {
       }
 
       return { data: true, error: null };
-    } catch (err) {
-      console.error('Unexpected error voting:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }
@@ -635,7 +625,6 @@ class MysteryService {
       });
 
       if (error) {
-        console.error('Error accepting solution:', error);
         return { data: null, error: { code: 'ACCEPT_ERROR', message: error.message } };
       }
 
@@ -644,8 +633,7 @@ class MysteryService {
       }
 
       return { data: true, error: null };
-    } catch (err) {
-      console.error('Unexpected error accepting solution:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }
@@ -663,7 +651,6 @@ class MysteryService {
       });
 
       if (error) {
-        console.error('Error closing mystery:', error);
         return { data: null, error: { code: 'CLOSE_ERROR', message: error.message } };
       }
 
@@ -672,8 +659,7 @@ class MysteryService {
       }
 
       return { data: true, error: null };
-    } catch (err) {
-      console.error('Unexpected error closing mystery:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }
@@ -717,8 +703,7 @@ class MysteryService {
         },
         error: null
       };
-    } catch (err) {
-      console.error('Unexpected error fetching detective stats:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }
@@ -828,8 +813,7 @@ class MysteryService {
       };
 
       return { data: mystery, error: null };
-    } catch (err) {
-      console.error('Error getting featured mystery:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'Failed to get featured mystery' } };
     }
   }
@@ -914,7 +898,6 @@ class MysteryService {
         .single();
 
       if (error) {
-        console.error('Error updating mystery:', error);
         return { data: null, error: { code: 'UPDATE_ERROR', message: error.message } };
       }
 
@@ -933,8 +916,7 @@ class MysteryService {
       };
 
       return { data: mystery, error: null };
-    } catch (err) {
-      console.error('Unexpected error updating mystery:', err);
+    } catch {
       return { data: null, error: { code: 'UNEXPECTED_ERROR', message: 'An unexpected error occurred' } };
     }
   }

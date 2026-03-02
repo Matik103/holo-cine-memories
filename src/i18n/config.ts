@@ -23,7 +23,7 @@ const SUPPORTED_LANGUAGES = [
 export { SUPPORTED_LANGUAGES };
 
 const TRANSLATION_CACHE_PREFIX = 'cinemind_i18n_';
-const TRANSLATION_CACHE_VERSION = 'v22';
+const TRANSLATION_CACHE_VERSION = 'v23';
 
 function getCachedTranslations(lang: string): Record<string, string> | null {
   try {
@@ -88,8 +88,8 @@ export async function loadLanguage(lang: string): Promise<void> {
     translatedResources[lang] = { translation: translated };
     i18n.addResourceBundle(lang, 'translation', translated, true, true);
     setCachedTranslations(lang, translated);
-  } catch (error) {
-    console.warn(`Failed to load language ${lang}:`, error);
+  } catch {
+    // Language loading failed, fallback to English
   }
 }
 

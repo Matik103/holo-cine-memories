@@ -11,6 +11,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { supabase } from "@/integrations/supabase/client";
 import { Brain, Mail, Lock, User, ArrowLeft } from "lucide-react";
 import { scrollInputIntoView } from "@/lib/utils";
+import { sanitizeEmail, sanitizeInput, validatePassword, checkRateLimit } from "@/lib/sanitize";
 
 export const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -175,11 +176,25 @@ export const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting
+    if (!checkRateLimit('signin', 5, 60000)) {
+      toast({
+        title: t('auth.tooManyAttempts'),
+        description: t('auth.tooManyAttemptsDesc'),
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
+
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email);
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: sanitizedEmail,
         password,
       });
 
@@ -233,6 +248,17 @@ export const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Rate limiting
+    if (!checkRateLimit('signup', 3, 60000)) {
+      toast({
+        title: t('auth.tooManyAttempts'),
+        description: t('auth.tooManyAttemptsDesc'),
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setLoading(true);
 
     // Validate privacy policy agreement
@@ -246,20 +272,25 @@ export const Auth = () => {
       return;
     }
 
-    // Validate password length
-    if (password.length < 6) {
+    // Validate password
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
       toast({
         title: t('auth.invalidPassword'),
-        description: t('auth.invalidPasswordDesc'),
+        description: passwordValidation.error || t('auth.invalidPasswordDesc'),
         variant: "destructive",
       });
       setLoading(false);
       return;
     }
 
+    // Sanitize inputs
+    const sanitizedEmail = sanitizeEmail(email);
+    const sanitizedFullName = sanitizeInput(fullName);
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(sanitizedEmail)) {
       toast({
         title: t('auth.invalidEmail'),
         description: t('auth.invalidEmailDesc'),
@@ -271,11 +302,11 @@ export const Auth = () => {
 
     try {
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: sanitizedEmail,
         password,
         options: {
           data: {
-            full_name: fullName,
+            full_name: sanitizedFullName,
           },
           emailRedirectTo: `${window.location.origin}/auth`,
         },

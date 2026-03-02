@@ -17,9 +17,7 @@ class NativeSensorService {
     
     try {
       await this.requestPermissions();
-      console.log('Native sensors initialized');
     } catch (error) {
-      console.error('Failed to initialize native sensors:', error);
     }
   }
 
@@ -35,7 +33,6 @@ class NativeSensorService {
       
       return { granted: true };
     } catch (error) {
-      console.error('Permission request failed:', error);
       return { granted: false };
     }
   }
@@ -52,7 +49,6 @@ class NativeSensorService {
 
       await Haptics.impact({ style: impactStyle });
     } catch (error) {
-      console.error('Haptic feedback failed:', error);
     }
   }
 
@@ -63,7 +59,6 @@ class NativeSensorService {
       const info = await Device.getInfo();
       return info;
     } catch (error) {
-      console.error('Failed to get device info:', error);
       return null;
     }
   }
@@ -75,7 +70,6 @@ class NativeSensorService {
       const status = await Network.getStatus();
       return status;
     } catch (error) {
-      console.error('Failed to get network status:', error);
       return null;
     }
   }
@@ -95,7 +89,6 @@ class NativeSensorService {
         ]
       });
     } catch (error) {
-      console.error('Failed to show notification:', error);
     }
   }
 
@@ -106,7 +99,6 @@ class NativeSensorService {
       const state = await App.getState();
       return state.isActive ? 'active' : 'background';
     } catch (error) {
-      console.error('Failed to check app state:', error);
       return 'unknown';
     }
   }

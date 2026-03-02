@@ -99,7 +99,6 @@ export const Discover = () => {
         setFavoriteIds(favoriteSet);
       }
     } catch (error) {
-      console.error('Error loading favorites:', error);
     }
   };
 
@@ -138,7 +137,6 @@ export const Discover = () => {
         description: t('discover.addedToFavoritesDesc', { title: rec.title }),
       });
     } catch (error) {
-      console.error('Error adding to favorites:', error);
       toast({
         title: t('common.error'),
         description: t('discover.errorAddFavorite'),
@@ -176,7 +174,6 @@ export const Discover = () => {
         description: t('discover.removedFromFavoritesDesc', { title: rec.title }),
       });
     } catch (error) {
-      console.error('Error removing from favorites:', error);
       toast({
         title: t('common.error'),
         description: t('discover.errorRemoveFavorite'),
@@ -228,7 +225,6 @@ export const Discover = () => {
         });
       }
     } catch (error) {
-      console.error('Error getting recommendations:', error);
       toast({
         title: t('common.error'),
         description: t('discover.errorGetRecommendations'),

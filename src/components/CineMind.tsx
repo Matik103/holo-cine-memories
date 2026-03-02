@@ -87,8 +87,6 @@ export const CineMind = () => {
                                hashParams.has('access_token');
         
         if (isPasswordReset) {
-          // Don't initialize app for password reset - let Auth component handle it
-          console.log('Password reset detected, not initializing app');
           return;
         }
         
@@ -121,8 +119,6 @@ export const CineMind = () => {
                                hashParams.has('access_token');
         
         if (isPasswordReset) {
-          // Don't initialize app for password reset - let Auth component handle it
-          console.log('Password reset detected, not initializing app');
           return;
         }
         
@@ -147,7 +143,6 @@ export const CineMind = () => {
   // Handle search query from navigation state (e.g., from Discover Movies)
   useEffect(() => {
     if (location.state?.searchQuery) {
-      console.log('Received search query from navigation:', location.state.searchQuery);
       handleSearch(location.state.searchQuery);
       // Clear the state to prevent re-triggering
       navigate(location.pathname, { replace: true, state: {} });
@@ -199,9 +194,7 @@ export const CineMind = () => {
     } : null;
     
     try {
-      console.log('Starting search for:', query);
       const rawMovie = await identifyMovie(query);
-      console.log('Raw movie response:', rawMovie);
       
       const searchDuration = Date.now() - searchStartTime;
       if (analyticsData) {
@@ -223,10 +216,6 @@ export const CineMind = () => {
           cast: rawMovie.cast || [],
           imdbRating: rawMovie.imdbRating || undefined
         };
-        
-        console.log('Transformed movie data:', movie);
-        console.log('Poster URL:', movie.poster);
-        console.log('Trailer URL:', movie.trailer);
         
         // Update analytics data with successful result
         if (analyticsData) {
@@ -258,8 +247,7 @@ export const CineMind = () => {
                   movie_poster_url: movie.poster,
                   movie_plot: movie.plot
                 });
-              if (searchError) console.error('Error saving search:', searchError);
-              else {
+              if (!searchError) {
                 localStorage.setItem('refreshProfile', 'true');
                 
                 // Record search in vault
@@ -280,20 +268,17 @@ export const CineMind = () => {
                     });
                   }
                 } catch (vaultError) {
-                  console.error('Vault integration error:', vaultError);
+                  // Vault integration error - silently continue
                 }
                 
-                const { error: cineDNAError } = await supabase.functions.invoke('update-cinedna', { body: { userId: user.id } });
-                if (cineDNAError) console.error('Error updating CineDNA:', cineDNAError);
+                await supabase.functions.invoke('update-cinedna', { body: { userId: user.id } });
               }
             } catch (e) {
-              console.error('Failed to save search/CineDNA:', e);
+              // Failed to save search/CineDNA - silently continue
             }
           })();
         }
       } else {
-        console.log('No movie found or low confidence:', rawMovie);
-        
         // Update analytics for unsuccessful search
         if (analyticsData) {
           analyticsData.success = false;
@@ -313,8 +298,6 @@ export const CineMind = () => {
         });
       }
     } catch (error) {
-      console.error('Search error:', error);
-      
       // Update analytics for error case
       if (analyticsData) {
         analyticsData.success = false;
@@ -340,13 +323,8 @@ export const CineMind = () => {
             .from('user_query_analytics')
             .insert(analyticsData);
           
-          if (analyticsError) {
-            console.error('Error saving analytics:', analyticsError);
-          } else {
-            console.log('Analytics data saved successfully');
-          }
         } catch (error) {
-          console.error('Failed to save analytics:', error);
+          // Failed to save analytics - silently continue
         }
       }
       
@@ -379,8 +357,6 @@ export const CineMind = () => {
         });
       }
     } catch (error) {
-      console.error('Explanation error:', error);
-      
       let errorMessage = "Failed to explain movie. Please try again.";
       if (error instanceof Error) {
         if (error.message.includes('CORS')) {
@@ -494,8 +470,6 @@ export const CineMind = () => {
         });
       }
     } catch (error) {
-      console.error('Similar movies error:', error);
-      
       let errorMessage = t('errors.generic');
       if (error instanceof Error) {
         if (error.message.includes('CORS')) {

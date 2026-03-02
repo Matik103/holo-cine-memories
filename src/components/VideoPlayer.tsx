@@ -47,8 +47,6 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
   // Extract YouTube video ID from URL with better error handling
   useEffect(() => {
     if (videoUrl && isOpen) {
-      console.log('Processing video URL:', videoUrl);
-      
       let extractedVideoId = null;
       
       // Handle different YouTube URL formats
@@ -70,13 +68,10 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
         extractedVideoId = match ? match[1] : null;
       }
       
-      console.log('Extracted video ID:', extractedVideoId);
-      
       if (extractedVideoId) {
         setVideoId(extractedVideoId);
         setHasError(false);
       } else {
-        console.error('Failed to extract video ID from URL:', videoUrl);
         setVideoId(null);
         setHasError(true);
       }
@@ -96,8 +91,6 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
         setShowControls(false);
       }, 4000);
       setControlsTimeout(timeout);
-      
-      console.log('VideoPlayer opened:', { videoUrl, title, isOpen });
     }
     
     return () => {
@@ -328,8 +321,7 @@ export const VideoPlayer = ({ isOpen, onClose, videoUrl, title }: VideoPlayerPro
               onLoad={() => {
                 setIsLoading(false);
               }}
-              onError={(e) => {
-                console.error('YouTube iframe failed to load:', e);
+              onError={() => {
                 setHasError(true);
                 setIsLoading(false);
               }}

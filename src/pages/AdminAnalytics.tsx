@@ -83,7 +83,6 @@ export const AdminAnalytics = () => {
       setRecentQueries(queries as QueryData[] || []);
 
     } catch (error) {
-      console.error('Error loading analytics:', error);
       toast({
         title: "Error Loading Analytics",
         description: "Failed to load analytics data. Make sure you have admin access.",

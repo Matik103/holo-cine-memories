@@ -122,7 +122,6 @@ export function MysteryNotifications() {
 
       localStorage.setItem(MYSTERY_CHECK_KEY, now.toString());
     } catch (error) {
-      console.error('Error checking mystery updates:', error);
     }
   }, [toast, navigate]);
 

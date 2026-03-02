@@ -47,8 +47,7 @@ async function searchMovieId(title: string, year: string): Promise<number | null
     }
     
     return null;
-  } catch (error) {
-    console.warn('TMDB search failed:', error);
+  } catch {
     return null;
   }
 }
@@ -72,8 +71,7 @@ export async function getLocalizedMovie(
     
     const data: TMDBMovie = await response.json();
     return data;
-  } catch (error) {
-    console.warn('TMDB movie details failed:', error);
+  } catch {
     return null;
   }
 }

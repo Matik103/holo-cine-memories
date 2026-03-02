@@ -45,16 +45,14 @@ const MobileAppInit = () => {
           showListenerDid.remove();
         };
 
-        App.addListener('appStateChange', ({ isActive }) => {
-          console.log('App state changed. Is active?', isActive);
+        App.addListener('appStateChange', () => {
+          // App state changed
         });
-        App.addListener('appUrlOpen', (event) => {
-          console.log('App opened with URL:', event.url);
+        App.addListener('appUrlOpen', () => {
+          // App opened with URL
         });
-
-        console.log('Mobile app initialized successfully');
       } catch (error) {
-        console.error('Mobile app initialization failed:', error);
+        // Mobile app initialization failed - silently continue
       }
     };
 

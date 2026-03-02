@@ -130,7 +130,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
                 newTranslatedDescriptions.set(movie.id, translated);
               }
             } catch (error) {
-              console.warn(`Failed to translate description for ${movie.title}:`, error);
+              // Failed to translate description - silently continue
             }
           }
         })
@@ -178,11 +178,7 @@ export const LandingPage = ({ onStart }: { onStart: () => void }) => {
         loading="lazy"
         decoding="async"
         onError={() => {
-          console.warn(`Failed to load poster for ${movie.title}: ${movie.poster}`);
           setImageError(true);
-        }}
-        onLoad={() => {
-          console.log(`✓ Poster loaded for ${movie.title}`);
         }}
       />
     );

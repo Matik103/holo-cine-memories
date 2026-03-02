@@ -19,7 +19,6 @@ export const fetchWithRetry = async <T>(
       if (i === retries - 1) throw error;
 
       const waitTime = delay * Math.pow(backoff, i);
-      console.warn(`Retry ${i + 1}/${retries} after ${waitTime}ms`, error);
       await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
   }

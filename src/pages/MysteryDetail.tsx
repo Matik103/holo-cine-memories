@@ -42,6 +42,7 @@ import { ShareMysteryMenu } from '@/components/mystery';
 import { scrollInputIntoView } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
 import { translationService } from '@/services/translationService';
+import { sanitizeInput, checkRateLimit } from '@/lib/sanitize';
 
 export function MysteryDetail() {
   const { id } = useParams<{ id: string }>();
@@ -143,7 +144,22 @@ export function MysteryDetail() {
   const editCluesRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmitAttempt = async () => {
-    if (!movieTitle.trim()) {
+    // Rate limiting
+    if (!checkRateLimit(`submit-attempt-${id}`, 10, 300000)) {
+      toast({
+        title: t('toast.error'),
+        description: t('mystery.tooManySubmissions'),
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Sanitize inputs
+    const sanitizedTitle = sanitizeInput(movieTitle);
+    const sanitizedYear = sanitizeInput(movieYear);
+    const sanitizedExplanation = sanitizeInput(explanation);
+
+    if (!sanitizedTitle) {
       toast({
         title: t('mystery.movieTitleRequired'),
         description: t('mystery.movieTitleRequiredDesc'),
@@ -152,8 +168,8 @@ export function MysteryDetail() {
       return;
     }
 
-    const year = movieYear ? parseInt(movieYear, 10) : undefined;
-    if (movieYear && (isNaN(year!) || year! < 1888 || year! > new Date().getFullYear() + 5)) {
+    const year = sanitizedYear ? parseInt(sanitizedYear, 10) : undefined;
+    if (sanitizedYear && (isNaN(year!) || year! < 1888 || year! > new Date().getFullYear() + 5)) {
       toast({
         title: t('mystery.invalidYear'),
         description: t('mystery.invalidYearDesc'),
@@ -164,11 +180,11 @@ export function MysteryDetail() {
 
     setIsSubmitting(true);
     const result = await submitAttempt(
-      movieTitle.trim(),
+      sanitizedTitle,
       year,
       undefined,
       undefined,
-      explanation.trim() || undefined
+      sanitizedExplanation || undefined
     );
     setIsSubmitting(false);
 

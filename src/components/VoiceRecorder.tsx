@@ -56,7 +56,6 @@ export const VoiceRecorder = ({ onTranscription, disabled }: VoiceRecorderProps)
       });
 
     } catch (error) {
-      console.error('Error starting recording:', error);
       toast({
         title: "Microphone Access Denied",
         description: "Please allow microphone access to use voice search.",
@@ -133,8 +132,6 @@ export const VoiceRecorder = ({ onTranscription, disabled }: VoiceRecorderProps)
 
       reader.readAsDataURL(audioBlob);
     } catch (error) {
-      console.error('Error processing audio:', error);
-      
       // Save analytics for processing error
       await saveVoiceAnalytics({
         query_text: '[PROCESSING_ERROR]',
@@ -175,14 +172,9 @@ export const VoiceRecorder = ({ onTranscription, disabled }: VoiceRecorderProps)
             user_agent: navigator.userAgent
           });
         
-        if (error) {
-          console.error('Error saving voice analytics:', error);
-        } else {
-          console.log('Voice analytics saved successfully');
-        }
       }
     } catch (error) {
-      console.error('Failed to save voice analytics:', error);
+      // Failed to save voice analytics - silently continue
     }
   };
 

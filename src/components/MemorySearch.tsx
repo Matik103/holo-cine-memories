@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Search, Sparkles } from "lucide-react";
 import { scrollInputIntoView } from "@/lib/utils";
 import { useTranslation } from "@/hooks/useTranslation";
+import { sanitizeSearchQuery } from "@/lib/sanitize";
 
 interface MemorySearchProps {
   onSearch: (query: string) => void;
@@ -21,8 +22,9 @@ export const MemorySearch = ({ onSearch, isLoading }: MemorySearchProps) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim()) {
-      onSearch(query.trim());
+    const sanitizedQuery = sanitizeSearchQuery(query);
+    if (sanitizedQuery) {
+      onSearch(sanitizedQuery);
     }
   };
 

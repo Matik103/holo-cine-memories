@@ -48,7 +48,6 @@ export const MovieCard = ({ movie, onExplainMeaning, onFindWhereToWatch, onFindS
           setTranslatedPlot(translated);
         }
       } catch (error) {
-        console.warn('Failed to translate plot:', error);
         if (mounted) {
           setTranslatedPlot(movie.plot);
         }
