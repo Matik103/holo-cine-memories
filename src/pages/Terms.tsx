@@ -1,9 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export const Terms = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = i18n.language?.split('-')[0] || 'en';
 
   return (
     <div className="min-h-screen bg-background pt-safe-top">
@@ -18,58 +21,52 @@ export const Terms = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold">Terms of Service</h1>
+          <h1 className="text-2xl font-bold">{t('terms.title')}</h1>
         </div>
 
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <p className="text-sm text-muted-foreground mb-6">
-            Last updated: {new Date().toLocaleDateString()}
+            {t('terms.lastUpdated')}: {new Date().toLocaleDateString(currentLanguage)}
           </p>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Acceptance of Terms</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('terms.acceptance.title')}</h2>
             <p className="text-muted-foreground">
-              By accessing and using CineMind, you accept and agree to be bound by the terms 
-              and provision of this agreement. If you do not agree to abide by the above, 
-              please do not use this service.
+              {t('terms.acceptance.description')}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Use License</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('terms.license.title')}</h2>
             <p className="text-muted-foreground mb-4">
-              Permission is granted to temporarily use CineMind for personal, non-commercial 
-              transitory viewing only. This is the grant of a license, not a transfer of title, and under this license you may not:
+              {t('terms.license.description')}
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Modify or copy the materials</li>
-              <li>Use the materials for any commercial purpose or for any public display</li>
-              <li>Attempt to reverse engineer any software contained in CineMind</li>
-              <li>Remove any copyright or other proprietary notations from the materials</li>
+              <li>{t('terms.license.item1')}</li>
+              <li>{t('terms.license.item2')}</li>
+              <li>{t('terms.license.item3')}</li>
+              <li>{t('terms.license.item4')}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">User Accounts</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('terms.accounts.title')}</h2>
             <p className="text-muted-foreground">
-              You are responsible for safeguarding the password and for maintaining the 
-              confidentiality of your account. You agree not to disclose your password to any third party.
+              {t('terms.accounts.description')}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Limitation of Liability</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('terms.liability.title')}</h2>
             <p className="text-muted-foreground">
-              In no event shall CineMind or its suppliers be liable for any damages arising 
-              out of the use or inability to use the materials on CineMind, even if authorized 
-              representative has been notified orally or in writing of the possibility of such damage.
+              {t('terms.liability.description')}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('terms.contact.title')}</h2>
             <p className="text-muted-foreground">
-              If you have any questions about these Terms of Service, please contact us at:
+              {t('terms.contact.description')}
             </p>
             <p className="font-medium mt-2">ernst@cinemind.tech</p>
           </section>

@@ -1,9 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export const Privacy = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen bg-background pt-safe-top">
@@ -18,113 +20,113 @@ export const Privacy = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold">Privacy Policy</h1>
+          <h1 className="text-2xl font-bold">{t('privacy.title')}</h1>
         </div>
 
         <div className="prose prose-gray dark:prose-invert max-w-none">
           <p className="text-sm text-muted-foreground mb-6">
-            Last updated: September 27, 2025
+            {t('privacy.lastUpdated')}: September 27, 2025
           </p>
 
           <p className="text-muted-foreground mb-6">
-            CineMind ("we," "our," or "us") values your privacy. This Privacy Policy explains what information we collect, how we use it, and the choices you have when using our app.
+            {t('privacy.intro')}
           </p>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">1. Information We Collect</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.section1.title')}</h2>
             <p className="text-muted-foreground mb-4">
-              We collect the following types of information:
+              {t('privacy.section1.intro')}
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Account Information:</strong> email address, display name, and any profile information you choose to provide.</li>
-              <li><strong>Search & Preferences:</strong> movies you search for, save, or interact with to improve recommendations.</li>
-              <li><strong>Usage Data & Analytics:</strong> in-app activity, interactions, crash logs, and performance metrics.</li>
-              <li><strong>Device Information:</strong> device type, operating system, app version, and technical identifiers.</li>
+              <li><strong>{t('privacy.section1.accountInfo.label')}:</strong> {t('privacy.section1.accountInfo.description')}</li>
+              <li><strong>{t('privacy.section1.searchPrefs.label')}:</strong> {t('privacy.section1.searchPrefs.description')}</li>
+              <li><strong>{t('privacy.section1.usageData.label')}:</strong> {t('privacy.section1.usageData.description')}</li>
+              <li><strong>{t('privacy.section1.deviceInfo.label')}:</strong> {t('privacy.section1.deviceInfo.description')}</li>
             </ul>
             <p className="text-muted-foreground mt-4">
-              We do not collect sensitive personal information such as payment details, biometric data, or precise location.
+              {t('privacy.section1.noSensitiveData')}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">2. How We Use Your Information</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.section2.title')}</h2>
             <p className="text-muted-foreground mb-4">
-              We use your information to:
+              {t('privacy.section2.intro')}
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li>Provide personalized movie and TV recommendations.</li>
-              <li>Display posters, trailers, and "Where to Watch" information.</li>
-              <li>Improve AI-powered discovery features.</li>
-              <li>Respond to support requests and troubleshoot issues.</li>
-              <li>Protect against fraud, abuse, and security risks.</li>
+              <li>{t('privacy.section2.item1')}</li>
+              <li>{t('privacy.section2.item2')}</li>
+              <li>{t('privacy.section2.item3')}</li>
+              <li>{t('privacy.section2.item4')}</li>
+              <li>{t('privacy.section2.item5')}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">3. Data Sharing & Third-Party Services</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.section3.title')}</h2>
             <p className="text-muted-foreground mb-4">
-              We do not sell or rent your personal information. However, we may share limited data in the following cases:
+              {t('privacy.section3.intro')}
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Service Providers:</strong> We may use trusted third parties (e.g., analytics providers) to help us operate our app.</li>
-              <li><strong>Legal Requirements:</strong> We may disclose data if required by law or to protect our rights and users' safety.</li>
-              <li><strong>Third-Party Links:</strong> Our app may include links to external services such as Hulu, Apple TV, Vudu, or YouTube. These services may collect their own data. We are not responsible for their privacy practices, and we encourage you to review their privacy policies.</li>
+              <li><strong>{t('privacy.section3.serviceProviders.label')}:</strong> {t('privacy.section3.serviceProviders.description')}</li>
+              <li><strong>{t('privacy.section3.legal.label')}:</strong> {t('privacy.section3.legal.description')}</li>
+              <li><strong>{t('privacy.section3.thirdParty.label')}:</strong> {t('privacy.section3.thirdParty.description')}</li>
             </ul>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">4. YouTube API Services</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.section4.title')}</h2>
             <p className="text-muted-foreground mb-4">
-              CineMind uses the YouTube API Services to display trailers and video content. By using CineMind, you are also agreeing to the:
+              {t('privacy.section4.intro')}
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">YouTube Terms of Service</a></li>
-              <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Google Privacy Policy</a></li>
+              <li><a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">{t('privacy.section4.youtubeTerms')}</a></li>
+              <li><a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">{t('privacy.section4.googlePrivacy')}</a></li>
             </ul>
             <p className="text-muted-foreground mt-4">
-              You may revoke CineMind's access to your YouTube data at any time via your <a href="https://security.google.com/settings/security/permissions" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Google Security Settings</a>.
+              {t('privacy.section4.revokeAccess')} <a href="https://security.google.com/settings/security/permissions" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">{t('privacy.section4.googleSettings')}</a>.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">5. Posters & Media Sources</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.section5.title')}</h2>
             <p className="text-muted-foreground mb-4">
-              CineMind uses the OMDb API to display movie posters, descriptions, and metadata. All media elements are provided by OMDb and remain the property of their respective owners.
+              {t('privacy.section5.description')}
             </p>
             <p className="text-muted-foreground">
-              For more information about OMDb, please visit: <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">https://www.omdbapi.com</a>
+              {t('privacy.section5.moreInfo')} <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">https://www.omdbapi.com</a>
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">6. Advertising</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.section6.title')}</h2>
             <p className="text-muted-foreground mb-4">
-              We may show third-party advertisements on CineMind (e.g. via Google AdSense). These partners may use cookies and similar technologies to deliver and measure ads. We do not sell your personal information to advertisers. For more detail on how we use advertising and how you can control ad preferences, see our{" "}
-              <Link to="/advertising" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Advertising</Link> page. Google’s use of data is also described in the{" "}
-              <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Google Advertising policy</a>.
+              {t('privacy.section6.description')}{" "}
+              <Link to="/advertising" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">{t('privacy.section6.advertisingPage')}</Link> {t('privacy.section6.googleAds')}{" "}
+              <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">{t('privacy.section6.googleAdPolicy')}</a>.
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">7. Your Rights & Account Management</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.section7.title')}</h2>
             <p className="text-muted-foreground mb-4">
-              You have the right to control your personal information:
+              {t('privacy.section7.intro')}
             </p>
             <ul className="list-disc pl-6 text-muted-foreground space-y-2">
-              <li><strong>Account Deletion:</strong> You can delete your account and all associated data at any time through the Settings page in the app.</li>
-              <li><strong>Data Access:</strong> You can view and manage your data through your profile page.</li>
-              <li><strong>Data Correction:</strong> You can update your profile information at any time.</li>
-              <li><strong>Data Portability:</strong> You can export your data by contacting us directly.</li>
+              <li><strong>{t('privacy.section7.deletion.label')}:</strong> {t('privacy.section7.deletion.description')}</li>
+              <li><strong>{t('privacy.section7.access.label')}:</strong> {t('privacy.section7.access.description')}</li>
+              <li><strong>{t('privacy.section7.correction.label')}:</strong> {t('privacy.section7.correction.description')}</li>
+              <li><strong>{t('privacy.section7.portability.label')}:</strong> {t('privacy.section7.portability.description')}</li>
             </ul>
             <p className="text-muted-foreground mt-4">
-              When you delete your account, we will permanently remove all your personal information, search history, preferences, and any other data associated with your account from our systems.
+              {t('privacy.section7.deletionNote')}
             </p>
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">8. Contact Us</h2>
+            <h2 className="text-xl font-semibold mb-4">{t('privacy.section8.title')}</h2>
             <p className="text-muted-foreground">
-              If you have any questions about this Privacy Policy, please contact us at:
+              {t('privacy.section8.description')}
             </p>
             <p className="font-medium mt-2">ernst@cinemind.tech</p>
           </section>

@@ -2,30 +2,32 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, Brain, Sparkles, Users, Target } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 export const About = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const features = [
     {
       icon: Brain,
-      title: "AI-Powered Recommendations",
-      description: "Our advanced AI understands your movie preferences to suggest perfect matches for your mood and taste."
+      titleKey: "about.features.aiPowered.title",
+      descriptionKey: "about.features.aiPowered.description"
     },
     {
       icon: Sparkles,
-      title: "CineDNA Technology",
-      description: "Personalized movie DNA that evolves with your viewing preferences, getting smarter with every interaction."
+      titleKey: "about.features.cineDNA.title",
+      descriptionKey: "about.features.cineDNA.description"
     },
     {
       icon: Users,
-      title: "Community-Driven",
-      description: "Built for movie lovers, by movie lovers. Discover films you never knew existed."
+      titleKey: "about.features.community.title",
+      descriptionKey: "about.features.community.description"
     },
     {
       icon: Target,
-      title: "Precision Matching",
-      description: "Find exactly what you're looking for with our intelligent search."
+      titleKey: "about.features.precision.title",
+      descriptionKey: "about.features.precision.description"
     }
   ];
 
@@ -42,7 +44,7 @@ export const About = () => {
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold">About CineMind</h1>
+          <h1 className="text-2xl font-bold">{t('about.title')}</h1>
         </div>
 
         <div className="space-y-6">
@@ -50,11 +52,9 @@ export const About = () => {
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <h2 className="text-2xl font-bold mb-4">Discover Your Perfect Movie</h2>
+                <h2 className="text-2xl font-bold mb-4">{t('about.mission.title')}</h2>
                 <p className="text-muted-foreground text-lg">
-                  CineMind is the intelligent movie discovery platform that understands your unique taste. 
-                  Using advanced AI and personalized CineDNA technology, we help you find movies that 
-                  perfectly match your mood, preferences, and viewing history.
+                  {t('about.mission.description')}
                 </p>
               </div>
             </CardContent>
@@ -69,11 +69,11 @@ export const About = () => {
                     <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
                       <feature.icon className="h-5 w-5 text-primary" />
                     </div>
-                    <CardTitle className="text-lg">{feature.title}</CardTitle>
+                    <CardTitle className="text-lg">{t(feature.titleKey)}</CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <p className="text-muted-foreground">{t(feature.descriptionKey)}</p>
                 </CardContent>
               </Card>
             ))}
@@ -82,22 +82,17 @@ export const About = () => {
           {/* Story */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Our Story</CardTitle>
+              <CardTitle className="text-lg">{t('about.story.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                CineMind was born from a simple frustration: spending more time searching for movies 
-                than actually watching them. We believed there had to be a better way to discover 
-                films that truly resonate with individual tastes.
+                {t('about.story.paragraph1')}
               </p>
               <p className="text-muted-foreground">
-                Our team of movie enthusiasts and AI experts came together to create a platform that 
-                doesn't just recommend popular movies, but understands the nuances of what makes a 
-                film perfect for you at any given moment.
+                {t('about.story.paragraph2')}
               </p>
               <p className="text-muted-foreground">
-                Today, CineMind helps thousands of users discover their next favorite movie, 
-                creating a more personalized and enjoyable movie-watching experience.
+                {t('about.story.paragraph3')}
               </p>
             </CardContent>
           </Card>
@@ -105,17 +100,17 @@ export const About = () => {
           {/* Data Sources – OMDb attribution (required for app store) */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">About This App / Data Sources</CardTitle>
+              <CardTitle className="text-lg">{t('about.dataSources.title')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <p className="text-sm text-muted-foreground">
-                Data provided by the <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">OMDb API</a> (https://www.omdbapi.com).
+                {t('about.dataSources.omdbAttribution')} <a href="https://www.omdbapi.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">OMDb API</a> (https://www.omdbapi.com).
               </p>
               <p className="text-sm text-muted-foreground italic">
-                This product uses the OMDb API but is not endorsed or certified by OMDb.
+                {t('about.dataSources.disclaimer')}
               </p>
               <p className="text-sm text-muted-foreground">
-                Movie posters and metadata are provided in accordance with OMDb API terms of use.
+                {t('about.dataSources.mediaNote')}
               </p>
             </CardContent>
           </Card>
@@ -123,21 +118,21 @@ export const About = () => {
           {/* Version & Contact */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Get in Touch</CardTitle>
+              <CardTitle className="text-lg">{t('about.contact.title')}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm text-muted-foreground">Version</p>
+                  <p className="text-sm text-muted-foreground">{t('about.contact.version')}</p>
                   <p className="font-medium">1.0.0</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Contact</p>
+                  <p className="text-sm text-muted-foreground">{t('about.contact.contactLabel')}</p>
                   <p className="font-medium">ernst@cinemind.tech</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Copyright</p>
-                  <p className="font-medium">© 2024 CineMind. All rights reserved.</p>
+                  <p className="text-sm text-muted-foreground">{t('about.contact.copyright')}</p>
+                  <p className="font-medium">© 2024 CineMind. {t('about.contact.allRightsReserved')}</p>
                 </div>
               </div>
             </CardContent>
