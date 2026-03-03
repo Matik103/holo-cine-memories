@@ -45,6 +45,7 @@ export const Cookies = () => {
               <li><strong>{t('cookies.howWeUse.preferences.label')}:</strong> {t('cookies.howWeUse.preferences.description')}</li>
               <li><strong>{t('cookies.howWeUse.analytics.label')}:</strong> {t('cookies.howWeUse.analytics.description')}</li>
               <li><strong>{t('cookies.howWeUse.performance.label')}:</strong> {t('cookies.howWeUse.performance.description')}</li>
+              <li><strong>{t('cookies.howWeUse.advertising.label')}:</strong> {t('cookies.howWeUse.advertising.description')}</li>
             </ul>
           </section>
 

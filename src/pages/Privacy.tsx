@@ -105,6 +105,10 @@ export const Privacy = () => {
               <Link to="/advertising" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">{t('privacy.section6.advertisingPage')}</Link> {t('privacy.section6.googleAds')}{" "}
               <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">{t('privacy.section6.googleAdPolicy')}</a>.
             </p>
+            <h3 className="text-lg font-medium mb-2">{t('privacy.section6.adServingTitle')}</h3>
+            <p className="text-muted-foreground">
+              {t('privacy.section6.adServingDescription')}
+            </p>
           </section>
 
           <section className="mb-8">

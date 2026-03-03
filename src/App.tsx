@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import MobileAppInit from "@/components/MobileAppInit";
 import { AdMobBanner } from "@/components/AdMobBanner";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import { LanguageAutoDetect } from "@/components/LanguageAutoDetect";
 import { VaultNotifications } from "@/components/vault/VaultNotifications";
 import { MysteryNotifications } from "@/components/mystery";
@@ -52,6 +53,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <MobileAppInit />
+        <CookieConsentBanner />
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
