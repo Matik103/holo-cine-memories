@@ -159,7 +159,7 @@ class MysteryService {
 
     const nameMap = new Map((stats || []).map((s: any) => [s.user_id, s.display_name as string]));
 
-    return mysteries.map(m => ({
+    return mysteries.map((m: any) => ({
       id: m.id,
       user_id: m.user_id,
       description: m.description,
@@ -179,8 +179,8 @@ class MysteryService {
       points_reward: m.points_reward || 25,
       created_at: m.created_at,
       updated_at: m.updated_at,
-      poster_name: nameMap.get(m.user_id) || 'Anonymous'
-    }));
+      poster_name: (nameMap.get(m.user_id) || 'Anonymous') as string
+    })) as Mystery[];
   }
 
   async getMysteryById(mysteryId: string): Promise<MysteryResult<Mystery>> {

@@ -103,7 +103,7 @@ class VaultService {
   private lastPulseUpdate = 0;
 
   async getTrending(period: 'hour' | 'day' | 'week' = 'day', limit = 10): Promise<VaultTrending[]> {
-    const { data: localTrending } = await supabase
+    const { data: localTrending } = await db
       .from('vault_trending')
       .select('*')
       .order(period === 'hour' ? 'recall_count_hour' : period === 'day' ? 'recall_count_day' : 'recall_count_week', { ascending: false })
@@ -129,7 +129,7 @@ class VaultService {
     }
 
     // Fallback to local data
-    const { data } = await supabase
+    const { data } = await db
       .from('vault_trending')
       .select('*')
       .eq('is_hidden_gem', true)
@@ -176,7 +176,7 @@ class VaultService {
   }
 
   async getUserStats(userId: string): Promise<VaultUserStats | null> {
-    const { data } = await supabase
+    const { data } = await db
       .from('vault_user_stats')
       .select('*')
       .eq('user_id', userId)
@@ -236,7 +236,7 @@ class VaultService {
       total_searches: totalSearches
     };
 
-    await supabase.from('vault_user_stats').upsert({
+    await db.from('vault_user_stats').upsert({
       user_id: userId,
       display_name: newStats.display_name,
       vault_score: newStats.vault_score,
@@ -255,7 +255,7 @@ class VaultService {
   }
 
   async getAllBadges(): Promise<VaultBadge[]> {
-    const { data } = await supabase
+    const { data } = await db
       .from('vault_badges')
       .select('*')
       .order('points_value', { ascending: true });
@@ -293,7 +293,7 @@ class VaultService {
       const updatedBadges = [...stats.badges, ...newlyUnlocked];
       const pointsEarned = newlyUnlocked.reduce((sum, b) => sum + b.points_value, 0);
 
-      await supabase
+      await db
         .from('vault_user_stats')
         .update({
           badges: updatedBadges,
@@ -353,7 +353,7 @@ class VaultService {
       }
 
       case 'early_discovery': {
-        const { data, error } = await supabase.rpc('check_early_discovery', {
+        const { data, error } = await db.rpc('check_early_discovery', {
           p_user_id: userId,
           p_movie_title: ''
         });
@@ -366,7 +366,7 @@ class VaultService {
   }
 
   async getActivePredictions(userId?: string): Promise<VaultPrediction[]> {
-    const { data } = await supabase
+    const { data } = await db
       .from('vault_predictions')
       .select('*')
       .eq('is_active', true)
@@ -390,7 +390,7 @@ class VaultService {
     }));
 
     if (userId && predictions.length > 0) {
-      const { data: userPredictions } = await supabase
+      const { data: userPredictions } = await db
         .from('vault_user_predictions')
         .select('prediction_id, selected_option')
         .eq('user_id', userId)
@@ -409,7 +409,7 @@ class VaultService {
   }
 
   async getResolvedPredictions(userId?: string, limit = 5): Promise<VaultPrediction[]> {
-    const { data } = await supabase
+    const { data } = await db
       .from('vault_predictions')
       .select('*')
       .eq('is_resolved', true)
@@ -431,14 +431,14 @@ class VaultService {
     }));
 
     if (userId && predictions.length > 0) {
-      const { data: userPredictions } = await supabase
+      const { data: userPredictions } = await db
         .from('vault_user_predictions')
         .select('prediction_id, selected_option, is_correct, points_earned')
         .eq('user_id', userId)
         .in('prediction_id', predictions.map(p => p.id));
 
       const userSelections = new Map(
-        (userPredictions || []).map(up => [up.prediction_id, { 
+        (userPredictions || []).map((up: any) => [up.prediction_id, { 
           selected_option: up.selected_option,
           is_correct: up.is_correct,
           points_earned: up.points_earned
@@ -446,7 +446,7 @@ class VaultService {
       );
 
       predictions.forEach(p => {
-        const userPred = userSelections.get(p.id);
+        const userPred = userSelections.get(p.id) as any;
         if (userPred) {
           p.user_selection = userPred.selected_option;
           (p as any).is_correct = userPred.is_correct;
@@ -459,7 +459,7 @@ class VaultService {
   }
 
   async submitPrediction(userId: string, predictionId: string, selectedOption: string): Promise<boolean> {
-    const { error } = await supabase
+    const { error } = await db
       .from('vault_user_predictions')
       .upsert({
         user_id: userId,
@@ -468,14 +468,14 @@ class VaultService {
       });
 
     if (!error) {
-      const { data: stats } = await supabase
+      const { data: stats } = await db
         .from('vault_user_stats')
         .select('predictions_total')
         .eq('user_id', userId)
         .single();
         
       if (stats) {
-        await supabase
+        await db
           .from('vault_user_stats')
           .update({
             predictions_total: (stats.predictions_total || 0) + 1,
@@ -489,7 +489,7 @@ class VaultService {
   }
 
   async getChampions(limit = 5): Promise<VaultChampion[]> {
-    const { data } = await supabase
+    const { data } = await db
       .from('vault_user_stats')
       .select('display_name, vault_score, current_streak, badges, rank_percentile')
       .gt('vault_score', 0)
@@ -506,7 +506,7 @@ class VaultService {
   }
 
   async getRecentActivity(limit = 20): Promise<VaultActivity[]> {
-    const { data } = await supabase
+    const { data } = await db
       .from('vault_activity_feed')
       .select('*')
       .order('created_at', { ascending: false })
@@ -523,8 +523,8 @@ class VaultService {
     }));
   }
 
-  async addActivity(activity: Omit<VaultActivity, 'id' | 'created_at'>): Promise<void> {
-    await supabase.from('vault_activity_feed').insert({
+  async addActivity(activity: Partial<Omit<VaultActivity, 'id' | 'created_at'>> & { activity_type: VaultActivity['activity_type'] }): Promise<void> {
+    await db.from('vault_activity_feed').insert({
       activity_type: activity.activity_type,
       movie_title: activity.movie_title || null,
       movie_year: activity.movie_year || null,
@@ -534,7 +534,7 @@ class VaultService {
   }
 
   async recordSearch(userId: string, movieTitle: string, movieYear?: number, genres?: string[]): Promise<void> {
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('vault_trending')
       .select('recall_count_hour, recall_count_day, recall_count_week, recall_count_total, is_hidden_gem')
       .eq('movie_title', movieTitle)
@@ -543,7 +543,7 @@ class VaultService {
     const isNewHiddenGem = !existing || (existing.recall_count_total < 50 && existing.recall_count_total > 5);
 
     if (existing) {
-      await supabase
+      await db
         .from('vault_trending')
         .update({
           recall_count_hour: (existing.recall_count_hour || 0) + 1,
@@ -555,7 +555,7 @@ class VaultService {
         })
         .eq('movie_title', movieTitle);
     } else {
-      await supabase.from('vault_trending').insert({
+      await db.from('vault_trending').insert({
         movie_title: movieTitle,
         movie_year: movieYear,
         recall_count_hour: 1,
@@ -567,7 +567,7 @@ class VaultService {
       });
     }
 
-    const { data: stats } = await supabase
+    const { data: stats } = await db
       .from('vault_user_stats')
       .select('total_searches, vault_score, genres_explored')
       .eq('user_id', userId)
@@ -575,7 +575,7 @@ class VaultService {
 
     if (stats) {
       const newGenres = [...new Set([...(stats.genres_explored || []), ...(genres || [])])];
-      await supabase
+      await db
         .from('vault_user_stats')
         .update({
           total_searches: (stats.total_searches || 0) + 1,
@@ -586,7 +586,7 @@ class VaultService {
         .eq('user_id', userId);
     }
 
-    await supabase.rpc('update_user_streak', { p_user_id: userId });
+    await db.rpc('update_user_streak', { p_user_id: userId });
 
     const { data: profile } = await supabase
       .from('profiles')
@@ -612,7 +612,7 @@ class VaultService {
 
     const fiveMinutesAgo = new Date(now - 5 * 60 * 1000).toISOString();
     
-    const { count } = await supabase
+    const { count } = await db
       .from('vault_activity_feed')
       .select('*', { count: 'exact', head: true })
       .gte('created_at', fiveMinutesAgo);
@@ -625,28 +625,28 @@ class VaultService {
   }
 
   async updateDisplayName(userId: string, displayName: string): Promise<void> {
-    await supabase
+    await db
       .from('vault_user_stats')
       .update({ display_name: displayName, updated_at: new Date().toISOString() })
       .eq('user_id', userId);
   }
 
   async recordHiddenGemRating(userId: string, movieTitle: string): Promise<void> {
-    const { data: movie } = await supabase
+    const { data: movie } = await db
       .from('vault_trending')
       .select('is_hidden_gem')
       .eq('movie_title', movieTitle)
       .single();
 
     if (movie?.is_hidden_gem) {
-      const { data: stats } = await supabase
+      const { data: stats } = await db
         .from('vault_user_stats')
         .select('hidden_gems_rated')
         .eq('user_id', userId)
         .single();
 
       if (stats) {
-        await supabase
+        await db
           .from('vault_user_stats')
           .update({
             hidden_gems_rated: (stats.hidden_gems_rated || 0) + 1,
