@@ -1,5 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 
+// Cast for tables not in generated types
+const db = supabase as any;
+
 export interface VaultTrending {
   movie_title: string;
   movie_year: number | null;

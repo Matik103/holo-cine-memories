@@ -5,8 +5,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { HelpCircle, CheckCircle, MessageSquare, Trophy } from 'lucide-react';
 
+// Cast for tables not in generated types
+const db = supabase as any;
+
 const MYSTERY_CHECK_KEY = 'cinemind_mystery_check';
-const CHECK_INTERVAL = 60000; // Check every minute
+const CHECK_INTERVAL = 60000;
 
 export function MysteryNotifications() {
   const { toast } = useToast();
@@ -23,8 +26,7 @@ export function MysteryNotifications() {
     if (now - lastCheck < CHECK_INTERVAL) return;
     
     try {
-      // Check for new attempts on user's mysteries
-      const { data: newAttempts } = await supabase
+      const { data: newAttempts } = await db
         .from('mystery_attempts')
         .select(`
           id,
@@ -56,8 +58,7 @@ export function MysteryNotifications() {
         });
       }
 
-      // Check if any of user's mysteries were solved
-      const { data: solvedMysteries } = await supabase
+      const { data: solvedMysteries } = await db
         .from('memory_mysteries')
         .select('id, solution_movie_title')
         .eq('user_id', userIdRef.current)
@@ -66,7 +67,7 @@ export function MysteryNotifications() {
         .limit(3);
 
       if (solvedMysteries && solvedMysteries.length > 0) {
-        solvedMysteries.forEach((mystery) => {
+        solvedMysteries.forEach((mystery: any) => {
           toast({
             title: '🎉 Mystery Solved!',
             description: `Your mystery was identified as "${mystery.solution_movie_title}"`,
@@ -86,8 +87,7 @@ export function MysteryNotifications() {
         });
       }
 
-      // Check if user's solutions were accepted
-      const { data: acceptedSolutions } = await supabase
+      const { data: acceptedSolutions } = await db
         .from('mystery_attempts')
         .select(`
           id,
@@ -100,7 +100,7 @@ export function MysteryNotifications() {
         .limit(3);
 
       if (acceptedSolutions && acceptedSolutions.length > 0) {
-        acceptedSolutions.forEach((solution) => {
+        acceptedSolutions.forEach((solution: any) => {
           toast({
             title: '🏆 Your solution was accepted!',
             description: `"${solution.movie_title}" was the correct answer!`,
@@ -129,12 +129,10 @@ export function MysteryNotifications() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       userIdRef.current = session?.user?.id || null;
       if (session?.user) {
-        // Initial check after a delay
         setTimeout(checkMysteryUpdates, 5000);
       }
     });
 
-    // Set up periodic checks
     const interval = setInterval(checkMysteryUpdates, CHECK_INTERVAL);
 
     return () => {

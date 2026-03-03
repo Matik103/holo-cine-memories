@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+
+// Cast for tables not in generated types
+const db = supabase as any;
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HelpCircle, Eye, MessageSquare, Trophy, ArrowRight, Users } from 'lucide-react';
@@ -31,13 +34,13 @@ export function RecentMysteries() {
     const fetchMysteries = async () => {
       try {
         const [{ data, error }, { count }] = await Promise.all([
-          supabase
+          db
             .from('memory_mysteries')
             .select('id, description, view_count, attempt_count, points_reward')
             .eq('status', 'unsolved')
             .order('created_at', { ascending: false })
             .limit(3),
-          supabase
+          db
             .from('memory_mysteries')
             .select('*', { count: 'exact', head: true })
             .eq('status', 'unsolved')
