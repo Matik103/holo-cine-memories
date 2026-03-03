@@ -7,7 +7,7 @@ const db = supabase as any;
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { HelpCircle, Eye, MessageSquare, Trophy, ArrowRight, Users } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from '@/hooks/useTranslation';
 import { translationService } from '@/services/translationService';
 
 interface SimpleMystery {
@@ -20,8 +20,7 @@ interface SimpleMystery {
 
 export function RecentMysteries() {
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const currentLanguage = i18n.language;
+  const { t, currentLanguage } = useTranslation();
   const [mysteries, setMysteries] = useState<SimpleMystery[]>([]);
   const [translatedDescriptions, setTranslatedDescriptions] = useState<Record<string, string>>({});
   const [unsolvedCount, setUnsolvedCount] = useState(0);
