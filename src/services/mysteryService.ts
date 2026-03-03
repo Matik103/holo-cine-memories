@@ -1,6 +1,9 @@
 import { supabase } from '@/integrations/supabase/client';
 import { vaultService } from './vaultService';
 
+// Cast for tables not in generated types
+const db = supabase as any;
+
 export interface Mystery {
   id: string;
   user_id: string;
@@ -94,16 +97,14 @@ class MysteryService {
     offset = 0,
     userId?: string
   ): Promise<MysteryResult<Mystery[]>> {
-    // Validate and cap limit
     const safeLimit = Math.min(Math.max(1, limit), MAX_LIMIT);
     const safeOffset = Math.max(0, offset);
 
     try {
-      let query = supabase
+      let query = db
         .from('memory_mysteries')
         .select('*');
 
-      // Apply filters
       if (filter === 'unsolved') {
         query = query.eq('status', 'unsolved');
       } else if (filter === 'solved') {
@@ -120,7 +121,6 @@ class MysteryService {
         query = query.eq('solved_by', userId);
       }
 
-      // Apply sorting
       if (sort === 'recent') {
         query = query.order('created_at', { ascending: false });
       } else if (sort === 'popular') {
@@ -139,7 +139,6 @@ class MysteryService {
         return { data: null, error: { code: 'FETCH_ERROR', message: error.message } };
       }
 
-      // Fetch poster names separately to avoid complex joins
       const mysteries = await this.enrichMysteriesWithPosterNames(data || []);
 
       return { data: mysteries, error: null };
@@ -153,12 +152,12 @@ class MysteryService {
     if (mysteries.length === 0) return [];
 
     const userIds = [...new Set(mysteries.map(m => m.user_id))];
-    const { data: stats } = await supabase
+    const { data: stats } = await db
       .from('vault_user_stats')
       .select('user_id, display_name')
       .in('user_id', userIds);
 
-    const nameMap = new Map((stats || []).map(s => [s.user_id, s.display_name]));
+    const nameMap = new Map((stats || []).map((s: any) => [s.user_id, s.display_name as string]));
 
     return mysteries.map(m => ({
       id: m.id,
@@ -190,7 +189,7 @@ class MysteryService {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('memory_mysteries')
         .select('*')
         .eq('id', mysteryId)
@@ -203,15 +202,13 @@ class MysteryService {
         return { data: null, error: { code: 'FETCH_ERROR', message: error.message } };
       }
 
-      // Atomically increment view count using database function
       try {
-        await supabase.rpc('increment_mystery_views', { p_mystery_id: mysteryId });
+        await db.rpc('increment_mystery_views', { p_mystery_id: mysteryId });
       } catch {
         // View count increment failed silently
       }
 
-      // Get poster name
-      const { data: stats } = await supabase
+      const { data: stats } = await db
         .from('vault_user_stats')
         .select('display_name')
         .eq('user_id', data.user_id)
@@ -253,7 +250,6 @@ class MysteryService {
     originalSearchQuery?: string,
     aiSuggestions?: any
   ): Promise<MysteryResult<Mystery>> {
-    // Validate inputs
     if (!validateUUID(userId)) {
       return { data: null, error: { code: 'INVALID_USER_ID', message: 'Invalid user ID format' } };
     }
@@ -272,7 +268,6 @@ class MysteryService {
     const sanitizedClues = sanitizeString(additionalClues, MAX_CLUES_LENGTH);
     const sanitizedQuery = sanitizeString(originalSearchQuery, MAX_DESCRIPTION_LENGTH);
 
-    // Sanitize aiSuggestions - only allow specific structure
     const sanitizedAiSuggestions = aiSuggestions && typeof aiSuggestions === 'object' 
       ? { 
           suggestedTitle: typeof aiSuggestions.suggestedTitle === 'string' ? aiSuggestions.suggestedTitle.slice(0, 200) : null,
@@ -281,7 +276,7 @@ class MysteryService {
       : null;
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('memory_mysteries')
         .insert({
           user_id: userId,
@@ -297,15 +292,13 @@ class MysteryService {
         return { data: null, error: { code: 'CREATE_ERROR', message: error.message } };
       }
 
-      // Increment mysteries_posted using database function
       try {
-        await supabase.rpc('increment_mysteries_posted', { p_user_id: userId });
+        await db.rpc('increment_mysteries_posted', { p_user_id: userId });
       } catch {
         // mysteries_posted increment failed silently
       }
 
-      // Add to activity feed
-      const { data: profile } = await supabase
+      const { data: profile } = await db
         .from('vault_user_stats')
         .select('display_name')
         .eq('user_id', userId)
@@ -319,7 +312,6 @@ class MysteryService {
         badge_id: null
       });
 
-      // Check for mystery poster badge
       await vaultService.checkAndUnlockBadges(userId);
 
       const mystery: Mystery = {
@@ -344,7 +336,7 @@ class MysteryService {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('mystery_attempts')
         .select('*')
         .eq('mystery_id', mysteryId)
@@ -354,16 +346,15 @@ class MysteryService {
         return { data: null, error: { code: 'FETCH_ERROR', message: error.message } };
       }
 
-      // Get solver names
-      const userIds = [...new Set((data || []).map(a => a.user_id))];
-      const { data: stats } = await supabase
+      const userIds = [...new Set((data || []).map((a: any) => a.user_id))];
+      const { data: stats } = await db
         .from('vault_user_stats')
         .select('user_id, display_name')
         .in('user_id', userIds);
 
-      const nameMap = new Map((stats || []).map(s => [s.user_id, s.display_name]));
+      const nameMap = new Map((stats || []).map((s: any) => [s.user_id, s.display_name]));
 
-      const attempts: MysteryAttempt[] = (data || []).map(a => ({
+      const attempts: MysteryAttempt[] = (data || []).map((a: any) => ({
         id: a.id,
         mystery_id: a.mystery_id,
         user_id: a.user_id,
@@ -395,7 +386,6 @@ class MysteryService {
     posterUrl?: string,
     explanation?: string
   ): Promise<MysteryResult<MysteryAttempt>> {
-    // Validate inputs
     if (!validateUUID(mysteryId)) {
       return { data: null, error: { code: 'INVALID_MYSTERY_ID', message: 'Invalid mystery ID format' } };
     }
@@ -416,8 +406,7 @@ class MysteryService {
     const sanitizedPosterUrl = posterUrl && posterUrl.startsWith('http') ? posterUrl.slice(0, 500) : null;
 
     try {
-      // Check if mystery exists and is unsolved
-      const { data: mystery, error: mysteryError } = await supabase
+      const { data: mystery, error: mysteryError } = await db
         .from('memory_mysteries')
         .select('id, user_id, status')
         .eq('id', mysteryId)
@@ -435,7 +424,7 @@ class MysteryService {
         return { data: null, error: { code: 'SELF_SOLVE', message: 'You cannot solve your own mystery' } };
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('mystery_attempts')
         .insert({
           mystery_id: mysteryId,
@@ -450,15 +439,14 @@ class MysteryService {
         .single();
 
       if (error) {
-        if (error.code === '23505') { // Unique violation
+        if (error.code === '23505') {
           return { data: null, error: { code: 'ALREADY_ATTEMPTED', message: 'You have already submitted a solution for this mystery' } };
         }
         return { data: null, error: { code: 'SUBMIT_ERROR', message: error.message } };
       }
 
-      // Atomically increment attempt count
       try {
-        await supabase.rpc('increment_mystery_attempts', { p_mystery_id: mysteryId });
+        await db.rpc('increment_mystery_attempts', { p_mystery_id: mysteryId });
       } catch {
         // Attempt count increment failed silently
       }
@@ -490,8 +478,7 @@ class MysteryService {
     }
 
     try {
-      // Check if attempt exists and user is not the author
-      const { data: attempt, error: attemptError } = await supabase
+      const { data: attempt, error: attemptError } = await db
         .from('mystery_attempts')
         .select('id, user_id, mystery_id')
         .eq('id', attemptId)
@@ -505,8 +492,7 @@ class MysteryService {
         return { data: null, error: { code: 'SELF_VOTE', message: 'You cannot vote on your own solution' } };
       }
 
-      // Check if mystery is still open
-      const { data: mystery } = await supabase
+      const { data: mystery } = await db
         .from('memory_mysteries')
         .select('status')
         .eq('id', attempt.mystery_id)
@@ -516,8 +502,7 @@ class MysteryService {
         return { data: null, error: { code: 'MYSTERY_CLOSED', message: 'Voting is closed for this mystery' } };
       }
 
-      // Check existing vote
-      const { data: existingVote } = await supabase
+      const { data: existingVote } = await db
         .from('mystery_votes')
         .select('id, vote_type')
         .eq('attempt_id', attemptId)
@@ -526,8 +511,7 @@ class MysteryService {
 
       if (existingVote) {
         if (existingVote.vote_type === voteType) {
-          // Remove vote (toggle off)
-          const { error } = await supabase
+          const { error } = await db
             .from('mystery_votes')
             .delete()
             .eq('id', existingVote.id);
@@ -537,8 +521,7 @@ class MysteryService {
           }
           return { data: true, error: null };
         } else {
-          // Change vote - delete and insert in sequence
-          const { error: deleteError } = await supabase
+          const { error: deleteError } = await db
             .from('mystery_votes')
             .delete()
             .eq('id', existingVote.id);
@@ -547,7 +530,7 @@ class MysteryService {
             return { data: null, error: { code: 'VOTE_ERROR', message: deleteError.message } };
           }
 
-          const { error: insertError } = await supabase
+          const { error: insertError } = await db
             .from('mystery_votes')
             .insert({
               attempt_id: attemptId,
@@ -562,8 +545,7 @@ class MysteryService {
         }
       }
 
-      // New vote
-      const { error } = await supabase
+      const { error } = await db
         .from('mystery_votes')
         .insert({
           attempt_id: attemptId,
@@ -584,7 +566,6 @@ class MysteryService {
   async getUserVotes(userId: string, attemptIds: string[]): Promise<Record<string, 'up' | 'down'>> {
     if (attemptIds.length === 0 || !validateUUID(userId)) return {};
 
-    // Batch in chunks of 50 to avoid large IN clauses
     const chunks = [];
     for (let i = 0; i < attemptIds.length; i += 50) {
       chunks.push(attemptIds.slice(i, i + 50));
@@ -593,13 +574,13 @@ class MysteryService {
     const votes: Record<string, 'up' | 'down'> = {};
 
     for (const chunk of chunks) {
-      const { data } = await supabase
+      const { data } = await db
         .from('mystery_votes')
         .select('attempt_id, vote_type')
         .eq('user_id', userId)
         .in('attempt_id', chunk);
 
-      (data || []).forEach(v => {
+      (data || []).forEach((v: any) => {
         votes[v.attempt_id] = v.vote_type as 'up' | 'down';
       });
     }
@@ -617,8 +598,7 @@ class MysteryService {
     }
 
     try {
-      // Use the database function for atomic operation with locking
-      const { data, error } = await supabase.rpc('accept_mystery_solution', {
+      const { data, error } = await db.rpc('accept_mystery_solution', {
         p_mystery_id: mysteryId,
         p_attempt_id: attemptId,
         p_user_id: userId
@@ -644,8 +624,7 @@ class MysteryService {
     }
 
     try {
-      // Use the database function for safe closing
-      const { data, error } = await supabase.rpc('close_mystery', {
+      const { data, error } = await db.rpc('close_mystery', {
         p_mystery_id: mysteryId,
         p_user_id: userId
       });
@@ -670,7 +649,7 @@ class MysteryService {
     }
 
     try {
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('vault_user_stats')
         .select('mysteries_solved, mysteries_posted, detective_rank, solve_streak, longest_solve_streak')
         .eq('user_id', userId)
@@ -678,7 +657,6 @@ class MysteryService {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // No stats row - return defaults
           return {
             data: {
               mysteries_solved: 0,
@@ -716,14 +694,14 @@ class MysteryService {
   }>> {
     const safeLimit = Math.min(Math.max(1, limit), 50);
 
-    const { data } = await supabase
+    const { data } = await db
       .from('vault_user_stats')
       .select('display_name, mysteries_solved, detective_rank, solve_streak')
       .gt('mysteries_solved', 0)
       .order('mysteries_solved', { ascending: false })
       .limit(safeLimit);
 
-    return (data || []).map(d => ({
+    return (data || []).map((d: any) => ({
       display_name: d.display_name || 'Anonymous',
       mysteries_solved: d.mysteries_solved || 0,
       detective_rank: d.detective_rank || 'rookie',
@@ -732,7 +710,7 @@ class MysteryService {
   }
 
   async getUnsolvedCount(): Promise<number> {
-    const { count } = await supabase
+    const { count } = await db
       .from('memory_mysteries')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'unsolved');
@@ -742,10 +720,7 @@ class MysteryService {
 
   async getFeaturedMystery(excludeUserId?: string): Promise<MysteryResult<Mystery>> {
     try {
-      // Get the "hottest" unsolved mystery based on engagement
-      // Priority: high view count + recent activity + high points
-      // Exclude the current user's mysteries so they see others' mysteries
-      let query = supabase
+      let query = db
         .from('memory_mysteries')
         .select('*')
         .eq('status', 'unsolved');
@@ -762,8 +737,7 @@ class MysteryService {
         .single();
 
       if (error || !data) {
-        // Fallback: get the most recent unsolved mystery (excluding user's own)
-        let fallbackQuery = supabase
+        let fallbackQuery = db
           .from('memory_mysteries')
           .select('*')
           .eq('status', 'unsolved');
@@ -781,8 +755,7 @@ class MysteryService {
           return { data: null, error: { code: 'NOT_FOUND', message: 'No featured mystery available' } };
         }
 
-        // Get poster name
-        const { data: profile } = await supabase
+        const { data: profile } = await db
           .from('vault_user_stats')
           .select('display_name')
           .eq('user_id', recentData.user_id)
@@ -798,8 +771,7 @@ class MysteryService {
         return { data: mystery, error: null };
       }
 
-      // Get poster name
-      const { data: profile } = await supabase
+      const { data: profile } = await db
         .from('vault_user_stats')
         .select('display_name')
         .eq('user_id', data.user_id)
@@ -830,7 +802,6 @@ class MysteryService {
       return { data: null, error: { code: 'INVALID_ID', message: 'Invalid mystery ID format' } };
     }
 
-    // Validate description if provided
     if (updates.description !== undefined) {
       const trimmedDescription = updates.description.trim();
       if (trimmedDescription.length < MIN_DESCRIPTION_LENGTH) {
@@ -854,8 +825,7 @@ class MysteryService {
     }
 
     try {
-      // First verify the user owns this mystery and it's still unsolved
-      const { data: existingMystery, error: fetchError } = await supabase
+      const { data: existingMystery, error: fetchError } = await db
         .from('memory_mysteries')
         .select('*')
         .eq('id', mysteryId)
@@ -873,7 +843,6 @@ class MysteryService {
         return { data: null, error: { code: 'CANNOT_EDIT', message: 'Cannot edit a mystery that has been solved or closed' } };
       }
 
-      // Build update object
       const updateData: Record<string, any> = {
         updated_at: new Date().toISOString()
       };
@@ -888,7 +857,7 @@ class MysteryService {
           : null;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await db
         .from('memory_mysteries')
         .update(updateData)
         .eq('id', mysteryId)
@@ -901,8 +870,7 @@ class MysteryService {
         return { data: null, error: { code: 'UPDATE_ERROR', message: error.message } };
       }
 
-      // Get poster name
-      const { data: profile } = await supabase
+      const { data: profile } = await db
         .from('vault_user_stats')
         .select('display_name')
         .eq('user_id', userId)
@@ -959,7 +927,7 @@ class MysteryService {
     const now = new Date();
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    if (seconds < 0) return 'just now'; // Handle future dates gracefully
+    if (seconds < 0) return 'just now';
     if (seconds < 60) return 'just now';
     if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
     if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
